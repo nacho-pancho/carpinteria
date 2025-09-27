@@ -3,7 +3,7 @@ import cadquery.vis as vis
 #
 # utilidades
 #
-zero = cq.Vector(0,0,0)
+zero  = cq.Vector(0,0,0)
 xaxis = cq.Vector(1,0,0)
 yaxis = cq.Vector(0,1,0)
 zaxis = cq.Vector(0,0,1)

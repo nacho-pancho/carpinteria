@@ -7,7 +7,7 @@ En orden de prioridad.
 
 * Puertas de interior
   * Agujero de 208x740 todas ellas
-  * De grosor, entre yeso y yeso, son 13cm
+  * De grosor, entre yeso y yeso, son 13cm la de mi cuarto, 14 la del baño 
   * Dos tienen pomo izquierdo (esto es una puerta _derecha_ porque se abre hacia la _derecha_)
   * La del baño tiene el pomo a la derecha (es una puerta _izquierda_)
 * Puerta exterior
@@ -24,7 +24,7 @@ En orden de prioridad.
 * Luego habría que agregar un nuevo tramo dividiendo de los alemanes, que son 4m (dos tramos de 2m)
 * Cada tramo tendría adosada una tabla vertical a cada lado para clavar las tablas, en lguar de hacerlo directo sobre los postes.
 * Cada tabla tendría 155cm
-* Son dos tablas por tramo, y hay 3 + 2 + 2 = 7 tramos = 14 tablas
+* Son dos tablas por tramo, y hay 3 + 2 + 2 = 7 tramos = 14 tablas DE 155cm
 * Las tablas verticales deberían ser de 1x3 pulgadas  
 * En resumen, son cualquier cosa
 * Cantidad de tablas por tramo:
@@ -32,12 +32,14 @@ En orden de prioridad.
 * Tablas de 6 pulgadas, cepilladas, quedan en 13-14cm
 * Para dejar una luz de 5cm entre ellas
 * 140cm es lo minimo. Con 7 tablas llego a eso
+* Con 7 tramos, por 7 tablas, son 49 tablas.
 
 ## Portera
 
 * Voy a sacar los postes altos
 * Distancia entre postes (sin contar los altos): 360cm
 * Si la hago de la misma altura que la cerca, son 155cm de altura
+* Necesito entonces 7 tablas de 405m mas 8 de 155 (para las verticales de los portones), mas 2 diagonales de $\sqrt{155^2+180^2} = 240$ cada una
 
 ## Deck parrillero
 

@@ -6,10 +6,10 @@ En orden de prioridad.
 ## Puertas
 
 * Puertas de interior
-  * Agujero de 209x734 (HDP, ahora entiendo por qué hicieron los marcos a mano)
+  * Agujero de 208x740 todas ellas
   * De grosor, entre yeso y yeso, son 13cm
-  * Dos tienen pomo izquierdo
-  * Una tiene pomo derecho
+  * Dos tienen pomo izquierdo (esto es una puerta _derecha_ porque se abre hacia la _derecha_)
+  * La del baño tiene el pomo a la derecha (es una puerta _izquierda_)
 * Puerta exterior
   * Por ahora no la voy a cambiar
 
@@ -41,6 +41,10 @@ En orden de prioridad.
 
 ## Deck parrillero
 
+* 400x400cm 
+* Tabla de deck tiene 14cm
+* Precio anda en los 300 pesos por unidad
+* 
 ## Cobertizo
 
 ## Cama dos plazas
@@ -51,7 +55,16 @@ En orden de prioridad.
 
 ## Isla
 
+* Profundidad: 55cm
+* Altura: 87m
+* Agujeros: 4x51cm
+
 ## Bajomesada
+
+* Profundidad: 55cm
+* Ancho: dos de 51cm, uno de 103cm
+* Altura: 69cm (hasta el bordecito)
+
 
 ## Placar cuarto Viole
 

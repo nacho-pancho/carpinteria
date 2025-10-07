@@ -74,7 +74,15 @@ En orden de prioridad.
 
 ## Domo sapiens
 
-## Casa 2
+## Escritorios
+
+* 75cm de alto.
+* Violeta. Solido, 1.0m de ancho. 
+* Nacho. Solido. 1.1m-1.2m de ancho. Bandeja para teclado?
+
+### Nacho
+
+# Casa 2
 
 
 

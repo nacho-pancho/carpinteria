@@ -18,3 +18,5 @@ Otras alternativas interesantes:
  * El ancho de las correderas van entre 30mm y 45mm, obviamente mas gruesas, más caras, más peso aguantan. Van hasta los 45kg
  * El largo de las correderas deberia ser igual al largo del cajón o un poco menos
  * También hay kits de rieles para puertas de placard como [este](https://articulo.mercadolibre.com.uy/MLU-695059554-rieles-correderas-para-puertas-corredizas-placard-3mt-blanco-_JM?has_official_store=false&highlight=false&searchVariation=181784231586&headerTopBrand=false#polycard_client=search-nordic&searchVariation=181784231586&search_layout=grid&position=6&type=item&tracking_id=526cb94a-c9da-4246-a8b3-2355229a1420)
+
+ * Tutorial roldana para puertas corredizas JP360 (gigante, para roperos grandes) https://www.youtube.com/watch?v=y-uLDW4GXA8

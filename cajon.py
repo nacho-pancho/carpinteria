@@ -1,9 +1,26 @@
 import cadquery as cq
-import cadquery.vis as vis
+#import cadquery.vis as vis
 
 x = cq.Vector(1,0,0)
 y = cq.Vector(0,1,0)
 z = cq.Vector(0,0,1)
+
+def crear_placa(orientacion,ancho,largo,grosor,nombre="sin_nombre",material="sin_material"):
+    pie = {"nombre":nombre,"material":material,"ancho":ancho,"largo":largo,"grosor":grosor}
+    if orientacion == "horizontal":
+        ancho = ancho
+        prof  = largo
+        alto  = grosor
+    elif orientacion == "frente":
+        alto = largo
+        ancho  = ancho
+        prof = grosor
+    elif orientacion == "lado":
+        alto = ancho
+        ancho  = grosor
+        prof = largo
+    obj = cq.Workplane("XY").box(ancho,prof,alto).translate((ancho/2,prof/2,alto/2))
+    return obj,pie
 
 def crear_caja(ancho,prof,alto,nombre="sin_nombre",material="sin_material"):
     obj = cq.Workplane("XY").box(ancho,prof,alto).translate((ancho/2,prof/2,alto/2))
@@ -39,38 +56,37 @@ def crear_cajon(ancho,
     alto_lado = alto - 2* guarda_int
     prof_lado = prof_base 
     largo_guia = (prof_base // 50)*50
-    print(prof_base, largo_guia)
     #
     # piezas
     #    
     piezas = list()
     ancla = (cq.Workplane("XY").sphere(5))
 
-    fondo,pie = crear_caja(ancho_fondo, grosor_placa, alto_fondo,nombre="fondo",material="MDF")
+    fondo,pie = crear_placa("frente",ancho_fondo, alto_fondo, grosor_placa,nombre="fondo",material="MDF")
     fondo = fondo.translate((grosor_guia+grosor_placa,prof_base-grosor_placa,grosor_placa))
     piezas.append(pie)
 
-    frente,pie = crear_caja(ancho_frente, grosor_placa, alto_frente,nombre="frente",material="MDF")
+    frente,pie = crear_placa("frente",ancho_frente, alto_frente, grosor_placa, nombre="frente",material="MDF")
     frente = frente.translate((-margen_frente,-grosor_placa,0))
     piezas.append(pie)
 
-    lado,pie = crear_caja(grosor_placa, prof_lado, alto_lado,nombre="lado",material="MDF")
+    lado,pie = crear_placa("lado", alto_lado,prof_lado, grosor_placa,nombre="lado",material="MDF")
     lado_izq = lado.translate((grosor_guia,0,0))
     piezas.append(pie)
     lado_der = lado.translate((ancho_base+grosor_guia+grosor_placa,0,0))
     piezas.append(pie)
 
-    base,pie = crear_caja(ancho_base, prof_base, grosor_placa,nombre="base",material="MDF")
+    base,pie = crear_placa("horizontal",ancho_base, prof_base, grosor_placa,nombre="base",material="MDF")
     base = base.translate((grosor_guia+grosor_placa,0,0))
     piezas.append(pie)
 
     guia_izq,pie = crear_caja(grosor_guia,largo_guia,ancho_guia,"guia",material="guia")
     guia_izq = guia_izq.translate((0,0,50))
-    piezas.append(pie)
+    #piezas.append(pie)
 
     guia_der,pie = crear_caja(grosor_guia,largo_guia,ancho_guia,nombre="guia",material="guia")
     guia_der = guia_der.translate((ancho_base+grosor_guia+2*+grosor_placa,0,50))
-    piezas.append(pie)
+    #piezas.append(pie)
 
     cajon = (cq.Assembly()
         .add(ancla,color=cq.Color("Yellow"))
@@ -84,6 +100,8 @@ def crear_cajon(ancho,
         )        
     return cajon,piezas
 
-cajon,piezas = crear_cajon(400, 200, 500)
-vis.show(cajon)
+#cajon,piezas = crear_cajon(400, 200, 500)
+#vis.show(cajon)
+#for p in piezas:
+#    print(p)
 #show_object(cajon)

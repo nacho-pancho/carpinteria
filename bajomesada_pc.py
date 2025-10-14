@@ -75,11 +75,12 @@ if __name__ == "__main__":
         ancho  = p["ancho"]
         largo  = p["largo"]
         grosor = p["grosor"]
-        id = f"{mat} de {grosor}mm {ancho}mm x {largo}mm"
+        nombre = p["nombre"]
+        id = f"{mat} de {grosor}mm {ancho}mm x {largo}mm ({nombre})"
         if id not in piezas_por_tipo:
             piezas_por_tipo[id] = 1
         else:
             piezas_por_tipo[id] +=1
         print(p)
     for p in piezas_por_tipo.keys():
-        print(p,piezas_por_tipo[p])
+        print(piezas_por_tipo[p],p)

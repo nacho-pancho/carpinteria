@@ -4,8 +4,16 @@ import cadquery as cq
 x = cq.Vector(1,0,0)
 y = cq.Vector(0,1,0)
 z = cq.Vector(0,0,1)
+xaxis = x
+yaxis = y
+zaxis = z
 
-def crear_placa(orientacion,ancho,largo,grosor,nombre="sin_nombre",material="sin_material"):
+def crear_placa(orientacion,ancho,largo,grosor,nombre="sin_nombre",material="sin_material", 
+                canto_arriba=False, 
+                canto_abajo=False, 
+                canto_derecha=False,
+                canto_izquierda=False,
+                canto_frente=False):
     pie = {"nombre":nombre,"material":material,"ancho":ancho,"largo":largo,"grosor":grosor}
     if orientacion == "horizontal":
         ancho = ancho

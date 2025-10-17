@@ -1,5 +1,6 @@
 import cadquery as cq
 #import cadquery.vis as vis
+import piezas as pz
 
 x = cq.Vector(1,0,0)
 y = cq.Vector(0,1,0)
@@ -25,9 +26,6 @@ def crear_placa(orientacion,ancho,largo,grosor,nombre="sin_nombre",material="sin
     obj = cq.Workplane("XY").box(ancho,prof,alto).translate((ancho/2,prof/2,alto/2))
     return obj,pie
 
-
-def crear_guia(orientacion,ancho,largo,grosor,nombre):
-    return crear_placa(orientacion,ancho,largo,grosor,nombre,material="GUIA")
 
 
 def crear_cajon(ancho, 
@@ -85,7 +83,7 @@ def agregar_cajon(objetos,
     prof_lado = prof_base 
     largo_guia = (prof_base // 50)*50
     if ancla is None:
-         ancla = piezas.ZERO
+         ancla = pz.ZERO
     #
     # piezas
     #    
@@ -123,14 +121,14 @@ def agregar_cajon(objetos,
                           name=f"{nombre}_base",
                           color=color_base)
 
-    guia_izq,pie = crear_guia("lado",ancho_guia,largo_guia,grosor_guia,nombre=f"{nombre}_guia_izq")
+    guia_izq,pie = pz.crear_guia("lado",ancho_guia,largo_guia,grosor_guia,nombre=f"{nombre}_guia_izq")
     guia_izq = guia_izq.translate((0,0,50))
     piezas.append(pie)
     objetos = objetos.add(guia_izq.translate(ancla),
                           name=f"{nombre}_guia_izq",
                           color=color_guia)
 
-    guia_der,pie = crear_guia("lado",ancho_guia,largo_guia,grosor_guia,nombre=f"{nombre}_guia_der")
+    guia_der,pie = pz.crear_guia("lado",ancho_guia,largo_guia,grosor_guia,nombre=f"{nombre}_guia_der")
     guia_der = guia_der.translate((ancho_base+grosor_guia+2*+grosor_placa,0,50))
     piezas.append(pie)
     objetos = objetos.add(guia_der.translate(ancla),

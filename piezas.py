@@ -53,6 +53,12 @@ def crear_placa(orientacion,ancho,largo,grosor,nombre="sin_nombre",material="sin
     return obj,pie
 
 
+def crear_guia(orientacion,ancho,largo,grosor,nombre):
+    obj,pie = crear_placa(orientacion,ancho,largo,grosor,nombre,material="GUIA")
+    obj = obj.edges("|Y").fillet(3)
+    return obj,pie
+
+
 def crear_tabla(orientacion,ancho,largo,grosor,nombre="sin_nombre",material="sin_material"):
     pie = {"nombre":nombre,"material":material,"ancho":ancho,"largo":largo,"grosor":grosor}
     if orientacion == "vertical":

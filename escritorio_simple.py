@@ -117,7 +117,7 @@ def escritorio_simple(nombre,ancho_tabla,
         obj,pies = cajon.agregar_cajon(obj, pies, f"{nombre}_cajon_{i}",
                                         (margen+grosor_mdf,margen,alto_tabla-(i+1)*alto_cajonera//num_cajones),
                                         ancho_cajonera, alto_cajonera//num_cajones, prof_caj, 
-                                        margen_frente=20, grosor_placa=15, guarda_ext=20,
+                                        margen_frente=20, grosor_placa=18, guarda_ext=20,
                                         color_frente=COLOR_MDF,
                                         color_lado=COLOR_MDF,
                                         color_base=COLOR_MDF)

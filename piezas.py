@@ -109,3 +109,48 @@ def lista(piezas,fname='materiales.csv'):
             lp = ','.join(piezas_por_tipo[p])
             print(f"{n:5d} | {p} | {lp}")
             print(f"{n:5d} | {p} | {lp}",file=f)
+
+def exportar_barraca_parana(piezas):
+    listas_de_materiales = dict()
+    for p in piezas:
+        mat    = p["material"]
+        grosor = p["grosor"]
+        id_material = f'{mat}_{grosor}'
+        ancho  = p["ancho"]
+        largo  = p["largo"]
+
+        dim1 = min(ancho,largo)
+        dim2 = max(ancho,largo)
+        id_pieza = f'{dim1}_{dim2}'
+
+        nombre = p["nombre"]
+        if id_material not in listas_de_materiales:
+            lista_de_piezas = dict()
+            piezas = [nombre]
+            lista_de_piezas[id_pieza] = {"dim1":dim1,"dim2":dim2,"piezas":piezas}
+            listas_de_materiales[id_material] = lista_de_piezas
+        else:
+            lista_de_piezas = listas_de_materiales[id_material]
+            if id_pieza not in lista_de_piezas:
+                lista_de_piezas[id_pieza] = {"dim1":dim1,"dim2":dim2,"piezas":[nombre]}
+            else:
+                lista_de_piezas[id_pieza]["piezas"].append(nombre)
+            listas_de_materiales[id_material]= lista_de_piezas
+        
+    for id_material in listas_de_materiales.keys():
+        lista_de_piezas = listas_de_materiales[id_material]
+        print("material",id_material)
+        with open(f'{id_material}.csv','w') as f:
+            for id_pieza in lista_de_piezas: # piezas de mismo tipo
+                print("pieza",id_pieza)
+                pieza = lista_de_piezas[id_pieza]
+                p_dim1 = pieza["dim1"]
+                p_dim2 = pieza["dim2"]
+                cant = len(pieza["piezas"])
+                p_nombre = pieza["piezas"][0]
+                rota = 0
+                canto_arr = 0
+                canto_aba = 0
+                canto_izq = 0
+                canto_der = 0
+                print(f"{cant}\t{p_dim1}\t{p_dim2}\t{p_nombre}\t{rota}\t{canto_arr}\t{canto_aba}\t{canto_izq}\t{canto_der}",file=f)

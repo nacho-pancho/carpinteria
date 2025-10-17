@@ -62,8 +62,9 @@ def crear_tabla(orientacion,ancho,largo,grosor,nombre="sin_nombre",material="sin
     obj = cq.Workplane("XY").box(ancho,prof,alto).translate((ancho/2,prof/2,alto/2))
     return obj,pie
 
+import csv
 
-def lista(piezas):
+def lista(piezas,fname='materiales.csv'):
     """
     " Mostrar una lista de piezas, agrupadas por mismo tamaño, material y dimensiones
     """
@@ -76,10 +77,17 @@ def lista(piezas):
         nombre = p["nombre"]
         dim1 = min(ancho,largo)
         dim2 = max(ancho,largo)
-        id = f"{mat:10} de {grosor:2d}mm {dim1:4d}mm x {dim2:4d}mm ({nombre})"
+        id = f"{mat:8} | {grosor:10d} | {dim1:8d} | {dim2:8d}"
         if id not in piezas_por_tipo:
-            piezas_por_tipo[id] = 1
+            piezas_por_tipo[id] = [nombre]
         else:
-            piezas_por_tipo[id] +=1
-    for p in sorted(piezas_por_tipo.keys()):
-        print(piezas_por_tipo[p],p)
+            piezas_por_tipo[id].append(nombre)
+
+    with open(fname,'w') as f:
+        print("cant. | material | grosor(mm) | dim1(mm) | dim2(mm) | piezas")
+        print("cant. | material | grosor(mm) | dim1(mm) | dim2(mm) | piezas",file=f)
+        for p in sorted(piezas_por_tipo.keys()):
+            n = len(piezas_por_tipo[p])
+            lp = ','.join(piezas_por_tipo[p])
+            print(f"{n:5d} | {p} | {lp}")
+            print(f"{n:5d} | {p} | {lp}",file=f)

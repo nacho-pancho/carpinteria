@@ -141,7 +141,7 @@ alto_bandeja = 300
 prof_bandeja = 100
 alto_cajon = 160
 alto_cajonera = alto_cajon*4
-ancho_cajonera = 450
+ancho_cajonera = 400
 margen = 20
 
 res,pies = escritorio("esc_nacho",

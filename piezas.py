@@ -148,7 +148,7 @@ def exportar_barraca_parana(piezas):
                 p_dim2 = pieza["dim2"]
                 cant = len(pieza["piezas"])
                 p_nombre = pieza["piezas"][0]
-                rota = 0
+                rota = 1
                 canto_arr = 0
                 canto_aba = 0
                 canto_izq = 0

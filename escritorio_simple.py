@@ -8,7 +8,7 @@ ALPHA = 0.5
 COLOR_MDF = cq.Color(1.0,0.95,0.9,ALPHA)
 COLOR_FINGER = cq.Color(1.0,0.8,0.6,ALPHA)
 
-def escritorio(nombre,ancho_tabla,
+def escritorio_simple(nombre,ancho_tabla,
                alto_tabla,
                prof_tabla,
                alto_bandeja,
@@ -126,53 +126,4 @@ def escritorio(nombre,ancho_tabla,
        # 
        # tabla, lado_izq, lado_der, fondo, bandeja, lado_cajonera, base_cajonera
        return obj, pies
-
-
-# unidades en mm
-#
-# escritorio de esquina de 2 piezas
-#
-grosor_finger      = 20
-grosor_mdf = 18
-alto_tabla = 750
-prof_tabla = 600
-ancho_tabla = 1500
-alto_bandeja = 300
-prof_bandeja = 100
-alto_cajon = 160
-alto_cajonera = alto_cajon*4
-ancho_cajonera = 400
-margen = 20
-
-res,pies = escritorio("esc_nacho",
-                      ancho_tabla, alto_tabla, prof_tabla,
-                      alto_bandeja, prof_bandeja,
-                      alto_cajonera,ancho_cajonera,
-                      margen = margen,
-                      grosor_mdf=18, grosor_finger=20)
-vis.show(res)
-print("ESCRITORIO DE NACHO")
-piezas.lista(pies)
-
-print("ESCRITORIO DE VIOLE")
-ancho_tabla    = 1000
-ancho_cajonera = 320
-
-res,pies2 = escritorio("esc_viole",
-                       ancho_tabla, alto_tabla,prof_tabla,
-                       alto_bandeja,prof_bandeja,
-                       alto_cajonera,ancho_cajonera,
-                       margen = margen,
-                       grosor_mdf=18, grosor_finger=20)
-
-vis.show(res)
-piezas.lista(pies2)
-
-print("TODAS LAS PIEZAS")
-
-pies.extend(pies2)
-piezas.lista(pies)
-
-#show_object(res,name="www")
-
 

@@ -5,6 +5,17 @@ YAXIS = cq.Vector(0,1,0)
 ZAXIS = cq.Vector(0,0,1)
 ZERO  = cq.Vector(0,0,0)
 
+def crear_caja(ancho,prof,alto,nombre="sin_nombre",material="sin_material"):
+    """
+    " Crea una caja con la esquina inferior izquierda frontal en (0,0,0)
+    " con el ancho (hacia X), profundidad (hacia Y), y alto (hacia Z) especificados
+    """
+    obj = cq.Workplane("XY").box(ancho,prof,alto).translate((ancho/2,prof/2,alto/2))
+    pie = {"nombre":nombre,"material":material,"ancho":ancho,"prof":prof,"alto":alto}
+    return obj,pie
+
+
+
 def crear_placa(orientacion,ancho,largo,grosor,nombre="sin_nombre",material="sin_material", 
                 canto_arriba=False, 
                 canto_abajo=False, 
@@ -40,6 +51,7 @@ def crear_placa(orientacion,ancho,largo,grosor,nombre="sin_nombre",material="sin
         prof = largo
     obj = cq.Workplane("XY").box(ancho,prof,alto).translate((ancho/2,prof/2,alto/2))
     return obj,pie
+
 
 def crear_tabla(orientacion,ancho,largo,grosor,nombre="sin_nombre",material="sin_material"):
     pie = {"nombre":nombre,"material":material,"ancho":ancho,"largo":largo,"grosor":grosor}

@@ -8,12 +8,7 @@ xaxis = x
 yaxis = y
 zaxis = z
 
-def crear_placa(orientacion,ancho,largo,grosor,nombre="sin_nombre",material="sin_material", 
-                canto_arriba=False, 
-                canto_abajo=False, 
-                canto_derecha=False,
-                canto_izquierda=False,
-                canto_frente=False):
+def crear_placa(orientacion,ancho,largo,grosor,nombre="sin_nombre",material="sin_material"):
     pie = {"nombre":nombre,"material":material,"ancho":ancho,"largo":largo,"grosor":grosor}
     if orientacion == "horizontal":
         ancho = ancho
@@ -30,10 +25,10 @@ def crear_placa(orientacion,ancho,largo,grosor,nombre="sin_nombre",material="sin
     obj = cq.Workplane("XY").box(ancho,prof,alto).translate((ancho/2,prof/2,alto/2))
     return obj,pie
 
-def crear_caja(ancho,prof,alto,nombre="sin_nombre",material="sin_material"):
-    obj = cq.Workplane("XY").box(ancho,prof,alto).translate((ancho/2,prof/2,alto/2))
-    pie = {"nombre":nombre,"material":material,"ancho":ancho,"prof":prof,"alto":alto}
-    return obj,pie
+
+def crear_guia(orientacion,ancho,largo,grosor,nombre):
+    return crear_placa(orientacion,ancho,largo,grosor,nombre,material="GUIA")
+
 
 def crear_cajon(ancho, 
                 alto, 
@@ -58,6 +53,7 @@ def agregar_cajon(objetos,
                 profundidad, 
                 margen_frente=5,
                 grosor_placa=15, 
+                grosor_frente=18,
                 grosor_guia=13,
                 ancho_guia=40,
                 guarda_ext=2,
@@ -100,8 +96,8 @@ def agregar_cajon(objetos,
                           name=f"{nombre}_fondo",
                           color=color_lado)
 
-    frente,pie = crear_placa("frente",ancho_frente, alto_frente, grosor_placa, nombre=f"{nombre}_frente",material="MDF")
-    frente = frente.translate((-margen_frente,-grosor_placa,0))
+    frente,pie = crear_placa("frente",ancho_frente, alto_frente, grosor_frente, nombre=f"{nombre}_frente",material="MDF")
+    frente = frente.translate((-margen_frente,-grosor_frente,0))
     piezas.append(pie)
     objetos = objetos.add(frente.translate(ancla),
                           name=f"{nombre}_frente",
@@ -127,16 +123,16 @@ def agregar_cajon(objetos,
                           name=f"{nombre}_base",
                           color=color_base)
 
-    guia_izq,pie = crear_caja(grosor_guia,largo_guia,ancho_guia,nombre=f"{nombre}_guia_izq",material="guia")
+    guia_izq,pie = crear_guia("lado",ancho_guia,largo_guia,grosor_guia,nombre=f"{nombre}_guia_izq")
     guia_izq = guia_izq.translate((0,0,50))
-    #piezas.append(pie)
+    piezas.append(pie)
     objetos = objetos.add(guia_izq.translate(ancla),
                           name=f"{nombre}_guia_izq",
                           color=color_guia)
 
-    guia_der,pie = crear_caja(grosor_guia,largo_guia,ancho_guia,nombre=f"{nombre}_guia_der",material="guia")
+    guia_der,pie = crear_guia("lado",ancho_guia,largo_guia,grosor_guia,nombre=f"{nombre}_guia_der")
     guia_der = guia_der.translate((ancho_base+grosor_guia+2*+grosor_placa,0,50))
-    #piezas.append(pie)
+    piezas.append(pie)
     objetos = objetos.add(guia_der.translate(ancla),
                           color=color_guia,
                           name=f"{nombre}_guia_der")

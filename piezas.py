@@ -79,5 +79,5 @@ def lista(piezas):
             piezas_por_tipo[id] = 1
         else:
             piezas_por_tipo[id] +=1
-    for p in piezas_por_tipo.keys():
+    for p in sorted(piezas_por_tipo.keys()):
         print(piezas_por_tipo[p],p)

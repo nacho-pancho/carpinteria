@@ -34,7 +34,6 @@ def escritorio(ancho_tabla,
        # lados
        # 
        prof_lado = prof_tabla - 2*margen
-       print(prof_lado)
        lado,pie   = piezas.crear_placa(orientacion="lado",
                                                 ancho=alto_tabla,
                                                 largo=prof_lado,
@@ -80,7 +79,7 @@ def escritorio(ancho_tabla,
                                                 largo=prof_caj,
                                                 grosor=grosor_mdf, 
                                                 material="MDF",
-                                                nombre="lado_ppal")
+                                                nombre="lado_cajonera")
        obj = obj.add(lado_med.translate((margen+ancho_cajonera+grosor_mdf,margen,0)),color=color_mdf)
        pies.append(pie)
        #
@@ -89,9 +88,9 @@ def escritorio(ancho_tabla,
        base_caj,pie  = piezas.crear_placa(orientacion="horizontal",
                                             ancho=ancho_cajonera,
                                             largo=prof_caj, 
-                                            grosor=grosor_finger,
-                                            material="FIN",
-                                            nombre="tabla_ppal")
+                                            grosor=grosor_mdf,
+                                            material="MDF",
+                                            nombre="base_cajonera")
        obj = obj.add(base_caj.translate((margen+grosor_mdf,margen,alto_tabla-alto_cajonera-grosor_mdf)),color=color_mdf)
        pies.append(pie)
        #
@@ -124,7 +123,21 @@ margen = 40
 
 res,pies = escritorio(ancho_tabla, alto_tabla,prof_tabla,alto_bandeja,prof_bandeja,alto_cajonera,ancho_cajonera)
 vis.show(res)
+print("ESCRITORIO DE NACHO")
 piezas.lista(pies)
+
+print("ESCRITORIO DE VIOLE")
+ancho_tabla = 1100
+ancho_cajonera = 360
+res,pies2 = escritorio(ancho_tabla, alto_tabla,prof_tabla,alto_bandeja,prof_bandeja,alto_cajonera,ancho_cajonera)
+vis.show(res)
+piezas.lista(pies2)
+
+print("TODAS LAS PIEZAS")
+
+pies.extend(pies2)
+piezas.lista(pies)
+
 #show_object(res,name="www")
 
 

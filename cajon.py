@@ -44,6 +44,24 @@ def crear_cajon(ancho,
                 ancho_guia=40,
                 guarda_ext=2,
                 guarda_int=10): 
+        obj = cq.Assembly()
+        pies = list()
+        return agregar_cajon(obj,pies,ancho,alto,profundidad,margen_frente,grosor_placa,grosor_guia,ancho_guia,guarda_ext,guarda_int)
+
+
+def agregar_cajon(objetos, 
+                piezas,
+                ancla,
+                ancho, 
+                alto, 
+                profundidad, 
+                margen_frente=5,
+                grosor_placa=15, 
+                grosor_guia=13,
+                ancho_guia=40,
+                guarda_ext=2,
+                guarda_int=10): 
+
     """
     " Crea un cajón con guias telescópicas a los lados.
     " ancho: ancho del hueco del cajón
@@ -57,59 +75,51 @@ def crear_cajon(ancho,
     #
     ancho_base = ancho - 2 * grosor_guia - 2*grosor_placa 
     prof_base = profundidad - guarda_int
-    alto_fondo = alto - grosor_placa - 2*guarda_int
     ancho_fondo = ancho_base
     alto_frente = alto - guarda_ext
     ancho_frente = ancho + 2*margen_frente
-    alto_lado = alto - 2* guarda_int
+    alto_lado = alto - 2*guarda_int
+    alto_fondo = alto_lado - grosor_placa - guarda_int
     prof_lado = prof_base 
     largo_guia = (prof_base // 50)*50
+    if ancla is None:
+         ancla = piezas.ZERO
     #
     # piezas
     #    
-    piezas = list()
-    ancla = (cq.Workplane("XY").sphere(5))
-
-    fondo,pie = crear_placa("frente",ancho_fondo, alto_fondo, grosor_placa,nombre="fondo",material="MDF")
-    fondo = fondo.translate((grosor_guia+grosor_placa,prof_base-grosor_placa,grosor_placa))
+    fondo,pie = crear_placa("frente",ancho_fondo, alto_fondo, grosor_placa,nombre="fondo_cajon",material="MDF")
+    fondo = fondo.translate((grosor_guia+grosor_placa,prof_base-grosor_placa,grosor_placa+guarda_int))
     piezas.append(pie)
+    objetos = objetos.add(fondo.translate(ancla),color=cq.Color("White"))
 
-    frente,pie = crear_placa("frente",ancho_frente, alto_frente, grosor_placa, nombre="frente",material="MDF")
+    frente,pie = crear_placa("frente",ancho_frente, alto_frente, grosor_placa, nombre="frente_cajon",material="MDF")
     frente = frente.translate((-margen_frente,-grosor_placa,0))
     piezas.append(pie)
+    objetos = objetos.add(frente.translate(ancla),color=cq.Color("Red"))
 
-    lado,pie = crear_placa("lado", alto_lado,prof_lado, grosor_placa,nombre="lado",material="MDF")
+    lado,pie = crear_placa("lado", alto_lado,prof_lado, grosor_placa,nombre="lado_cajon",material="MDF")
     lado_izq = lado.translate((grosor_guia,0,0))
     piezas.append(pie)
+    objetos = objetos.add(lado_izq.translate(ancla),color=cq.Color("White"))
+
     lado_der = lado.translate((ancho_base+grosor_guia+grosor_placa,0,0))
     piezas.append(pie)
+    objetos = objetos.add(lado_der.translate(ancla),color=cq.Color("White")) 
 
-    base,pie = crear_placa("horizontal",ancho_base, prof_base, grosor_placa,nombre="base",material="MDF")
-    base = base.translate((grosor_guia+grosor_placa,0,0))
+    base,pie = crear_placa("horizontal",ancho_base, prof_base, grosor_placa,nombre="base_cajon",material="MDF")
+    base = base.translate((grosor_guia+grosor_placa,0,guarda_int))
     piezas.append(pie)
+    objetos = objetos.add(base.translate(ancla),color=cq.Color("beige"))
 
-    guia_izq,pie = crear_caja(grosor_guia,largo_guia,ancho_guia,"guia",material="guia")
+    guia_izq,pie = crear_caja(grosor_guia,largo_guia,ancho_guia,nombre="guia_cajon",material="guia")
     guia_izq = guia_izq.translate((0,0,50))
     #piezas.append(pie)
+    objetos = objetos.add(guia_izq.translate(ancla),color=cq.Color("Azure2"))
 
-    guia_der,pie = crear_caja(grosor_guia,largo_guia,ancho_guia,nombre="guia",material="guia")
+    guia_der,pie = crear_caja(grosor_guia,largo_guia,ancho_guia,nombre="guia_cajon",material="guia")
     guia_der = guia_der.translate((ancho_base+grosor_guia+2*+grosor_placa,0,50))
     #piezas.append(pie)
+    objetos = objetos.add(guia_der.translate(ancla),color=cq.Color("Azure2"))
+    
+    return objetos,piezas
 
-    cajon = (cq.Assembly()
-        .add(ancla,color=cq.Color("Yellow"))
-        .add(fondo,color=cq.Color("White"))
-        .add(frente,color=cq.Color("Red"))
-        .add(lado_izq,color=cq.Color("White"))
-        .add(lado_der,color=cq.Color("White"))
-        .add(guia_izq,color=cq.Color("Azure2"))
-        .add(guia_der,color=cq.Color("Azure2"))
-        .add(base,color=cq.Color("beige"))
-        )        
-    return cajon,piezas
-
-#cajon,piezas = crear_cajon(400, 200, 500)
-#vis.show(cajon)
-#for p in piezas:
-#    print(p)
-#show_object(cajon)

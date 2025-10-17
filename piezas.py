@@ -1,8 +1,9 @@
 import cadquery as cq
 
-x = cq.Vector(1,0,0)
-y = cq.Vector(0,1,0)
-z = cq.Vector(0,0,1)
+XAXIS = cq.Vector(1,0,0)
+YAXIS = cq.Vector(0,1,0)
+ZAXIS = cq.Vector(0,0,1)
+ZERO  = cq.Vector(0,0,0)
 
 def crear_placa(orientacion,ancho,largo,grosor,nombre="sin_nombre",material="sin_material", 
                 canto_arriba=False, 
@@ -78,6 +79,5 @@ def lista(piezas):
             piezas_por_tipo[id] = 1
         else:
             piezas_por_tipo[id] +=1
-        print(p)
     for p in piezas_por_tipo.keys():
         print(piezas_por_tipo[p],p)

@@ -51,6 +51,7 @@ def crear_cajon(ancho,
 
 def agregar_cajon(objetos, 
                 piezas,
+                nombre,
                 ancla,
                 ancho, 
                 alto, 
@@ -60,7 +61,12 @@ def agregar_cajon(objetos,
                 grosor_guia=13,
                 ancho_guia=40,
                 guarda_ext=2,
-                guarda_int=10): 
+                guarda_int=10,
+                color_frente=cq.Color("antiquewhite"),
+                color_base=cq.Color("cornsilk1"),
+                color_lado=cq.Color("White"),
+                color_guia=cq.Color("Azure2")
+                ): 
 
     """
     " Crea un cajón con guias telescópicas a los lados.
@@ -87,39 +93,53 @@ def agregar_cajon(objetos,
     #
     # piezas
     #    
-    fondo,pie = crear_placa("frente",ancho_fondo, alto_fondo, grosor_placa,nombre="fondo_cajon",material="MDF")
+    fondo,pie = crear_placa("frente",ancho_fondo, alto_fondo, grosor_placa,nombre=f"{nombre}_fondo",material="MDF")
     fondo = fondo.translate((grosor_guia+grosor_placa,prof_base-grosor_placa,grosor_placa+guarda_int))
     piezas.append(pie)
-    objetos = objetos.add(fondo.translate(ancla),color=cq.Color("White"))
+    objetos = objetos.add(fondo.translate(ancla),
+                          name=f"{nombre}_fondo",
+                          color=color_lado)
 
-    frente,pie = crear_placa("frente",ancho_frente, alto_frente, grosor_placa, nombre="frente_cajon",material="MDF")
+    frente,pie = crear_placa("frente",ancho_frente, alto_frente, grosor_placa, nombre=f"{nombre}_frente",material="MDF")
     frente = frente.translate((-margen_frente,-grosor_placa,0))
     piezas.append(pie)
-    objetos = objetos.add(frente.translate(ancla),color=cq.Color("Red"))
+    objetos = objetos.add(frente.translate(ancla),
+                          name=f"{nombre}_frente",
+                          color=color_frente)
 
-    lado,pie = crear_placa("lado", alto_lado,prof_lado, grosor_placa,nombre="lado_cajon",material="MDF")
+    lado,pie = crear_placa("lado", alto_lado,prof_lado, grosor_placa,nombre=f"{nombre}_lado",material="MDF")
     lado_izq = lado.translate((grosor_guia,0,0))
     piezas.append(pie)
-    objetos = objetos.add(lado_izq.translate(ancla),color=cq.Color("White"))
+    objetos = objetos.add(lado_izq.translate(ancla),
+                          name=f"{nombre}_lado_izq",
+                          color=color_lado)
 
     lado_der = lado.translate((ancho_base+grosor_guia+grosor_placa,0,0))
     piezas.append(pie)
-    objetos = objetos.add(lado_der.translate(ancla),color=cq.Color("White")) 
+    objetos = objetos.add(lado_der.translate(ancla),
+                          name=f"{nombre}_lado_der",
+                          color=color_lado) 
 
-    base,pie = crear_placa("horizontal",ancho_base, prof_base, grosor_placa,nombre="base_cajon",material="MDF")
+    base,pie = crear_placa("horizontal",ancho_base, prof_base, grosor_placa,nombre=f"{nombre}_base",material="MDF")
     base = base.translate((grosor_guia+grosor_placa,0,guarda_int))
     piezas.append(pie)
-    objetos = objetos.add(base.translate(ancla),color=cq.Color("beige"))
+    objetos = objetos.add(base.translate(ancla),
+                          name=f"{nombre}_base",
+                          color=color_base)
 
-    guia_izq,pie = crear_caja(grosor_guia,largo_guia,ancho_guia,nombre="guia_cajon",material="guia")
+    guia_izq,pie = crear_caja(grosor_guia,largo_guia,ancho_guia,nombre=f"{nombre}_guia_izq",material="guia")
     guia_izq = guia_izq.translate((0,0,50))
     #piezas.append(pie)
-    objetos = objetos.add(guia_izq.translate(ancla),color=cq.Color("Azure2"))
+    objetos = objetos.add(guia_izq.translate(ancla),
+                          name=f"{nombre}_guia_izq",
+                          color=color_guia)
 
-    guia_der,pie = crear_caja(grosor_guia,largo_guia,ancho_guia,nombre="guia_cajon",material="guia")
+    guia_der,pie = crear_caja(grosor_guia,largo_guia,ancho_guia,nombre=f"{nombre}_guia_der",material="guia")
     guia_der = guia_der.translate((ancho_base+grosor_guia+2*+grosor_placa,0,50))
     #piezas.append(pie)
-    objetos = objetos.add(guia_der.translate(ancla),color=cq.Color("Azure2"))
+    objetos = objetos.add(guia_der.translate(ancla),
+                          color=color_guia,
+                          name=f"{nombre}_guia_der")
     
     return objetos,piezas
 

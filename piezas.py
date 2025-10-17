@@ -74,7 +74,9 @@ def lista(piezas):
         largo  = p["largo"]
         grosor = p["grosor"]
         nombre = p["nombre"]
-        id = f"{mat} de {grosor}mm {ancho}mm x {largo}mm ({nombre})"
+        dim1 = min(ancho,largo)
+        dim2 = max(ancho,largo)
+        id = f"{mat:10} de {grosor:2d}mm {dim1:4d}mm x {dim2:4d}mm ({nombre})"
         if id not in piezas_por_tipo:
             piezas_por_tipo[id] = 1
         else:

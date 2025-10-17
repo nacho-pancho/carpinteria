@@ -15,6 +15,7 @@ def escritorio(nombre,ancho_tabla,
                prof_bandeja,
                alto_cajonera,
                ancho_cajonera,
+               num_cajones=4,
                margen=40,
                grosor_mdf=18,
                grosor_finger=20):
@@ -112,27 +113,14 @@ def escritorio(nombre,ancho_tabla,
        #
        # agregamos cajones
        #
-       obj,pies = cajon.agregar_cajon(obj, pies, f"{nombre}_cajon_arriba",
-                                      (margen+grosor_mdf,margen,alto_tabla-alto_cajonera//3),
-                                      ancho_cajonera, alto_cajonera//3, prof_caj, 
-                                      margen_frente=20, grosor_placa=15, guarda_ext=20,
-                                      color_frente=COLOR_MDF,
-                                      color_lado=COLOR_MDF,
-                                      color_base=COLOR_MDF)
-       obj,pies = cajon.agregar_cajon(obj, pies, f"{nombre}_cajon_medio",
-                                      (margen+grosor_mdf,margen,alto_tabla-2*alto_cajonera//3),
-                                      ancho_cajonera,alto_cajonera//3, prof_caj, 
-                                      margen_frente=20, grosor_placa=15, guarda_ext=20,
-                                      color_frente=COLOR_MDF,
-                                      color_lado=COLOR_MDF,
-                                      color_base=COLOR_MDF)
-       obj,pies = cajon.agregar_cajon(obj, pies, f"{nombre}_cajon_abajo",
-                                      (margen+grosor_mdf,margen,alto_tabla-alto_cajonera),
-                                      ancho_cajonera,alto_cajonera//3, prof_caj, 
-                                      margen_frente=20, grosor_placa=15, guarda_ext=20,
-                                      color_frente=COLOR_MDF,
-                                      color_lado=COLOR_MDF,
-                                      color_base=COLOR_MDF)
+       for i in range(num_cajones):
+        obj,pies = cajon.agregar_cajon(obj, pies, f"{nombre}_cajon_{i}",
+                                        (margen+grosor_mdf,margen,alto_tabla-(i+1)*alto_cajonera//num_cajones),
+                                        ancho_cajonera, alto_cajonera//num_cajones, prof_caj, 
+                                        margen_frente=20, grosor_placa=15, guarda_ext=20,
+                                        color_frente=COLOR_MDF,
+                                        color_lado=COLOR_MDF,
+                                        color_base=COLOR_MDF)
        #
        # restricciones
        # 
@@ -151,20 +139,32 @@ prof_tabla = 600
 ancho_tabla = 1500
 alto_bandeja = 300
 prof_bandeja = 100
-alto_cajon = 180
-alto_cajonera = alto_cajon*3
+alto_cajon = 160
+alto_cajonera = alto_cajon*4
 ancho_cajonera = 450
-margen = 40
+margen = 20
 
-res,pies = escritorio("esc_nacho",ancho_tabla, alto_tabla,prof_tabla,alto_bandeja,prof_bandeja,alto_cajonera,ancho_cajonera)
+res,pies = escritorio("esc_nacho",
+                      ancho_tabla, alto_tabla, prof_tabla,
+                      alto_bandeja, prof_bandeja,
+                      alto_cajonera,ancho_cajonera,
+                      margen = margen,
+                      grosor_mdf=18, grosor_finger=20)
 vis.show(res)
 print("ESCRITORIO DE NACHO")
 piezas.lista(pies)
 
 print("ESCRITORIO DE VIOLE")
-ancho_tabla = 1100
-ancho_cajonera = 360
-res,pies2 = escritorio("esc_viole",ancho_tabla, alto_tabla,prof_tabla,alto_bandeja,prof_bandeja,alto_cajonera,ancho_cajonera)
+ancho_tabla    = 1000
+ancho_cajonera = 320
+
+res,pies2 = escritorio("esc_viole",
+                       ancho_tabla, alto_tabla,prof_tabla,
+                       alto_bandeja,prof_bandeja,
+                       alto_cajonera,ancho_cajonera,
+                       margen = margen,
+                       grosor_mdf=18, grosor_finger=20)
+
 vis.show(res)
 piezas.lista(pies2)
 

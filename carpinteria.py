@@ -5,6 +5,18 @@ YAXIS = cq.Vector(0,1,0)
 ZAXIS = cq.Vector(0,0,1)
 ZERO  = cq.Vector(0,0,0)
 
+ALPHA = 0.5
+COLOR_MDF    = cq.Color(1.0, 0.975, 0.95, ALPHA)
+COLOR_FINGER = cq.Color(1.0, 0.75, 0.5, ALPHA)
+COLOR_GUIA   = cq.Color(0.7, 0.8, 0.9, ALPHA)
+COLOR_DEBUG1 = cq.Color(1.0, 0.2, 0.2, ALPHA)
+COLOR_DEBUG2 = cq.Color(0.2, 1.0, 0.2, ALPHA)
+COLOR_DEBUG3 = cq.Color(0.2, 0.2, 1.0, ALPHA)
+COLOR_DEBUG4 = cq.Color(1.0, 1.0, 0.2, ALPHA)
+COLOR_DEBUG5 = cq.Color(0.2, 1.0, 1.0, ALPHA)
+COLOR_DEBUG6 = cq.Color(1.0, 0.2, 1.0, ALPHA)
+COLOR_DEBUG7 = cq.Color(1.0, 1.0, 1.0, ALPHA)
+
 def crear_caja(ancho,prof,alto,nombre="sin_nombre",material="sin_material"):
     """
     " Crea una caja con la esquina inferior izquierda frontal en (0,0,0)

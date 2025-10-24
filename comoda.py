@@ -5,11 +5,6 @@ import cadquery as cq
 import carpinteria
 import cajon
 
-ALPHA = 0.5
-COLOR_MDF = cq.Color(1.0, 0.95, 0.9, ALPHA)
-COLOR_FINGER = cq.Color(1.0, 0.8, 0.6, ALPHA)
-
-
 def comoda(nombre, 
         alto_cajones=(200,200,200,200),
         ancho_cajones=(500,500),
@@ -39,7 +34,9 @@ def comoda(nombre,
         nombre=f"{nombre}_tabla",
     )
     objetos = objetos.add(
-        tabla.translate((0, -margen-grosor_mdf, alto-grosor_finger)), color=COLOR_FINGER, name=f"{nombre}_tabla"
+        tabla.translate((0, -margen-grosor_mdf, alto-grosor_finger)), 
+        color=carpinteria.COLOR_FINGER, 
+        name=f"{nombre}_tabla"
     )
     piezas.append(pie)
     #
@@ -61,7 +58,7 @@ def comoda(nombre,
         
         objetos = objetos.add(
             lado.translate((offset_x, offset_y, 0)),
-            color=COLOR_MDF,
+            color=carpinteria.COLOR_MDF,
             name=f"{nombre}_lado_{l}",
         )
         piezas.append(pie)
@@ -79,13 +76,13 @@ def comoda(nombre,
         largo=ancho_fondo,
         grosor=grosor_mdf,
         material="MDF",
-        nombre=f"{nombre}_fondo",
+        nombre=f"{nombre}_fon",
     )
     piezas.append(pie)
     objetos.add(
         fondo.translate((margen, prof - grosor_mdf - margen, margen)),
-        name=f"{nombre}_fondo",
-        color=COLOR_MDF,
+        name=f"{nombre}_fon",
+        color=carpinteria.COLOR_DEBUG1,
     )
     #
 
@@ -107,21 +104,22 @@ def comoda(nombre,
             guarda_vert = 5
             alto_cajon = alto_hueco - guarda_vert
             prof_hueco = prof_base
+            prof_cajon = prof_hueco - 10
             ancla = (offset_x, offset_y, offset_z)
             objetos, piezas = cajon.agregar_cajon(
                 objetos,
                 piezas,
-                f"{nombre}_cajon_{ci}_{cj}",
+                f"{nombre}_caj_{ci}{cj}",
                 ancla,
                 ancho_cajon,
                 alto_cajon,
-                prof_hueco,
-                margen_horiz=grosor_mdf//2,
+                prof_cajon,
+                margen_horiz=grosor_mdf//2-2,
                 margen_vert=10,
                 grosor_placa=grosor_mdf,
-                color_frente=COLOR_MDF,
-                color_lado=COLOR_MDF,
-                color_base=COLOR_MDF,
+                color_frente=carpinteria.COLOR_MDF,
+                color_lado=carpinteria.COLOR_MDF,
+                color_base=carpinteria.COLOR_MDF,
             )
         offset_x += ancho_hueco + grosor_mdf
     #
@@ -142,6 +140,6 @@ def comoda(nombre,
     objetos.add(
         tapa.translate((margen, margen-grosor_mdf, offset_z)),
         name=f"{nombre}_tapa",
-        color=cq.Color("Blue"),
+        color=carpinteria.COLOR_DEBUG2,
     )
     return objetos, piezas

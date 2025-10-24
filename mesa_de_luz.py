@@ -3,10 +3,6 @@ import cadquery as cq
 import carpinteria
 import cajon
 
-ALPHA = 0.5
-COLOR_MDF = cq.Color(1.0, 0.95, 0.9, ALPHA)
-COLOR_FINGER = cq.Color(1.0, 0.8, 0.6, ALPHA)
-
 
 def mesa_de_luz(
     nombre, ancho, alto, prof, alto_tapa=100, margen=10, grosor_mdf=18, grosor_finger=20
@@ -25,7 +21,9 @@ def mesa_de_luz(
         nombre=f"{nombre}_tabla",
     )
     objetos = objetos.add(
-        tabla.translate((0, 0, alto-grosor_finger)), color=COLOR_FINGER, name=f"{nombre}_tabla"
+        tabla.translate((0, 0, alto-grosor_finger)), 
+        color=carpinteria.COLOR_FINGER, 
+        name=f"{nombre}_tabla"
     )
     piezas.append(pie)
     #
@@ -44,7 +42,7 @@ def mesa_de_luz(
 
     objetos = objetos.add(
         lado_izq.translate((margen, margen + grosor_mdf, 0)),
-        color=COLOR_MDF,
+        color=carpinteria.COLOR_MDF,
         name=f"{nombre}_lado_izq",
     )
     piezas.append(pie)
@@ -59,7 +57,7 @@ def mesa_de_luz(
 
     objetos = objetos.add(
         lado_der.translate((ancho - margen - grosor_mdf, margen + grosor_mdf, 0)),
-        color=COLOR_MDF,
+        color=carpinteria.COLOR_MDF,
         name=f"{nombre}_lado_der",
     )
     piezas.append(pie)
@@ -83,7 +81,7 @@ def mesa_de_luz(
             prof_lado + margen + grosor_mdf, 
             margen)),
         name=f"{nombre}_fondo",
-        color=COLOR_MDF,
+        color=carpinteria.COLOR_MDF,
     )
     #
     # agregamos cajones
@@ -112,9 +110,9 @@ def mesa_de_luz(
             margen_horiz=grosor_mdf,
             margen_vert=10,
             grosor_placa=grosor_mdf,
-            color_frente=COLOR_MDF,
-            color_lado=COLOR_MDF,
-            color_base=COLOR_MDF,
+            color_frente=carpinteria.COLOR_MDF,
+            color_lado=carpinteria.COLOR_MDF,
+            color_base=carpinteria.COLOR_MDF,
         )
         offset_z -= alto_hueco_cajon
 
@@ -139,7 +137,7 @@ def mesa_de_luz(
     objetos.add(
         tapa.translate((margen, margen, offset_z)),
         name=f"{nombre}_tapa",
-        color=cq.Color("Blue") #COLOR_MDF,
+        color=carpinteria.COLOR_MDF,
     )
 
     return objetos, piezas

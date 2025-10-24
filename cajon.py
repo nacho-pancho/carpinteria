@@ -128,7 +128,7 @@ def agregar_cajon(
         ancho_fondo,
         alto_fondo,
         grosor_placa,
-        nombre=f"{nombre}_fondo",
+        nombre=f"{nombre}_fon",
         material="MDF",
     )
     fondo = fondo.translate(
@@ -148,13 +148,13 @@ def agregar_cajon(
         ancho_frente,
         alto_frente,
         grosor_frente,
-        nombre=f"{nombre}_frente",
+        nombre=f"{nombre}_fre",
         material="MDF",
     )
     frente = frente.translate((-margen_horiz, -grosor_frente, 0))
     piezas.append(pie)
     objetos = objetos.add(
-        frente.translate(ancla), name=f"{nombre}_frente", color=color_frente
+        frente.translate(ancla), name=f"{nombre}_fre", color=color_frente
     )
 
     lado, pie = crear_placa(

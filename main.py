@@ -6,7 +6,7 @@ import escritorio_con_bandeja
 import escritorio_simple
 import mesa_de_luz
 import comoda
-
+import bajomesada_pc
 
 piezas = list()
 # unidades en mm
@@ -31,7 +31,7 @@ if True:
     ancho_cajonera = 400
     margen = 10
     res, pies = escritorio_con_bandeja.escritorio_con_bandeja(
-        "esc_nacho",
+        "escn",
         ancho_tabla,
         alto_tabla,
         prof_tabla,
@@ -62,7 +62,7 @@ if True:
     ancho_cajonera = 320
 
     res, pies = escritorio_simple.escritorio_simple(
-        "esc_viole",
+        "escv",
         ancho_tabla,
         alto_tabla,
         prof_tabla,
@@ -85,8 +85,14 @@ if True:
     alto  = 600
     prof  = 400
     margen = 10
-    res, pie = comoda.comoda("comoda")
+    res, pie = comoda.comoda("cmd")
     vis.show(res,title="COMODA")
+    piezas.extend(pie)
+
+if True:
+    print("BAJOMESADA PC")
+    res, pie = bajomesada_pc.bajomesada()
+    vis.show(res,title="BAJOMESADA")
     piezas.extend(pie)
 
 if True:
@@ -96,7 +102,7 @@ if True:
     prof  = 400
     margen = 10
     alto_tapa = 100
-    res, pie = mesa_de_luz.mesa_de_luz("mdluz",ancho,alto,prof,alto_tapa=alto_tapa, margen=margen)
+    res, pie = mesa_de_luz.mesa_de_luz("mluz",ancho,alto,prof,alto_tapa=alto_tapa, margen=margen)
     vis.show(res,title="MESA DELUZ")
     piezas.extend(pie)
 

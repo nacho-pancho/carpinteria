@@ -4,11 +4,6 @@ import cadquery.vis as vis
 import carpinteria
 import cajon
 
-ALPHA = 0.5
-COLOR_MDF = cq.Color(1.0, 0.95, 0.9, ALPHA)
-COLOR_FINGER = cq.Color(1.0, 0.8, 0.6, ALPHA)
-
-
 def escritorio_simple(
     nombre,
     ancho_tabla,
@@ -37,7 +32,8 @@ def escritorio_simple(
         nombre=f"{nombre}_tabla",
     )
     objetos = objetos.add(
-        tabla.translate((0, 0, alto_tabla)), color=COLOR_FINGER, name=f"{nombre}_tabla"
+        tabla.translate((0, 0, alto_tabla)), 
+        color=carpinteria.COLOR_FINGER, name=f"{nombre}_tabla"
     )
     piezas.append(pie)
     #
@@ -56,7 +52,7 @@ def escritorio_simple(
 
     objetos = objetos.add(
         lado_izq.translate((margen, y_lado, 0)),
-        color=COLOR_MDF,
+        color=carpinteria.COLOR_MDF,
         name=f"{nombre}_lado_izq",
     )
     piezas.append(pie)
@@ -71,7 +67,7 @@ def escritorio_simple(
 
     objetos = objetos.add(
         lado_der.translate((ancho_tabla - margen - grosor_mdf, y_lado, 0)),
-        color=COLOR_MDF,
+        color=carpinteria.COLOR_MDF,
         name=f"{nombre}_lado_der",
     )
     piezas.append(pie)
@@ -99,7 +95,7 @@ def escritorio_simple(
             )
         ),
         name=f"{nombre}_rack",
-        color=COLOR_MDF,
+        color=carpinteria.COLOR_DEBUG3,
     )
     piezas.append(pie)
     #
@@ -126,7 +122,7 @@ def escritorio_simple(
             )
         ),
         name=f"{nombre}_fondo",
-        color=COLOR_MDF,
+        color=carpinteria.COLOR_DEBUG2,
     )
 
     # cajonera
@@ -138,12 +134,12 @@ def escritorio_simple(
         largo=prof_cajonera,
         grosor=grosor_mdf,
         material="MDF",
-        nombre=f"{nombre}_lado_cajonera",
+        nombre=f"{nombre}_lado_caj",
     )
     objetos.add(
         lado_med.translate((margen + ancho_cajonera + grosor_mdf, y_lado, 0)),
-        name=f"{nombre}_lado_cajonera",
-        color=COLOR_MDF,
+        name=f"{nombre}_lado_caj",
+        color=carpinteria.COLOR_MDF,
     )
     piezas.append(pie)
     #
@@ -159,7 +155,7 @@ def escritorio_simple(
         objetos, piezas = cajon.agregar_cajon(
             objetos,
             piezas,
-            f"{nombre}_cajon_{i}",
+            f"{nombre}_caj_{i}",
             (
                 margen + grosor_mdf,
                 y_lado,
@@ -171,9 +167,9 @@ def escritorio_simple(
             margen_vert=10,
             margen_horiz=10,
             grosor_placa=18,
-            color_frente=COLOR_MDF,
-            color_lado=COLOR_MDF,
-            color_base=COLOR_MDF,
+            color_frente=carpinteria.COLOR_MDF,
+            color_lado=carpinteria.COLOR_MDF,
+            color_base=carpinteria.COLOR_MDF,
         )
         offset_z -= alto_hueco_cajon
     #
@@ -188,13 +184,13 @@ def escritorio_simple(
         largo=ancho_fondo_caj,
         grosor=grosor_mdf,
         material="MDF",
-        nombre=f"{nombre}_fondo_caj"
+        nombre=f"{nombre}_fon_caj"
     )
     piezas.append(pie)
     objetos.add(
         fondo_caj.translate((margen+grosor_mdf, y_fondo_caj, margen)),
-        name=f"{nombre}_fondo_caj",
-        color=cq.Color("Blue"),#COLOR_MDF,
+        name=f"{nombre}_fon_caj",
+        color=carpinteria.COLOR_DEBUG1,
     )
     #
     # tapa de la cajonera
@@ -215,7 +211,7 @@ def escritorio_simple(
     objetos.add(
         tapa_caj.translate((margen, y_lado - grosor_mdf, margen)),
         name=f"{nombre}_tapa_caj",
-        color=cq.Color("Blue"),#COLOR_MDF,
+        color=carpinteria.COLOR_MDF,
     )
 
     return objetos, piezas

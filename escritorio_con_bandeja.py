@@ -4,10 +4,6 @@ import cadquery.vis as vis
 import carpinteria
 import cajon
 
-ALPHA = 0.5
-COLOR_MDF = cq.Color(1.0, 0.95, 0.9, ALPHA)
-COLOR_FINGER = cq.Color(1.0, 0.8, 0.6, ALPHA)
-COLOR_GUIA = cq.Color(0.7, 0.8, 0.9, ALPHA)
 GROSOR_GUIA = 13
 ANCHO_GUIA = 40
 
@@ -44,7 +40,9 @@ def escritorio_con_bandeja(
         nombre=f"{nombre}_tabla",
     )
     objetos = objetos.add(
-        tabla.translate((0, 0, alto_tabla)), color=COLOR_FINGER, name=f"{nombre}_tabla"
+        tabla.translate((0, 0, alto_tabla)), 
+        color=carpinteria.COLOR_FINGER, 
+        name=f"{nombre}_tabla"
     )
     piezas.append(pie)
     #
@@ -62,7 +60,7 @@ def escritorio_con_bandeja(
 
     objetos = objetos.add(
         lado_izq.translate((margen, margen, 0)),
-        color=COLOR_MDF,
+        color=carpinteria.COLOR_MDF,
         name=f"{nombre}_lado_izq",
     )
     piezas.append(pie)
@@ -77,7 +75,7 @@ def escritorio_con_bandeja(
 
     objetos = objetos.add(
         lado_der.translate((ancho_tabla - margen - grosor_mdf, margen, 0)),
-        color=COLOR_MDF,
+        color=carpinteria.COLOR_MDF,
         name=f"{nombre}_lado_der",
     )
     piezas.append(pie)
@@ -105,7 +103,7 @@ def escritorio_con_bandeja(
             )
         ),
         name=f"{nombre}_rack",
-        color=COLOR_MDF,
+        color=carpinteria.COLOR_DEBUG3,
     )
     piezas.append(pie)
 
@@ -118,7 +116,7 @@ def escritorio_con_bandeja(
         largo=ancho_rack,
         grosor=grosor_mdf,
         material="MDF",
-        nombre=f"{nombre}_fondo_rack",
+        nombre=f"{nombre}_fon_rack",
     )
     piezas.append(pie)
     y_fondo_rack = y_rack - grosor_mdf
@@ -131,8 +129,8 @@ def escritorio_con_bandeja(
                 z_fondo_rack,
             )
         ),
-        name=f"{nombre}_fondo_rack",
-        color=COLOR_MDF,
+        name=f"{nombre}_fon_rack",
+        color=carpinteria.COLOR_DEBUG2,
     )
     #
     # cajonera
@@ -146,12 +144,12 @@ def escritorio_con_bandeja(
         largo=prof_cajonera,
         grosor=grosor_mdf,
         material="MDF",
-        nombre=f"{nombre}_lado_cajonera",
+        nombre=f"{nombre}_lado_caj",
     )
     objetos.add(
         lado_med.translate((margen + ancho_cajonera + grosor_mdf, margen, 0)),
-        name=f"{nombre}_lado_cajonera",
-        color=COLOR_MDF,
+        name=f"{nombre}_lado_caj",
+        color=carpinteria.COLOR_MDF,
     )
     piezas.append(pie)
     #
@@ -167,7 +165,7 @@ def escritorio_con_bandeja(
         objetos, piezas = cajon.agregar_cajon(
             objetos,
             piezas,
-            f"{nombre}_cajon_{i}",
+            f"{nombre}_caj_{i}",
             (
                 margen + grosor_mdf,
                 margen,
@@ -179,9 +177,9 @@ def escritorio_con_bandeja(
             margen_vert=10,
             margen_horiz=10,
             grosor_placa=18,
-            color_frente=COLOR_MDF,
-            color_lado=COLOR_MDF,
-            color_base=COLOR_MDF,
+            color_frente=carpinteria.COLOR_MDF,
+            color_lado=carpinteria.COLOR_MDF,
+            color_base=carpinteria.COLOR_MDF,
         )        
         offset_z -= alto_hueco_cajon
     #
@@ -196,13 +194,13 @@ def escritorio_con_bandeja(
         largo=ancho_fondo_caj,
         grosor=grosor_mdf,
         material="MDF",
-        nombre=f"{nombre}_fondo_caj"
+        nombre=f"{nombre}_fon_caj"
     )
     piezas.append(pie)
     objetos.add(
         fondo_caj.translate((margen+grosor_mdf, y_fondo_caj, margen)),
-        name=f"{nombre}_fondo_caj",
-        color=cq.Color("Blue"),#COLOR_MDF,
+        name=f"{nombre}_fon_caj",
+        color=carpinteria.COLOR_DEBUG1,
     )
     #
     # tapa de la cajonera
@@ -224,7 +222,7 @@ def escritorio_con_bandeja(
     objetos.add(
         tapa_caj.translate((margen, margen-grosor_mdf, margen)),
         name=f"{nombre}_tapa_caj",
-        color=cq.Color("Blue"),#COLOR_MDF,
+        color=carpinteria.COLOR_MDF,
     )
 
     #
@@ -241,12 +239,12 @@ def escritorio_con_bandeja(
         largo=prof_bandeja,
         grosor=grosor_mdf,
         material="MDF",
-        nombre=f"{nombre}_bandeja",
+        nombre=f"{nombre}_ban",
     )
     objetos.add(
         bandeja.translate((offset_hueco + GROSOR_GUIA, margen, alto_bandeja)),
-        name=f"{nombre}_bandeja",
-        color=COLOR_MDF,
+        name=f"{nombre}_ban",
+        color=carpinteria.COLOR_MDF,
     )
     piezas.append(pie)
 
@@ -261,7 +259,7 @@ def escritorio_con_bandeja(
     objetos.add(
         lado_ban_izq.translate((offset_bandeja, margen, alto_bandeja - ancho_bandeja)),
         name=f"{nombre}_lado_ban_izq",
-        color=COLOR_MDF,
+        color=carpinteria.COLOR_MDF,
     )
     piezas.append(pie)
 
@@ -282,7 +280,7 @@ def escritorio_con_bandeja(
             )
         ),
         name=f"{nombre}_lado_ban_der",
-        color=COLOR_MDF,
+        color=carpinteria.COLOR_MDF,
     )
     piezas.append(pie)
 
@@ -292,7 +290,7 @@ def escritorio_con_bandeja(
         largo=largo_bandeja - 2 * grosor_mdf,
         grosor=grosor_mdf,
         material="MDF",
-        nombre=f"{nombre}_fondo_ban",
+        nombre=f"{nombre}_fon_ban",
     )
     piezas.append(pie)
     objetos.add(
@@ -303,8 +301,8 @@ def escritorio_con_bandeja(
                 alto_bandeja - ancho_bandeja,
             )
         ),
-        name=f"{nombre}_fondo_bandeja",
-        color=COLOR_MDF,
+        name=f"{nombre}_fon_ban",
+        color=carpinteria.COLOR_MDF,
     )
 
     largo_guia = (prof_bandeja // 50) * 50
@@ -322,7 +320,7 @@ def escritorio_con_bandeja(
             )
         ),
         name=f"{nombre}_guia_izq",
-        color=COLOR_GUIA,
+        color=carpinteria.COLOR_GUIA,
     )
     piezas.append(pie)
 
@@ -338,7 +336,7 @@ def escritorio_con_bandeja(
             )
         ),
         name=f"{nombre}_guia_der",
-        color=COLOR_GUIA,
+        color=carpinteria.COLOR_GUIA,
     )
     piezas.append(pie)
     #

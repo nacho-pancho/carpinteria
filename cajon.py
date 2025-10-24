@@ -89,13 +89,23 @@ def agregar_cajon(
     color_guia=cq.Color("Azure2"),
 ):
     """
-    " Crea un cajón con guias telescópicas a los lados.
-    " ancho: ancho del hueco del cajón
-    " alto: alto del hueco del cajón
-    " profundidad: profundidad del cajón
-    " margen_frente: margen extra en el frente del cajón en mm
-    " ancho_guia: ancho de las guias telescópicas en mm
-    " Devuelve un objeto CadQuery con el cajón.
+    " Agrega un cajon a la lista de objetos y piezas de un modelo
+    " objetos: objetos de CadQuery
+    " piezas : piezas de las mias
+    " nombre : nombre 
+    " ancla: ubicacion de esquina inferior izquierda (sin contar márgenes)
+    " ancho: ancho exterior del cajón (sin contar márgenes)
+    " alto:  altura exterior del cajón  (sin contar márgenes)
+    " profundidad: profundidad exterior del hueco
+    " margen_vert: margen adicional de la tapa hacia arriba y abajo
+    " margen_horiz: margen adicional de la tapa hacia los lados
+    " grosor_placa: grosor de placa MDF de la estructura (defectio 15mm)
+    " grosor_frente: grosor de la tapa de frente (ej. 18 mm)
+    " grosor_guia: grosor de la guia metálica / corredera. Esta es la medida más común
+    " color_frente: objeto de tipo cq.Color
+    " color_base: idem 
+    " color_lado: idem
+    " color_guia: idem
     """
     # medidas
     #

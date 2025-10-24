@@ -28,7 +28,6 @@ def escritorio_con_bandeja(
     margen=40,
     grosor_mdf=18,
     grosor_finger=20,
-    gap_bandeja=50,
 ):
     pies = list()
     obj = cq.Assembly()
@@ -132,7 +131,7 @@ def escritorio_con_bandeja(
 
     # cajonera
     # lado
-    prof_caj = prof_lado - prof_rack - grosor_mdf
+    prof_caj = prof_lado - prof_rack - grosor_mdf - 10 # 1cm de guarda
     lado_med, pie = carpinteria.crear_placa(
         orientacion="lado",
         ancho=alto_tabla,
@@ -169,6 +168,8 @@ def escritorio_con_bandeja(
     #
     # agregamos cajones
     #
+    guarda_caj = 5
+    alto_cajon = alto_cajonera // num_cajones - guarda_caj
     for i in range(num_cajones):
         obj, pies = cajon.agregar_cajon(
             obj,
@@ -180,11 +181,11 @@ def escritorio_con_bandeja(
                 alto_tabla - (i + 1) * alto_cajonera // num_cajones,
             ),
             ancho_cajonera,
-            alto_cajonera // num_cajones,
+            alto_cajon,
             prof_caj,
-            margen_frente=20,
+            margen_vert=10,
+            margen_horiz=10,
             grosor_placa=18,
-            guarda_ext=20,
             color_frente=COLOR_MDF,
             color_lado=COLOR_MDF,
             color_base=COLOR_MDF,

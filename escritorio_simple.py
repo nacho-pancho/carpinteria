@@ -124,7 +124,7 @@ def escritorio_simple(
 
     # cajonera
     # lado
-    prof_caj = prof_lado - prof_bandeja - grosor_mdf
+    prof_caj = prof_lado - prof_bandeja - grosor_mdf - 10 # 1cm de holgura al fondo
     lado_med, pie = carpinteria.crear_placa(
         orientacion="lado",
         ancho=alto_tabla,
@@ -161,6 +161,9 @@ def escritorio_simple(
     #
     # agregamos cajones
     #
+    guarda_caj = 5
+    alto_cajon = alto_cajonera // num_cajones - guarda_caj
+    ancho_cajon = ancho_cajonera
     for i in range(num_cajones):
         obj, pies = cajon.agregar_cajon(
             obj,
@@ -171,12 +174,12 @@ def escritorio_simple(
                 margen,
                 alto_tabla - (i + 1) * alto_cajonera // num_cajones,
             ),
-            ancho_cajonera,
-            alto_cajonera // num_cajones,
+            ancho_cajon,
+            alto_cajon,
             prof_caj,
-            margen_frente=20,
+            margen_vert=10,
+            margen_horiz=10,
             grosor_placa=18,
-            guarda_ext=20,
             color_frente=COLOR_MDF,
             color_lado=COLOR_MDF,
             color_base=COLOR_MDF,

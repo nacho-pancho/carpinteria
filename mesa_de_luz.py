@@ -67,7 +67,7 @@ def mesa_de_luz(
     # fondo
     #
     ancho_fondo = ancho - 2 * margen 
-    alto_fondo = alto - grosor_finger - 2 * margen
+    alto_fondo = alto - grosor_finger - margen
     fondo, pie = carpinteria.crear_placa(
         orientacion="frente",
         ancho=alto_fondo,
@@ -81,7 +81,7 @@ def mesa_de_luz(
         fondo.translate((
             margen, 
             prof_lado + margen + grosor_mdf, 
-            2*margen)),
+            margen)),
         name=f"{nombre}_fondo",
         color=COLOR_MDF,
     )
@@ -122,12 +122,10 @@ def mesa_de_luz(
     # tapa
     #
     
-    offset_z += alto_hueco_cajon
-    alto_tapa = offset_z - 2*margen
-    offset_z -= alto_tapa + guarda_vert
+    offset_z += alto_hueco_cajon - guarda_vert
+    alto_tapa = offset_z - margen
+    offset_z = margen
     ancho_tapa = ancho - 2 * margen 
-    print(alto_tapa)
-    print(ancho_tapa)
     tapa, pie = carpinteria.crear_placa(
         orientacion="frente",
         ancho=alto_tapa,

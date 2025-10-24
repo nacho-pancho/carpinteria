@@ -27,7 +27,7 @@ def comoda(nombre,
     nh = len(ancho_cajones)
     nv = len(alto_cajones)
     ancho = np.sum(np.array(ancho_cajones))+grosor_mdf*(nh+1) + 2*margen
-    alto  = np.sum(np.array(alto_cajones))+ alto_tapa + 2*margen + grosor_finger
+    alto  = np.sum(np.array(alto_cajones))+ alto_tapa + margen + grosor_finger
     print(alto)
     num_lados = nh + 1
     tabla, pie = carpinteria.crear_placa(
@@ -72,7 +72,7 @@ def comoda(nombre,
     # fondo
     #
     ancho_fondo = ancho - 2 * margen 
-    alto_fondo = alto - grosor_finger - margen
+    alto_fondo = alto_lado - margen
     fondo, pie = carpinteria.crear_placa(
         orientacion="frente",
         ancho=alto_fondo,
@@ -142,6 +142,6 @@ def comoda(nombre,
     objetos.add(
         tapa.translate((margen, margen-grosor_mdf, offset_z)),
         name=f"{nombre}_tapa",
-        color=COLOR_MDF,
+        color=cq.Color("Blue"),
     )
     return objetos, piezas

@@ -29,7 +29,7 @@ if True:
     alto_cajon = 160
     alto_cajonera = alto_cajon * 4
     ancho_cajonera = 400
-    margen = 20
+    margen = 10
     res, pies = escritorio_con_bandeja.escritorio_con_bandeja(
         "esc_nacho",
         ancho_tabla,
@@ -51,7 +51,7 @@ if True:
 
 if True:
     print("ESCRITORIO DE VIOLE")
-    margen = 20
+    margen = 10
     prof_tabla = 600
     alto_rack = 300
     prof_rack = 100

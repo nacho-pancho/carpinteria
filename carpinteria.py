@@ -139,10 +139,10 @@ def exportar_barraca_parana(piezas):
         
     for id_material in listas_de_materiales.keys():
         lista_de_piezas = listas_de_materiales[id_material]
-        print("material",id_material)
+        #print("material",id_material)
         with open(f'{id_material}.csv','w') as f:
             for id_pieza in lista_de_piezas: # piezas de mismo tipo
-                print("pieza",id_pieza)
+                #print("pieza",id_pieza)
                 pieza = lista_de_piezas[id_pieza]
                 p_dim1 = pieza["dim1"]
                 p_dim2 = pieza["dim2"]

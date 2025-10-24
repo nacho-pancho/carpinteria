@@ -188,7 +188,7 @@ def escritorio_con_bandeja(
     # fondo de cajonera
     #
     ancho_fondo_caj = ancho_cajonera + grosor_mdf
-    alto_fondo_caj = z_fondo_rack - 2*margen
+    alto_fondo_caj = z_fondo_rack - margen
     y_fondo_caj = y_fondo_rack
     fondo_caj, pie = carpinteria.crear_placa(
         orientacion="frente",
@@ -200,16 +200,17 @@ def escritorio_con_bandeja(
     )
     piezas.append(pie)
     objetos.add(
-        fondo_caj.translate((margen+grosor_mdf, y_fondo_caj, 2*margen)),
+        fondo_caj.translate((margen+grosor_mdf, y_fondo_caj, margen)),
         name=f"{nombre}_fondo_caj",
         color=cq.Color("Blue"),#COLOR_MDF,
     )
     #
     # tapa de la cajonera
     #
-    offset_z += alto_hueco_cajon
+    offset_z += alto_hueco_cajon 
+    offset_z -= guarda_caj
     ancho_tapa_caj = ancho_cajonera + 2*grosor_mdf
-    alto_tapa_caj = offset_z - guarda_caj -2*margen
+    alto_tapa_caj = offset_z - margen
     tapa_caj, pie = carpinteria.crear_placa(
         orientacion="frente",
         ancho=alto_tapa_caj,
@@ -221,7 +222,7 @@ def escritorio_con_bandeja(
     piezas.append(pie)
 
     objetos.add(
-        tapa_caj.translate((margen, margen-grosor_mdf, 2*margen)),
+        tapa_caj.translate((margen, margen-grosor_mdf, margen)),
         name=f"{nombre}_tapa_caj",
         color=cq.Color("Blue"),#COLOR_MDF,
     )

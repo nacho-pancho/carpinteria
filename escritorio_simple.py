@@ -180,7 +180,7 @@ def escritorio_simple(
     # fondo de cajonera
     #
     ancho_fondo_caj = ancho_cajonera + grosor_mdf
-    alto_fondo_caj = z_fondo_rack - 2*margen
+    alto_fondo_caj = z_fondo_rack - margen
     y_fondo_caj = y_fondo_rack
     fondo_caj, pie = carpinteria.crear_placa(
         orientacion="frente",
@@ -192,7 +192,7 @@ def escritorio_simple(
     )
     piezas.append(pie)
     objetos.add(
-        fondo_caj.translate((margen+grosor_mdf, y_fondo_caj, 2*margen)),
+        fondo_caj.translate((margen+grosor_mdf, y_fondo_caj, margen)),
         name=f"{nombre}_fondo_caj",
         color=cq.Color("Blue"),#COLOR_MDF,
     )
@@ -200,7 +200,8 @@ def escritorio_simple(
     # tapa de la cajonera
     #
     offset_z += alto_hueco_cajon
-    alto_tapa_caj = offset_z - guarda_caj -2*margen
+    offset_z -= guarda_caj
+    alto_tapa_caj = offset_z -margen
     ancho_tapa_caj = ancho_cajonera + 2*grosor_mdf
     tapa_caj, pie = carpinteria.crear_placa(
         orientacion="frente",
@@ -212,7 +213,7 @@ def escritorio_simple(
     )
     piezas.append(pie)
     objetos.add(
-        tapa_caj.translate((margen, y_lado - grosor_mdf, 2*margen)),
+        tapa_caj.translate((margen, y_lado - grosor_mdf, margen)),
         name=f"{nombre}_tapa_caj",
         color=cq.Color("Blue"),#COLOR_MDF,
     )

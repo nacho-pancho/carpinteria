@@ -16,7 +16,7 @@ piezas = list()
 grosor_finger = 20
 grosor_mdf = 18
 
-if True:
+if False:
     alto_tabla = 790
     prof_tabla = 600
     ancho_tabla = 1600
@@ -49,7 +49,7 @@ if True:
     print("ESCRITORIO DE NACHO")
     carpinteria.lista(pies)
 
-if True:
+if False:
     print("ESCRITORIO DE VIOLE")
     margen = 20
     prof_tabla = 600
@@ -79,12 +79,13 @@ if True:
     piezas.extend(pies)
 
 
-if False:
+if True:
+    print("COMODA")
     ancho = 400
     alto  = 600
     prof  = 400
     margen = 10
-    res, pie = comoda.comoda("comoda",ancho,alto,prof,margen)
+    res, pie = comoda.comoda("comoda")
     vis.show(res)
     piezas.extend(pie)
 

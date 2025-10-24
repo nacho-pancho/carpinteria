@@ -135,7 +135,7 @@ def agregar_cajon(
         (
             grosor_guia + grosor_placa,
             prof_base - grosor_placa,
-            grosor_placa,
+            grosor_placa + margen_vert,
         )
     )
     piezas.append(pie)

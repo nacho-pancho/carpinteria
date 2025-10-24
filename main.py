@@ -16,7 +16,8 @@ piezas = list()
 grosor_finger = 20
 grosor_mdf = 18
 
-if False:
+if True:
+    print("ESCRITORIO DE NACHO")
     alto_tabla = 790
     prof_tabla = 600
     ancho_tabla = 1600
@@ -45,11 +46,10 @@ if False:
         grosor_mdf=18,
         grosor_finger=20,
     )
-    vis.show(res)
-    print("ESCRITORIO DE NACHO")
-    carpinteria.lista(pies)
+    vis.show(res,title="ESCRITORIO NACHO")
+    piezas.extend(pies)
 
-if False:
+if True:
     print("ESCRITORIO DE VIOLE")
     margen = 20
     prof_tabla = 600
@@ -75,7 +75,7 @@ if False:
         grosor_finger=20,
     )
 
-    vis.show(res)
+    vis.show(res,title="ESCRITORIO VIOLE")
     piezas.extend(pies)
 
 
@@ -86,16 +86,18 @@ if True:
     prof  = 400
     margen = 10
     res, pie = comoda.comoda("comoda")
-    vis.show(res)
+    vis.show(res,title="COMODA")
     piezas.extend(pie)
 
-if False:
+if True:
+    print("MESA DE LUZ")
     ancho = 400
     alto  = 600
     prof  = 400
     margen = 10
-    res, pie = mesa_de_luz.mesa_de_luz("mdluz",ancho,alto,prof,margen)
-    vis.show(res)
+    alto_tapa = 100
+    res, pie = mesa_de_luz.mesa_de_luz("mdluz",ancho,alto,prof,alto_tapa=alto_tapa, margen=margen)
+    vis.show(res,title="MESA DELUZ")
     piezas.extend(pie)
 
 print("TODAS LAS PIEZAS")

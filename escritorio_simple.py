@@ -14,8 +14,8 @@ def escritorio_simple(
     ancho_tabla,
     alto_tabla,
     prof_tabla,
-    alto_bandeja,
-    prof_bandeja,
+    alto_rack,
+    prof_rack,
     alto_cajonera,
     ancho_cajonera,
     num_cajones=4,
@@ -23,8 +23,8 @@ def escritorio_simple(
     grosor_mdf=18,
     grosor_finger=20,
 ):
-    pies = list()
-    obj = cq.Assembly()
+    piezas = list()
+    objetos = cq.Assembly()
     #
     # tabla
     #
@@ -36,14 +36,15 @@ def escritorio_simple(
         material="FINGER",
         nombre=f"{nombre}_tabla",
     )
-    obj = obj.add(
+    objetos = objetos.add(
         tabla.translate((0, 0, alto_tabla)), color=COLOR_FINGER, name=f"{nombre}_tabla"
     )
-    pies.append(pie)
+    piezas.append(pie)
     #
     # lados
     #
-    prof_lado = prof_tabla - 2 * margen
+    y_lado = margen + grosor_mdf
+    prof_lado = prof_tabla - 2 * margen - grosor_mdf
     lado_izq, pie = carpinteria.crear_placa(
         orientacion="lado",
         ancho=alto_tabla,
@@ -53,12 +54,12 @@ def escritorio_simple(
         nombre=f"{nombre}_lado",
     )
 
-    obj = obj.add(
-        lado_izq.translate((margen, margen, 0)),
+    objetos = objetos.add(
+        lado_izq.translate((margen, y_lado, 0)),
         color=COLOR_MDF,
         name=f"{nombre}_lado_izq",
     )
-    pies.append(pie)
+    piezas.append(pie)
     lado_der, pie = carpinteria.crear_placa(
         orientacion="lado",
         ancho=alto_tabla,
@@ -68,115 +69,105 @@ def escritorio_simple(
         nombre=f"{nombre}_lado",
     )
 
-    obj = obj.add(
-        lado_der.translate((ancho_tabla - margen - grosor_mdf, margen, 0)),
+    objetos = objetos.add(
+        lado_der.translate((ancho_tabla - margen - grosor_mdf, y_lado, 0)),
         color=COLOR_MDF,
         name=f"{nombre}_lado_der",
     )
-    pies.append(pie)
+    piezas.append(pie)
     #
-    # fondo de bandeja
+    # rack
     #
-    ancho_bandeja = ancho_tabla - 2 * grosor_mdf - 2 * margen
-    fondo_bandeja, pie = carpinteria.crear_placa(
+    ancho_rack = ancho_tabla - 2 * grosor_mdf - 2 * margen
+    x_rack = margen + grosor_mdf
+    y_rack = prof_tabla - prof_rack - margen
+    z_rack = alto_tabla - alto_rack
+    rack, pie = carpinteria.crear_placa(
+        orientacion="horizontal",
+        largo=prof_rack,
+        ancho=ancho_rack,
+        grosor=grosor_mdf,
+        material="MDF",
+        nombre=f"{nombre}_rack",
+    )
+    objetos.add(
+        rack.translate(
+            (
+                x_rack,
+                y_rack,
+                z_rack,
+            )
+        ),
+        name=f"{nombre}_rack",
+        color=COLOR_MDF,
+    )
+    piezas.append(pie)
+    #
+    # fondo de rack
+    #
+    x_fondo_rack = x_rack
+    y_fondo_rack = y_rack - grosor_mdf
+    z_fondo_rack = z_rack 
+    fondo_rack, pie = carpinteria.crear_placa(
         orientacion="frente",
-        ancho=alto_bandeja,
-        largo=ancho_bandeja,
+        ancho=alto_rack,
+        largo=ancho_rack,
         grosor=grosor_mdf,
         material="MDF",
         nombre=f"{nombre}_fondo",
     )
-    pies.append(pie)
-    obj.add(
-        fondo_bandeja.translate(
+    piezas.append(pie)
+    objetos.add(
+        fondo_rack.translate(
             (
-                margen + grosor_mdf,
-                prof_tabla - grosor_mdf - prof_bandeja - margen,
-                alto_tabla - alto_bandeja,
+                x_fondo_rack,
+                y_fondo_rack,
+                z_fondo_rack,
             )
         ),
         name=f"{nombre}_fondo",
         color=COLOR_MDF,
     )
-    #
-    # bandeja
-    #
-    bandeja, pie = carpinteria.crear_placa(
-        orientacion="horizontal",
-        largo=prof_bandeja,
-        ancho=ancho_bandeja,
-        grosor=grosor_mdf,
-        material="MDF",
-        nombre=f"{nombre}_bandeja",
-    )
-    obj.add(
-        bandeja.translate(
-            (
-                margen + grosor_mdf,
-                prof_tabla - prof_bandeja - margen,
-                alto_tabla - alto_bandeja,
-            )
-        ),
-        name=f"{nombre}_bandeja",
-        color=COLOR_MDF,
-    )
-    pies.append(pie)
 
     # cajonera
     # lado
-    prof_caj = prof_lado - prof_bandeja - grosor_mdf - 10 # 1cm de holgura al fondo
+    prof_cajonera = prof_lado - prof_rack - grosor_mdf # 1cm de holgura al fondo
     lado_med, pie = carpinteria.crear_placa(
         orientacion="lado",
         ancho=alto_tabla,
-        largo=prof_caj,
+        largo=prof_cajonera,
         grosor=grosor_mdf,
         material="MDF",
         nombre=f"{nombre}_lado_cajonera",
     )
-    obj.add(
-        lado_med.translate((margen + ancho_cajonera + grosor_mdf, margen, 0)),
+    objetos.add(
+        lado_med.translate((margen + ancho_cajonera + grosor_mdf, y_lado, 0)),
         name=f"{nombre}_lado_cajonera",
         color=COLOR_MDF,
     )
-    pies.append(pie)
-    #
-    # base
-    #
-    base_caj, pie = carpinteria.crear_placa(
-        orientacion="horizontal",
-        ancho=ancho_cajonera,
-        largo=prof_caj,
-        grosor=grosor_mdf,
-        material="MDF",
-        nombre=f"{nombre}_base_cajonera",
-    )
-    obj.add(
-        base_caj.translate(
-            (margen + grosor_mdf, margen, alto_tabla - alto_cajonera - grosor_mdf)
-        ),
-        name=f"{nombre}_base_cajonera",
-        color=COLOR_MDF,
-    )
-    pies.append(pie)
+    piezas.append(pie)
     #
     # agregamos cajones
     #
     guarda_caj = 5
-    alto_cajon = alto_cajonera // num_cajones - guarda_caj
+    alto_hueco_cajon = alto_cajonera // num_cajones
+    alto_cajon = alto_hueco_cajon - guarda_caj
+    prof_cajon = prof_cajonera - 10
     ancho_cajon = ancho_cajonera
+    offset_z = alto_tabla - alto_hueco_cajon
     for i in range(num_cajones):
-        obj, pies = cajon.agregar_cajon(
-            obj,
-            pies,
+        objetos, piezas = cajon.agregar_cajon(
+            objetos,
+            piezas,
             f"{nombre}_cajon_{i}",
             (
                 margen + grosor_mdf,
-                margen,
-                alto_tabla - (i + 1) * alto_cajonera // num_cajones,
+                y_lado,
+                offset_z,
             ),
             ancho_cajon,
             alto_cajon,
-            prof_caj,
+            prof_cajon,
             margen_vert=10,
             margen_horiz=10,
             grosor_placa=18,
@@ -184,8 +175,46 @@ def escritorio_simple(
             color_lado=COLOR_MDF,
             color_base=COLOR_MDF,
         )
+        offset_z -= alto_hueco_cajon
     #
-    # restricciones
+    # fondo de cajonera
     #
-    # tabla, lado_izq, lado_der, fondo, bandeja, lado_cajonera, base_cajonera
-    return obj, pies
+    ancho_fondo_caj = ancho_cajonera + grosor_mdf
+    alto_fondo_caj = z_fondo_rack - 2*margen
+    y_fondo_caj = y_fondo_rack
+    fondo_caj, pie = carpinteria.crear_placa(
+        orientacion="frente",
+        ancho=alto_fondo_caj,
+        largo=ancho_fondo_caj,
+        grosor=grosor_mdf,
+        material="MDF",
+        nombre=f"{nombre}_fondo_caj"
+    )
+    piezas.append(pie)
+    objetos.add(
+        fondo_caj.translate((margen+grosor_mdf, y_fondo_caj, 2*margen)),
+        name=f"{nombre}_fondo_caj",
+        color=cq.Color("Blue"),#COLOR_MDF,
+    )
+    #
+    # tapa de la cajonera
+    #
+    offset_z += alto_hueco_cajon
+    alto_tapa_caj = offset_z - guarda_caj -2*margen
+    ancho_tapa_caj = ancho_cajonera + 2*grosor_mdf
+    tapa_caj, pie = carpinteria.crear_placa(
+        orientacion="frente",
+        ancho=alto_tapa_caj,
+        largo=ancho_tapa_caj,
+        grosor=grosor_mdf,
+        material="MDF",
+        nombre=f"{nombre}_tapa"
+    )
+    piezas.append(pie)
+    objetos.add(
+        tapa_caj.translate((margen, y_lado - grosor_mdf, 2*margen)),
+        name=f"{nombre}_tapa_caj",
+        color=cq.Color("Blue"),#COLOR_MDF,
+    )
+
+    return objetos, piezas

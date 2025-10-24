@@ -124,7 +124,7 @@ def comoda(nombre,
                 color_base=COLOR_MDF,
             )
         offset_x += ancho_hueco + grosor_mdf
-
+    #
     # tapa
     #
     offset_z -= alto_tapa + guarda_vert
@@ -142,10 +142,6 @@ def comoda(nombre,
     objetos.add(
         tapa.translate((margen, margen-grosor_mdf, offset_z)),
         name=f"{nombre}_tapa",
-        color=cq.Color("Blue"),#COLOR_MDF,
+        color=COLOR_MDF,
     )
-    #
-    # restricciones
-    #
-    # tabla, lado_izq, lado_der, fondo, bandeja, lado_cajonera, base_cajonera
     return objetos, piezas

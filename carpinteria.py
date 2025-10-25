@@ -1,5 +1,6 @@
 #!/usr/bin/env python3 
 
+import csv
 import numpy as np
 import geom
 import cadquery as cq
@@ -48,10 +49,8 @@ class Parte():
         self.loc = geom.trans(self.loc,dx,dy,dz)
             
     def rotar(self,rx,ry,rz):
-        print("antes ",self.loc)
         self.loc = geom.rot(self.loc,rx,ry,rz)
-        print("des. ", self.loc)
-        self.rot += np.array((rx,ry,rz))
+        self.rot = (self.rot[0] + rx, self.rot[1] + ry, self.rot[2] + rz)
 
 
 class Pieza():
@@ -84,7 +83,8 @@ class Tabla(Pieza):
         self.largo = largo
         self.grosor = grosor
         # aparece acostada, a lo largo de X, centrada en (0,0,0)
-        self.partes = crear_caja(largo,ancho,grosor,color)
+        self.partes = [crear_caja(largo,ancho,grosor,color)]
+
 
 
 class Placa(Tabla):
@@ -138,7 +138,7 @@ class Placa(Tabla):
             self.partes.append(canto)            
         if canto_der:
             canto = crear_caja(ESPESOR_CANTO,ancho,grosor,color)
-            canto.trasladar( ancho/2+ESPESOR_CANTO/2, 0, 0)
+            canto.trasladar( largo/2+ESPESOR_CANTO/2, 0, 0)
             self.partes.append(canto)
 
 
@@ -148,16 +148,34 @@ class Guia(Pieza):
         self.ancho = ancho
         self.largo = largo
         self.grosor = grosor
-        obj = cq.Workplane("XY").box(largo,ancho,grosor).edges("|Y").fillet(3)
+        obj = cq.Workplane("XY").box(largo,ancho,grosor).edges("|X").fillet(3)
         parte = Parte(obj,color=color)
         self.partes = [parte]
+
+def rotar(obj,rx,ry,rz):
+    if isinstance(obj,Parte):
+        obj.rotar(rx,ry,rz)
+    elif isinstance(obj,Pieza):
+        obj.rotar(rx,ry,rz)
+    elif isinstance(obj,list):
+        for p in obj:
+            rotar(p,rx,ry,rz)
+
+
+def trasladar(obj,dx,dy,dz):
+    if isinstance(obj,Parte):
+        obj.trasladar(dx,dy,dz)
+    elif isinstance(obj,Pieza):
+        obj.trasladar(dx,dy,dz)
+    elif isinstance(obj,list):
+        for p in obj:
+            trasladar(p,dx,dy,dz)
 
 
 def ensamblar(piezas):
     res = cq.Assembly()
     for P in piezas:
         for p in P.partes:
-            print(p.rot)
             obj = p.obj.rotate(ZERO,XAXIS,p.rot[0])
             obj = obj.rotate(ZERO,YAXIS,p.rot[1])
             obj = obj.rotate(ZERO,ZAXIS,p.rot[2])
@@ -165,102 +183,10 @@ def ensamblar(piezas):
     return res
 
 
-def crear_caja_cq(ancho,prof,alto,nombre="sin_nombre",material="sin_material"):
-    """
-    " Crea una caja con la esquina inferior izquierda frontal en (0,0,0)
-    " con el ancho (hacia X), profundidad (hacia Y), y alto (hacia Z) especificados
-    """
-    obj = cq.Workplane("XY").box(ancho,prof,alto).translate((ancho/2,prof/2,alto/2))
-    pie = {"nombre":nombre,"material":material,"ancho":ancho,"prof":prof,"alto":alto}
-    return obj,pie
-
-
-
-def crear_placa_cq(orientacion,ancho,largo,grosor,nombre="sin_nombre",material="sin_material", 
-                canto_arriba=False, 
-                canto_abajo=False, 
-                canto_derecha=False,
-                canto_izquierda=False):
-    """
-    " Crea una pieza formada por una placa de ciertas dimensiones y grosor.
-    " Se pasa la orientación para que sea más fácil ubicarla en 3D directamente, si bien 
-    " la definición de orientación puede ser un poco confusa.
-    " Cuando la orientación es horizontal, el ancho es la dimensión que va de lado a lado frente a nosotros (X, de izq a der),
-    " el largo es la profundidad (hacia Y) y el grosor se extiende hacia el eje Z.
-    " Cuando la orientación es vertical,  el ancho es el eje X, el grosor va hacia el fondo (eje Y) y el largo sube (eje Z)
-    " Cuando la orientación es de lado, el ancho (X) es el grosor, el largo es la profundidad (Y) y el ancho va hacia arriba (eje Z)
-    " Cuando la orientación es de frente, el largo de la pieza se extiende frente a nosotros (eje X), el ancho sube (eje Z) y la profundidad es el grosor (Y)
-    """    
-    pie = {"nombre":nombre,
-           "material":material,
-           "ancho":ancho,
-           "largo":largo,
-           "grosor":grosor,
-           "canto_arr":canto_arriba,
-           "canto_aba": canto_abajo,
-           "canto_izq": canto_izquierda,
-           "canto_der": canto_derecha}
-    if orientacion == "vertical": # de frente pero parado; lado izquierdo abajo
-        ancho = ancho
-        prof  = grosor
-        alto  = largo
-    elif orientacion == "horizontal": # acostado. borde de abajo al frente, arriba al fondo
-        ancho = ancho
-        prof  = largo
-        alto  = grosor
-    elif orientacion == "frente":
-        alto = ancho
-        ancho  = largo
-        prof = grosor
-    elif orientacion == "lado": # de lado. borde izquierdo al frente, derecho al fondo
-        alto = ancho
-        ancho  = grosor
-        prof = largo
-    partes = list()
-    offset_z = 0
-    offset_x = 0
-    if canto_izquierda:
-        offset_x += 1
-        ancho -= 1
-    if canto_derecha:
-        ancho -= 1
-    if canto_abajo:
-        offset_z += 1
-        alto -= 1
-    if canto_arriba:
-        alto -= 1
-    partes.append(cq.Workplane("XY").box(ancho,prof,alto).translate((ancho/2,prof/2,alto/2)))
-    return obj,pie
-
-
-def crear_guia_cq(orientacion,ancho,largo,grosor,nombre):
-    obj,pie = crear_placa_cq(orientacion,ancho,largo,grosor,nombre,material="GUIA")
-    obj = obj.edges("|Y").fillet(3)
-    return obj,pie
-
-
-def crear_tabla(orientacion,ancho,largo,grosor,nombre="sin_nombre",material="sin_material"):
-    pie = {"nombre":nombre,"material":material,"ancho":ancho,"largo":largo,"grosor":grosor}
-    if orientacion == "vertical":
-        ancho = ancho
-        prof  = grosor
-        alto  = largo
-    elif orientacion == "horizontal":
-        ancho = ancho
-        prof  = largo
-        alto  = grosor
-    elif orientacion == "frente":
-        alto = ancho
-        ancho  = largo
-        prof = grosor
-    elif orientacion == "lado":
-        alto = ancho
-        ancho  = grosor
-        prof = largo
-    obj = cq.Workplane("XY").box(ancho,prof,alto).translate((ancho/2,prof/2,alto/2))
-    return obj,pie
-
-import csv
+def crear_tabla(desc,material,largo,ancho,grosor,color):
+    tabla =Tabla(desc,material,largo,ancho,grosor,color)
+    tabla.trasladar(largo/2,ancho/2,grosor/2)
+    return tabla
 
 def lista(piezas,fname='materiales.csv'):
     """
@@ -405,7 +331,7 @@ def crear_cajon(
     fondo.rotar(90,0,0)
     fondo.trasladar(
             grosor_guia + grosor_placa,
-            prof_base - grosor_placa,
+            prof_base,
             grosor_placa + margen_vert,
         )
     piezas.append(fondo)
@@ -416,14 +342,14 @@ def crear_cajon(
         ancho_frente,
         alto_frente,
         grosor_frente,
-        canto_arr=0,
-        canto_aba=0,
-        canto_izq=0,
-        canto_der=0,
+        canto_arr=1,
+        canto_aba=1,
+        canto_izq=1,
+        canto_der=1,
         color=COLOR_BLANCO
     )
     frente.rotar(90,0,0)
-    frente.trasladar(-margen_horiz, -grosor_frente, 0)
+    frente.trasladar(-margen_horiz,0, 0)
     piezas.append(frente)
 
     lado_izq = crear_placa(
@@ -438,9 +364,9 @@ def crear_cajon(
         canto_der=1,
         color=COLOR_BLANCO
     )
-    lado_izq.rotar(0,90,0)
+    lado_izq.rotar(90,0,90)    
     lado_izq.trasladar(grosor_guia, 0, margen_vert)
-    #piezas.append(lado_izq)
+    piezas.append(lado_izq)
 
     lado_der = crear_placa(
         f"{nombre}_lado_der",
@@ -454,9 +380,9 @@ def crear_cajon(
         canto_der=1,
         color=COLOR_BLANCO
     )
-    lado_der.rotar(0,90,0)
+    lado_der.rotar(90,0,90)
     lado_der.trasladar(ancho_base + grosor_guia + grosor_placa, 0, margen_vert)
-    #piezas.append(lado_der)
+    piezas.append(lado_der)
 
     base = crear_placa(
         f"{nombre}_base",
@@ -464,30 +390,34 @@ def crear_cajon(
         ancho_base,
         prof_base,
         grosor_placa,        
-        canto_arr=0,
+        canto_arr=1,
         canto_aba=0,
         canto_izq=0,
         canto_der=0,
         color=COLOR_BLANCO
     )
     base.trasladar(grosor_guia + grosor_placa, 0, margen_vert)
-    #piezas.append(base)
+    piezas.append(base)
 
     guia_izq = Guia(
         f"{nombre}_guia_izq", 
         largo_guia,
         ancho_guia,
         grosor_guia)
+    guia_izq.trasladar(largo_guia/2,ancho_guia/2,grosor_guia/2)
+    guia_izq.rotar(90,0,90)
     guia_izq.trasladar(0, 0, 50)
-    #piezas.append(guia_izq)
+    piezas.append(guia_izq)
 
     guia_der = Guia(
         f"{nombre}_guia_der", 
         largo_guia,
         ancho_guia,
         grosor_guia)
+    guia_der.trasladar(largo_guia/2,ancho_guia/2,grosor_guia/2)
+    guia_der.rotar(90,0,90)
     guia_der.trasladar(ancho_base + grosor_guia + 2 * +grosor_placa, 0, 50)
-    #piezas.append(guia_der)
+    piezas.append(guia_der)
 
     return piezas
 
@@ -498,7 +428,13 @@ if __name__ == "__main__":
     #placa.rotar(0,0,30)
     #piezas = [placa]
 
-    piezas = crear_cajon("cajon",400,200,500)
+    cajon1 = crear_cajon("cajon",400,200,500)
+    trasladar(cajon1,0,0,000)
+    cajon2 = crear_cajon("cajon",400,200,500)
+    trasladar(cajon2,0,0,205)
+    piezas = list()
+    piezas.extend(cajon1)
+    piezas.extend(cajon2)
     ass = ensamblar(piezas)
     ass.add(cq.Workplane().sphere(5))
     vis.show(ass)

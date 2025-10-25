@@ -64,7 +64,7 @@ def crear_patas(ancho, largo, grosor_tabla_parrilla, alto_pata, grosor_pata):
     pies = list()
     dx = ancho / 2 - grosor_tabla_parrilla - grosor_pata / 2
     dy = largo / 2 - grosor_tabla_parrilla - grosor_pata / 2
-    pata_izq_fre, pie = carpinteria.crear_tabla(
+    pata_izq_fre, pie = carpinteria.crear_tabla_cq(
         "vertical", grosor_pata, alto_pata, grosor_pata, "pata", material="pino"
     )
     pata_izq_fre = pata_izq_fre.translate(

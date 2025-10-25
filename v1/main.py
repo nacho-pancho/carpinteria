@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+#
+import cadquery.vis as vis
+import carpinteria
+import escritorio_con_bandeja
+import escritorio_simple
+import mesa_de_luz
+import comoda
+import bajomesada_pc
+
+piezas = list()
+# unidades en mm
+#
+# escritorio de esquina de 2 piezas
+#
+grosor_finger = 20
+grosor_mdf = 18
+
+if True:
+    print("ESCRITORIO DE NACHO")
+    alto_tabla = 790
+    prof_tabla = 600
+    ancho_tabla = 1600
+    alto_rack = 300
+    prof_rack = 100
+    prof_bandeja = 300
+    ancho_bandeja = 80
+    alto_bandeja = 690
+    alto_cajon = 160
+    alto_cajonera = alto_cajon * 4
+    ancho_cajonera = 400
+    margen = 10
+    res, pies = escritorio_con_bandeja.escritorio_con_bandeja(
+        "escn",
+        ancho_tabla,
+        alto_tabla,
+        prof_tabla,
+        ancho_bandeja,
+        alto_bandeja,
+        prof_bandeja,
+        alto_rack,
+        prof_rack,
+        alto_cajonera,
+        ancho_cajonera,
+        margen=margen,
+        grosor_mdf=18,
+        grosor_finger=20,
+    )
+    vis.show(res,title="ESCRITORIO NACHO")
+    piezas.extend(pies)
+
+if True:
+    print("ESCRITORIO DE VIOLE")
+    margen = 10
+    prof_tabla = 600
+    alto_rack = 300
+    prof_rack = 100
+    alto_cajon = 160
+    alto_cajonera = alto_cajon * 4
+    alto_tabla = 720
+    ancho_tabla = 1000
+    ancho_cajonera = 320
+
+    res, pies = escritorio_simple.escritorio_simple(
+        "escv",
+        ancho_tabla,
+        alto_tabla,
+        prof_tabla,
+        alto_rack,
+        prof_rack,
+        alto_cajonera,
+        ancho_cajonera,
+        margen=margen,
+        grosor_mdf=18,
+        grosor_finger=20,
+    )
+
+    vis.show(res,title="ESCRITORIO VIOLE")
+    piezas.extend(pies)
+
+
+if True:
+    print("COMODA")
+    ancho = 400
+    alto  = 600
+    prof  = 400
+    margen = 10
+    res, pie = comoda.comoda("cmd")
+    vis.show(res,title="COMODA")
+    piezas.extend(pie)
+
+if True:
+    print("BAJOMESADA PC")
+    res, pie = bajomesada_pc.bajomesada()
+    vis.show(res,title="BAJOMESADA")
+    piezas.extend(pie)
+
+if True:
+    print("MESA DE LUZ")
+    ancho = 400
+    alto  = 600
+    prof  = 400
+    margen = 10
+    alto_tapa = 100
+    res, pie = mesa_de_luz.mesa_de_luz("mluz",ancho,alto,prof,alto_tapa=alto_tapa, margen=margen)
+    vis.show(res,title="MESA DELUZ")
+    piezas.extend(pie)
+
+print("TODAS LAS PIEZAS")
+carpinteria.lista(piezas)
+
+# show_object(res,name="www")
+carpinteria.exportar_barraca_parana(piezas)

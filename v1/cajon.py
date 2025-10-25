@@ -41,7 +41,7 @@ def crear_placa(
     return obj, pie
 
 
-def crear_cajon_cq(
+def crear_cajon(
     ancho,
     alto,
     profundidad,

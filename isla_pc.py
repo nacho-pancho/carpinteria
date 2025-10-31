@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+#
+# -*- coding:utf-8 -*-
+# 
+
 import cadquery as cq
 import cadquery.vis as vis
 import cajon

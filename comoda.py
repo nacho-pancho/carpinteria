@@ -12,110 +12,98 @@ import carpinteria
 
 def comoda(nombre, 
         alto_cajones=(200,200,200,200),
-        ancho_cajones=(500,500),
+        largo_cajones=(500,500),
         alto_tapa=100,
         prof=500, 
         margen=10, 
         grosor_mdf=18, 
         grosor_finger=20,
+        color=carpinteria.COLOR_BLANCO
     ):
     piezas = list()
     objetos = cq.Assembly()
     #
     # tabla
     #
-    nh = len(ancho_cajones)
+    nh = len(largo_cajones)
     nv = len(alto_cajones)
-    ancho = np.sum(np.array(ancho_cajones))+grosor_mdf*(nh+1) + 2*margen
+    largo = np.sum(np.array(largo_cajones))+grosor_mdf*(nh+1) + 2*margen
     alto  = np.sum(np.array(alto_cajones))+ alto_tapa + margen + grosor_finger
-    print(alto)
     num_lados = nh + 1
-    tabla, pie = carpinteria.crear_placa_cq(
-        orientacion="horizontal",
-        ancho=ancho,
-        largo=prof+2*grosor_mdf,
+
+    largo_tabla = largo + 2*margen
+    prof_tabla = prof
+    tabla = carpinteria.crear_tabla(
+        f"{nombre}_tabla",
+        largo=largo_tabla,
+        ancho=prof_tabla,
         grosor=grosor_finger,
         material="FINGER",
-        nombre=f"{nombre}_tabla",
+        color=carpinteria.COLOR_FINGER, 
     )
-    objetos = objetos.add(
-        tabla.translate((0, -margen-grosor_mdf, alto-grosor_finger)), 
-        color=carpinteria.CQ_COLOR_FINGER, 
-        name=f"{nombre}_tabla"
-    )
-    piezas.append(pie)
+    x_tabla = -margen
+    y_tabla = -margen
+    z_tabla = alto-grosor_finger
+    tabla.trasladar(x_tabla, y_tabla, z_tabla)
+    piezas.append(tabla)
     #
     # lados
     #
-    prof_lado = prof - 2 * margen - grosor_mdf
+    y_lado = grosor_mdf
+    prof_lado = prof - 2 * margen - 2*grosor_mdf
     alto_lado = alto - grosor_finger
-    offset_x = margen
-    offset_y = margen
+    x_lado = grosor_mdf
     for l in range(nh+1):
-        lado, pie = carpinteria.crear_placa_cq(
-            orientacion="lado",
-            ancho=alto_lado,
-            largo=prof_lado,
+        lado = carpinteria.crear_placa(
+            f"{nombre}_lado_{l}", 
+            "MDF",
+            largo=alto_lado,
+            ancho=prof_lado,
             grosor=grosor_mdf,
-            material="MDF",
-            nombre=f"{nombre}_lado_{l}",
+            canto_aba=1,canto_arr=1,canto_izq=1,canto_der=0,
+            color=color
         )
-        
-        objetos = objetos.add(
-            lado.translate((offset_x, offset_y, 0)),
-            color=carpinteria.CQ_COLOR_MDF,
-            name=f"{nombre}_lado_{l}",
-        )
-        piezas.append(pie)
+        lado.rotar(0,-90,0)        
+        lado.trasladar(x_lado, y_lado, 0)
+        piezas.append(lado)
         if l < nh:
-            offset_x += ancho_cajones[l] + grosor_mdf
+            x_lado += largo_cajones[l] + grosor_mdf
 
     #
     # fondo
     #
-    ancho_fondo = ancho - 2 * margen 
+    ancho_fondo = largo - 2 * margen 
     alto_fondo = alto_lado - margen
-    fondo, pie = carpinteria.crear_placa_cq(
-        orientacion="frente",
+    fondo = carpinteria.crear_placa(
+        f"{nombre}_fon","MDF",
         ancho=alto_fondo,
         largo=ancho_fondo,
         grosor=grosor_mdf,
-        material="MDF",
-        nombre=f"{nombre}_fon",
+        canto_aba=1,canto_arr=0,canto_izq=1,canto_der=1,
+        color=color      
     )
-    piezas.append(pie)
-    objetos.add(
-        fondo.translate((margen, prof - grosor_mdf - margen, margen)),
-        name=f"{nombre}_fon",
-        color=carpinteria.CQ_COLOR_DEBUG1,
-    )
-    #
+    fondo.rotar(90,0,0)
+    fondo.trasladar(0, prof_lado + 2*grosor_mdf, margen)
+    piezas.append(fondo)
 
-
-    ancho_base = ancho - 2*margen - 2 * grosor_mdf
-    prof_base = prof - 2*margen - grosor_mdf - 10
     #
     # agregamos cajones
     #
-    offset_y = margen
-    offset_x = margen + grosor_mdf        
+    y_cajon = grosor_mdf
+    x_cajon = grosor_mdf        
     for cj in range(nh):
-        offset_z = alto - grosor_finger 
+        z_cajon = alto - grosor_finger 
         for ci in range(nv):
             alto_hueco = alto_cajones[ci]
-            ancho_hueco = ancho_cajones[cj]
-            offset_z -= alto_hueco
+            ancho_hueco = largo_cajones[cj]
+            z_cajon -= alto_hueco
             ancho_cajon = ancho_hueco
             guarda_vert = 5
             alto_cajon = alto_hueco - guarda_vert
-            prof_hueco = prof_base
+            prof_hueco = prof_lado
             prof_cajon = prof_hueco - 10
-            ancla = (offset_x, offset_y, offset_z)
-            cajon = carpinteria.agregar_cajon(
-                objetos,
-                piezas,
+            cajon = carpinteria.crear_cajon(
                 f"{nombre}_caj_{ci}{cj}",
-                ancla,
                 ancho_cajon,
                 alto_cajon,
                 prof_cajon,
@@ -126,28 +114,26 @@ def comoda(nombre,
                 color_lado=carpinteria.CQ_COLOR_MDF,
                 color_base=carpinteria.CQ_COLOR_MDF,
             )
-        offset_x += ancho_hueco + grosor_mdf
+            carpinteria.trasladar(cajon,x_cajon, y_cajon, z_cajon)
+            piezas.extend(cajon)
+        x_cajon += ancho_hueco + grosor_mdf
     #
     # tapa
     #
-    offset_z -= alto_tapa + guarda_vert
-    ancho_tapa = ancho - 2 * margen 
-    tapa, pie = carpinteria.crear_placa(
-        orientacion="frente",
+    z_tapa = z_cajon - alto_tapa - guarda_vert
+    ancho_tapa = largo - 2 * margen 
+    tapa = carpinteria.crear_placa(
+        f"{nombre}_tapa", "MDF",
         ancho=alto_tapa,
         largo=ancho_tapa,
         grosor=grosor_mdf,
-        material="MDF",
-        nombre=f"{nombre}_tapa",
+        canto_aba=1,canto_arr=1,canto_der=1,canto_izq=1,
+        color=color        
     )
-    piezas.append(pie)
-
-    objetos.add(
-        tapa.translate((margen, margen-grosor_mdf, offset_z)),
-        name=f"{nombre}_tapa",
-        color=carpinteria.CQ_COLOR_DEBUG2,
-    )
-    return objetos, piezas
+    tapa.rotar(90,0,0)
+    tapa.trasladar(0, y_lado, z_tapa)
+    piezas.append(tapa)
+    return piezas
 
 if __name__ == "__main__":
     print("COMODA")

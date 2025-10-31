@@ -11,6 +11,8 @@ YAXIS = cq.Vector(0,1,0)
 ZAXIS = cq.Vector(0,0,1)
 ZERO  = cq.Vector(0,0,0)
 
+GROSOR_GUIA = 13
+
 ALPHA = 0.7
 COLOR_BLANCO = (1.0,1.0,1.0,1.0)
 COLOR_MDF    = (0.5, 0.4, 0.2, ALPHA)

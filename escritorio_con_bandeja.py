@@ -180,20 +180,24 @@ def escritorio_con_bandeja(
     #
     # bandeja
     #
-    offset_hueco = margen + ancho_cajonera + 2 * grosor_mdf
-    ancho_hueco = ancho - 2 * margen - 3 * grosor_mdf - ancho_cajonera
+    offset_hueco = ancho_cajonera + 2 * grosor_mdf
+    largo_hueco = largo - 2 * margen - 3 * grosor_mdf - ancho_cajonera
     offset_bandeja = offset_hueco + carpinteria.GROSOR_GUIA
-    largo_bandeja = ancho_hueco - 2 * carpinteria.GROSOR_GUIA
+    largo_bandeja = largo_hueco - 2 * carpinteria.GROSOR_GUIA
     alto_bandeja -= grosor_mdf
     base_ban = carpinteria.crear_placa(
         f"{nombre}_ban_base",
         "MDF",
-        ancho=largo_bandeja,
-        largo=prof_bandeja,
+        ancho=prof_bandeja,
+        largo=largo_bandeja,
+        canto_arr=1,
+        canto_aba=1,
+        canto_izq=1,
+        canto_der=1,
         grosor=grosor_mdf,
         color=color
     )
-    base_ban.trasladar(offset_hueco + carpinteria.GROSOR_GUIA, margen, alto_bandeja)
+    base_ban.trasladar(offset_hueco + carpinteria.GROSOR_GUIA, y_lado, alto_bandeja)
     piezas.append(base_ban)
 
     lado_ban_izq = carpinteria.crear_placa(
@@ -202,9 +206,16 @@ def escritorio_con_bandeja(
         ancho=ancho_bandeja,
         largo=prof_bandeja,
         grosor=grosor_mdf,
+        canto_arr=1,
+        canto_aba=1,
+        canto_izq=1,
+        canto_der=1,
         color=color
     )
-    lado_ban_izq.trasladar(offset_bandeja, margen, alto_bandeja - ancho_bandeja)
+    lado_ban_izq.rotar(90,0,90)
+    lado_ban_izq.trasladar(offset_bandeja, 
+                           y_lado, 
+                           alto_bandeja - ancho_bandeja)
     piezas.append(lado_ban_izq)
 
     lado_ban_der = carpinteria.crear_placa(
@@ -213,62 +224,66 @@ def escritorio_con_bandeja(
         ancho=ancho_bandeja,
         largo=prof_bandeja,
         grosor=grosor_mdf,
+        canto_arr=1,
+        canto_aba=1,
+        canto_izq=1,
+        canto_der=1,
         color=color
     )
+    lado_ban_der.rotar(90,0,90)
     lado_ban_der.trasladar(
-            (
                 offset_bandeja + largo_bandeja - grosor_mdf,
-                margen,
+                y_lado,
                 alto_bandeja - ancho_bandeja,
-            )
         )
     piezas.append(lado_ban_der)
 
-    fondo_ban = carpinteria.crear_placa_cq(
+    fondo_ban = carpinteria.crear_placa(
         f"{nombre}_fon_ban",
         "MDF",
         ancho=ancho_bandeja,
         largo=largo_bandeja - 2 * grosor_mdf,
         grosor=grosor_mdf,
+        canto_arr=0,
+        canto_aba=1,
+        canto_izq=1,
+        canto_der=1,
         color=color
     )
-    piezas.append(fondo_ban)
+    fondo_ban.rotar(90,0,0)
     fondo_ban.trasladar(
-            (
                 offset_bandeja + grosor_mdf,
-                margen + prof_bandeja - grosor_mdf,
+                y_lado + prof_bandeja,
                 alto_bandeja - ancho_bandeja,
-            )
         )
+    piezas.append(fondo_ban)
 
     largo_guia = (prof_bandeja // 50) * 50
     ancho_guia = carpinteria.ANCHO_GUIA
     grosor_guia = carpinteria.GROSOR_GUIA
-    guia_izq = carpinteria.crear_guia(
+    guia_izq = carpinteria.Guia(
         f"{nombre}_guia_izq",
         largo_guia, ancho_guia, grosor_guia
     )
+    guia_izq.trasladar(largo_guia/2,ancho_guia/2,grosor_guia/2)
     guia_izq.rotar(90,0,90)
     guia_izq.trasladar(
-            (
-                margen + ancho_cajonera + 2 * grosor_mdf,
-                margen,
+                ancho_cajonera + 2 * grosor_mdf,
+                y_lado,
                 alto_bandeja - ancho_bandeja + (ancho_bandeja - carpinteria.ANCHO_GUIA) // 2,
-            )
         )
     piezas.append(guia_izq)
 
-    guia_der = carpinteria.crear_guia(
+    guia_der = carpinteria.Guia(
         f"{nombre}_guia_der",
-        largo_guia, ancho, grosor_guia
+        largo_guia, ancho_guia, grosor_guia
     )
+    guia_der.trasladar(largo_guia/2,ancho_guia/2,grosor_guia/2)
     guia_der.rotar(90,0,90)
     guia_der.trasladar(
-            (
-                margen + ancho_cajonera + 2 * grosor_mdf + carpinteria.GROSOR_GUIA + largo_bandeja,
-                margen,
+                ancho_cajonera + 2 * grosor_mdf + carpinteria.GROSOR_GUIA + largo_bandeja,
+                y_lado,
                 alto_bandeja - ancho_bandeja + (ancho_bandeja - carpinteria.ANCHO_GUIA) // 2,
-            )
         )
     piezas.append(guia_der)
 
@@ -286,6 +301,9 @@ if __name__ == "__main__":
     alto_cajon = 160
     alto_cajonera = alto_cajon * 4
     ancho_cajonera = 320
+    prof_bandeja = 300
+    ancho_bandeja = 80
+    alto_bandeja = 690
 
     piezas = escritorio_con_bandeja(
         "es",
@@ -296,6 +314,9 @@ if __name__ == "__main__":
         prof_rack,
         alto_cajonera,
         ancho_cajonera,
+        ancho_bandeja=ancho_bandeja,
+        alto_bandeja=alto_bandeja,
+        prof_bandeja=prof_bandeja,
         margen=margen,
         grosor_mdf=18,
         grosor_finger=20

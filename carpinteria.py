@@ -12,6 +12,7 @@ ZAXIS = cq.Vector(0,0,1)
 ZERO  = cq.Vector(0,0,0)
 
 GROSOR_GUIA = 13
+ANCHO_GUIA  = 40
 
 ALPHA = 0.7
 COLOR_BLANCO = (1.0,1.0,1.0,1.0)

@@ -6,9 +6,9 @@
 import numpy as np
 
 import cadquery as cq
+import cadquery.vis as vis
 
 import carpinteria
-import cajon
 
 def comoda(nombre, 
         alto_cajones=(200,200,200,200),
@@ -111,7 +111,7 @@ def comoda(nombre,
             prof_hueco = prof_base
             prof_cajon = prof_hueco - 10
             ancla = (offset_x, offset_y, offset_z)
-            objetos, piezas = cajon.agregar_cajon(
+            cajon = carpinteria.agregar_cajon(
                 objetos,
                 piezas,
                 f"{nombre}_caj_{ci}{cj}",
@@ -132,7 +132,7 @@ def comoda(nombre,
     #
     offset_z -= alto_tapa + guarda_vert
     ancho_tapa = ancho - 2 * margen 
-    tapa, pie = carpinteria.crear_placa_cq(
+    tapa, pie = carpinteria.crear_placa(
         orientacion="frente",
         ancho=alto_tapa,
         largo=ancho_tapa,
@@ -148,3 +148,14 @@ def comoda(nombre,
         color=carpinteria.CQ_COLOR_DEBUG2,
     )
     return objetos, piezas
+
+if __name__ == "__main__":
+    print("COMODA")
+    ancho = 400
+    alto  = 600
+    prof  = 400
+    margen = 10
+    piezas = comoda("cmd")
+    ass = carpinteria.ensamblar(piezas)
+    ass.add(cq.Workplane().sphere(5))
+    vis.show(ass,title="COMODA")

@@ -2,8 +2,8 @@
 # 
 import numpy as np
 import cadquery as cq
+import cadquery.vis as vis
 import carpinteria
-import cajon
 """
  * Profundidad: 55cm
  * Ancho: dos de 51cm, uno de 103cm
@@ -28,25 +28,35 @@ def bajomesada(nombre='bmes'):
     prof  = 500 - 10
 
     piezas = list()
-    objetos = cq.Assembly()
     x_cajon = 0
     y_cajon = 0
     for j in range(3):
         z_cajon = np.sum(np.array(altos))
         for i in range(3):
             z_cajon -= altos[i]
-            objetos,piezas = cajon.agregar_cajon(
-                objetos, 
-                piezas, 
-                nombre=f"{nombre}_caj_{i}{j}",                                        
-                ancla=(x_cajon,y_cajon,z_cajon),
+            cajon = carpinteria.crear_cajon(
+                f"{nombre}_caj_{i}{j}",                                        
                 ancho=anchos[j],
                 alto=altos[i]-guarda_vert,
                 profundidad=prof,
                 margen_horiz=grosor_placa//2-2,
-                color_base=cq.Color(0.8,0.8,0.8,0.8),
-                color_frente=cq.Color(0.7,0.3,0.3,0.1))
+                color_base=carpinteria.COLOR_BLANCO,
+                color_frente=carpinteria.COLOR_DEBUG1)
+            carpinteria.trasladar(cajon,x_cajon,y_cajon,z_cajon)
+            piezas.extend(cajon)
         x_cajon += huecos[j] + grosor_placa
 
-    return objetos, piezas    
+    return piezas    
     
+
+
+if __name__ == "__main__":
+    print("COMODA")
+    ancho = 400
+    alto  = 600
+    prof  = 400
+    margen = 10
+    piezas = bajomesada("cmd")
+    ass = carpinteria.ensamblar(piezas)
+    ass.add(cq.Workplane().sphere(5))
+    vis.show(ass,title="COMODA")

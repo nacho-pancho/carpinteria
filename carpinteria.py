@@ -197,14 +197,12 @@ def lista(piezas,fname='materiales.csv'):
     """
     piezas_por_tipo = dict()
     for p in piezas:
-        mat    = p["material"]
-        ancho  = p["ancho"]
-        largo  = p["largo"]
-        grosor = p["grosor"]
-        nombre = p["nombre"]
-        dim1 = min(ancho,largo)
-        dim2 = max(ancho,largo)
-        id = f"{mat:8} | {grosor:10d} | {dim1:8d} | {dim2:8d}"
+        mat    = p.material
+        ancho  = p.ancho
+        largo  = p.largo
+        grosor = p.grosor
+        nombre = p.desc
+        id = f"{mat:8} | {grosor:10d} | {largo:8d} | {ancho:8d}"
         if id not in piezas_por_tipo:
             piezas_por_tipo[id] = [nombre]
         else:
@@ -222,26 +220,39 @@ def lista(piezas,fname='materiales.csv'):
 def exportar_barraca_parana(piezas):
     listas_de_materiales = dict()
     for p in piezas:
-        mat    = p["material"]
-        grosor = p["grosor"]
+        mat    = p.material
+        grosor = p.grosor
         id_material = f'{mat}_{grosor}'
-        ancho  = p["ancho"]
-        largo  = p["largo"]
+        ancho  = p.ancho
+        largo  = p.largo
+        if isinstance(p,Placa):
+            arr,aba,izq,der = p.canto_arr,p.canto_aba,p.canto_izq,p.canto_der
+        else:
+            arr,aba,izq,der=0,0,0,0
+        id_pieza = f'{largo}x{ancho}_{arr}{aba}{izq}{der}'
 
-        dim1 = min(ancho,largo)
-        dim2 = max(ancho,largo)
-        id_pieza = f'{dim1}_{dim2}'
-
-        nombre = p["nombre"]
+        nombre = p.desc
         if id_material not in listas_de_materiales:
             lista_de_piezas = dict()
             piezas = [nombre]
-            lista_de_piezas[id_pieza] = {"dim1":dim1,"dim2":dim2,"piezas":piezas}
+            lista_de_piezas[id_pieza] = {"largo":largo,
+                                         "ancho":ancho,
+                                            "arr":arr,
+                                            "aba":aba,
+                                            "izq":izq,
+                                            "der":der,
+                                         "piezas":piezas}
             listas_de_materiales[id_material] = lista_de_piezas
         else:
             lista_de_piezas = listas_de_materiales[id_material]
             if id_pieza not in lista_de_piezas:
-                lista_de_piezas[id_pieza] = {"dim1":dim1,"dim2":dim2,"piezas":[nombre]}
+                lista_de_piezas[id_pieza] = {"largo":largo,
+                                             "ancho":ancho,
+                                            "arr":arr,
+                                            "aba":aba,
+                                            "izq":izq,
+                                            "der":der,
+                                            "piezas":[nombre]}
             else:
                 lista_de_piezas[id_pieza]["piezas"].append(nombre)
             listas_de_materiales[id_material]= lista_de_piezas
@@ -253,16 +264,16 @@ def exportar_barraca_parana(piezas):
             for id_pieza in lista_de_piezas: # piezas de mismo tipo
                 #print("pieza",id_pieza)
                 pieza = lista_de_piezas[id_pieza]
-                p_dim1 = pieza["dim1"]
-                p_dim2 = pieza["dim2"]
+                p_largo = pieza["largo"]
+                p_ancho = pieza["ancho"]
                 cant = len(pieza["piezas"])
                 p_nombre = pieza["piezas"][0]
                 rota = 1
-                canto_arr = 0
-                canto_aba = 0
-                canto_izq = 0
-                canto_der = 0
-                print(f"{cant}\t{p_dim1}\t{p_dim2}\t{p_nombre}\t{rota}\t{canto_arr}\t{canto_aba}\t{canto_izq}\t{canto_der}",file=f)
+                canto_arr = pieza["arr"]
+                canto_aba = pieza["aba"]
+                canto_izq = pieza["izq"]
+                canto_der = pieza["der"]
+                print(f"{cant}\t{p_largo}\t{p_ancho}\t{p_nombre}\t{rota}\t{canto_arr}\t{canto_aba}\t{canto_izq}\t{canto_der}",file=f)
 
 
 def crear_placa(desc,material,largo,ancho,grosor,canto_arr,canto_aba,canto_izq,canto_der,color):

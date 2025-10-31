@@ -17,66 +17,68 @@ grosor_finger = 20
 grosor_mdf = 18
 
 if True:
-    print("ESCRITORIO DE NACHO")
-    alto_tabla = 790
-    prof_tabla = 600
-    ancho_tabla = 1600
+    margen = 10
+    largo = 1600
+    ancho = 600
+    alto = 720
     alto_rack = 300
     prof_rack = 100
-    prof_bandeja = 300
-    ancho_bandeja = 80
-    alto_bandeja = 690
     alto_cajon = 160
     alto_cajonera = alto_cajon * 4
     ancho_cajonera = 400
-    margen = 10
-    res, pies = escritorio_con_bandeja.escritorio_con_bandeja(
-        "escn",
-        ancho_tabla,
-        alto_tabla,
-        prof_tabla,
-        ancho_bandeja,
-        alto_bandeja,
-        prof_bandeja,
+    prof_bandeja = 300
+    ancho_bandeja = 80
+    alto_bandeja = 690
+
+    p = escritorio_con_bandeja.escritorio_con_bandeja(
+        "enac",
+        largo,
+        ancho,
+        alto,
         alto_rack,
         prof_rack,
         alto_cajonera,
         ancho_cajonera,
+        ancho_bandeja=ancho_bandeja,
+        alto_bandeja=alto_bandeja,
+        prof_bandeja=prof_bandeja,
         margen=margen,
         grosor_mdf=18,
-        grosor_finger=20,
+        grosor_finger=20
     )
-    vis.show(res,title="ESCRITORIO NACHO")
-    piezas.extend(pies)
+    ass = carpinteria.ensamblar(p)
+    #ass.add(cq.Workplane().sphere(5))
+    vis.show(ass,title="ESCRITORIO NACHO")
+    piezas.extend(p)
 
 if True:
     print("ESCRITORIO DE VIOLE")
     margen = 10
-    prof_tabla = 600
+    largo = 1000
+    ancho = 600
+    alto = 720
     alto_rack = 300
     prof_rack = 100
     alto_cajon = 160
     alto_cajonera = alto_cajon * 4
-    alto_tabla = 720
-    ancho_tabla = 1000
     ancho_cajonera = 320
-
-    res, pies = escritorio_simple.escritorio_simple(
-        "escv",
-        ancho_tabla,
-        alto_tabla,
-        prof_tabla,
+    p = escritorio_simple.escritorio_simple(
+        "evio",
+        largo,
+        ancho,
+        alto,
         alto_rack,
         prof_rack,
         alto_cajonera,
         ancho_cajonera,
         margen=margen,
         grosor_mdf=18,
-        grosor_finger=20,
+        grosor_finger=20
     )
 
-    vis.show(res,title="ESCRITORIO VIOLE")
-    piezas.extend(pies)
+    ass = carpinteria.ensamblar(p)
+    vis.show(ass,title="ESCRITORIO VIOLE")
+    piezas.extend(p)
 
 
 if True:
@@ -85,17 +87,19 @@ if True:
     alto  = 600
     prof  = 400
     margen = 10
-    res, pie = comoda.comoda("cmd")
-    vis.show(res,title="COMODA")
-    piezas.extend(pie)
+    p = comoda.comoda("cmd")
+    ass = carpinteria.ensamblar(p)
+    vis.show(ass,title="COMODA")
+    piezas.extend(p)
 
 if True:
     print("BAJOMESADA PC")
-    res, pie = bajomesada_pc.bajomesada()
-    vis.show(res,title="BAJOMESADA")
-    piezas.extend(pie)
+    p = bajomesada_pc.bajomesada()
+    ass = carpinteria.ensamblar(p)
+    vis.show(ass,title="BAJOMESADA")
+    piezas.extend(p)
 
-if True:
+if False:
     print("MESA DE LUZ")
     ancho = 400
     alto  = 600

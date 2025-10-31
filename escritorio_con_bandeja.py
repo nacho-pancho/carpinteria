@@ -293,7 +293,7 @@ def escritorio_con_bandeja(
 
 if __name__ == "__main__":
     margen = 10
-    largo = 1000
+    largo = 1600
     ancho = 600
     alto = 720
     alto_rack = 300

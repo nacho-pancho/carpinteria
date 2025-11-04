@@ -21,7 +21,6 @@ def comoda(nombre,
         color=carpinteria.COLOR_BLANCO
     ):
     piezas = list()
-    objetos = cq.Assembly()
     #
     # tabla
     #
@@ -29,7 +28,6 @@ def comoda(nombre,
     nv = len(alto_cajones)
     largo = np.sum(np.array(largo_cajones))+grosor_mdf*(nh+1) + 2*margen
     alto  = np.sum(np.array(alto_cajones))+ alto_tapa + margen + grosor_finger
-    num_lados = nh + 1
 
     largo_tabla = largo + 2*margen
     prof_tabla = prof
@@ -53,9 +51,9 @@ def comoda(nombre,
     prof_lado = prof - 2 * margen - 2*grosor_mdf
     alto_lado = alto - grosor_finger
     x_lado = grosor_mdf
-    for l in range(nh+1):
+    for la in range(nh+1):
         lado = carpinteria.crear_placa(
-            f"{nombre}_lado_{l}", 
+            f"{nombre}_lado_{la}", 
             "MDF",
             largo=alto_lado,
             ancho=prof_lado,
@@ -66,8 +64,8 @@ def comoda(nombre,
         lado.rotar(0,-90,0)        
         lado.trasladar(x_lado, y_lado, 0)
         piezas.append(lado)
-        if l < nh:
-            x_lado += largo_cajones[l] + grosor_mdf
+        if la < nh:
+            x_lado += largo_cajones[la] + grosor_mdf
 
     #
     # fondo

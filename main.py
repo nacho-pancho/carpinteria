@@ -17,6 +17,18 @@ grosor_finger = 20
 grosor_mdf = 18
 
 if True:
+    print("MESA DE LUZ")
+    ancho = 400
+    alto  = 600
+    prof  = 400
+    margen = 10
+    alto_tapa = 100
+    p = mesa_de_luz.mesa_de_luz("mluz",ancho,alto,prof,alto_tapa=alto_tapa, margen=margen)
+    ass = carpinteria.ensamblar(p)
+    vis.show(ass,title="MESA DELUZ")
+    piezas.extend(p)
+
+if True:
     margen = 10
     largo = 1600
     ancho = 600
@@ -92,7 +104,7 @@ if True:
     vis.show(ass,title="COMODA")
     piezas.extend(p)
 
-if True:
+if False:
     print("BAJOMESADA PC")
     p = bajomesada_pc.bajomesada()
     ass = carpinteria.ensamblar(p)
@@ -106,9 +118,10 @@ if False:
     prof  = 400
     margen = 10
     alto_tapa = 100
-    res, pie = mesa_de_luz.mesa_de_luz("mluz",ancho,alto,prof,alto_tapa=alto_tapa, margen=margen)
-    vis.show(res,title="MESA DELUZ")
-    piezas.extend(pie)
+    p = mesa_de_luz.mesa_de_luz("mluz",ancho,alto,prof,alto_tapa=alto_tapa, margen=margen)
+    ass = carpinteria.ensamblar(p)
+    vis.show(ass,title="MESA DELUZ")
+    piezas.extend(p)
 
 print("TODAS LAS PIEZAS")
 carpinteria.lista(piezas)

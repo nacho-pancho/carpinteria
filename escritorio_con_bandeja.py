@@ -137,9 +137,6 @@ def escritorio_con_bandeja(
     guarda_caj = 5
     alto_hueco_cajon = alto_cajonera // num_cajones
     alto_cajon = alto_hueco_cajon - guarda_caj
-    print(alto_cajonera)
-    print(alto_hueco_cajon)
-    print(alto_cajon)
     prof_cajon = prof_cajonera - 10
     ancho_cajon = ancho_cajonera
     x_cajon = grosor_mdf

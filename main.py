@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 #
+import sys
+import argparse
+
 import cadquery.vis as vis
+
 import carpinteria
 import escritorio_con_bandeja
 import escritorio_simple
 import mesa_de_luz
 import comoda
 import bajomesada_pc
-import argparse
-import sys
+import aparador
 
 # unidades en mm
 #
@@ -113,6 +116,15 @@ if __name__ == "__main__":
             p = bajomesada_pc.bajomesada()
             ass = carpinteria.ensamblar(p)
             vis.show(ass,title="BAJOMESADA")
+            piezas.extend(p)
+        elif p == "aparador":
+            largo = 1200
+            alto  = 1000
+            prof  = 450
+            z_base= 50
+            p = aparador.aparador("apa",alto=alto,largo=largo,prof=prof,z_base=z_base)
+            ass = carpinteria.ensamblar(p)
+            vis.show(ass,title="APARADOR")
             piezas.extend(p)
 
     print("TODAS LAS PIEZAS")

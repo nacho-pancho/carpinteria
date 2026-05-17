@@ -7,124 +7,116 @@ import escritorio_simple
 import mesa_de_luz
 import comoda
 import bajomesada_pc
+import argparse
+import sys
 
-piezas = list()
 # unidades en mm
 #
 # escritorio de esquina de 2 piezas
 #
-grosor_finger = 20
-grosor_mdf = 18
+if __name__ == "__main__":
+    #ap = argparse.ArgumentParser(prog="Carpinteria",description="Diseña muebles y genera lista de materiales",epilog="Para uso personal de Nacho")
+    #ap.add_argument(help="que piezas incluir")
+    #args = ap.parse_args()
+    
+    grosor_finger = 20
+    grosor_mdf = 18
+    piezas = list()
+    partes = sys.argv[1:]
+    
+    for p in partes:
+        if p == "mluz":
+            print("MESA DE LUZ")
+            ancho = 400
+            alto  = 600
+            prof  = 400
+            margen = 10
+            alto_tapa = 100
+            p = mesa_de_luz.mesa_de_luz("mluz",ancho,alto,prof,alto_tapa=alto_tapa, margen=margen)
+            ass = carpinteria.ensamblar(p)
+            vis.show(ass,title="MESA DELUZ")
+            piezas.extend(p)
 
-if True:
-    print("MESA DE LUZ")
-    ancho = 400
-    alto  = 600
-    prof  = 400
-    margen = 10
-    alto_tapa = 100
-    p = mesa_de_luz.mesa_de_luz("mluz",ancho,alto,prof,alto_tapa=alto_tapa, margen=margen)
-    ass = carpinteria.ensamblar(p)
-    vis.show(ass,title="MESA DELUZ")
-    piezas.extend(p)
+        elif p == "enacho":
+            margen = 10
+            largo = 1600
+            ancho = 600
+            alto = 720
+            alto_rack = 300
+            prof_rack = 100
+            alto_cajon = 160
+            alto_cajonera = alto_cajon * 4
+            ancho_cajonera = 400
+            prof_bandeja = 300
+            ancho_bandeja = 80
+            alto_bandeja = 690    
+            p = escritorio_con_bandeja.escritorio_con_bandeja(
+                "enac",
+                largo,
+                ancho,
+                alto,
+                alto_rack,
+                prof_rack,
+                alto_cajonera,
+                ancho_cajonera,
+                ancho_bandeja=ancho_bandeja,
+                alto_bandeja=alto_bandeja,
+                prof_bandeja=prof_bandeja,
+                margen=margen,
+                grosor_mdf=18,
+                grosor_finger=20
+            )
+            ass = carpinteria.ensamblar(p)
+            #ass.add(cq.Workplane().sphere(5))
+            vis.show(ass,title="ESCRITORIO NACHO")
+            piezas.extend(p)
 
-if True:
-    margen = 10
-    largo = 1600
-    ancho = 600
-    alto = 720
-    alto_rack = 300
-    prof_rack = 100
-    alto_cajon = 160
-    alto_cajonera = alto_cajon * 4
-    ancho_cajonera = 400
-    prof_bandeja = 300
-    ancho_bandeja = 80
-    alto_bandeja = 690
+        elif p == "eviole":
+            print("ESCRITORIO DE VIOLE")
+            margen = 10
+            largo = 1000
+            ancho = 600
+            alto = 720
+            alto_rack = 300
+            prof_rack = 100
+            alto_cajon = 160
+            alto_cajonera = alto_cajon * 4
+            ancho_cajonera = 320
+            p = escritorio_simple.escritorio_simple(
+                "evio",
+                largo,
+                ancho,
+                alto,
+                alto_rack,
+                prof_rack,
+                alto_cajonera,
+                ancho_cajonera,
+                margen=margen,
+                grosor_mdf=18,
+                grosor_finger=20
+            )
+            ass = carpinteria.ensamblar(p)
+            vis.show(ass,title="ESCRITORIO VIOLE")
+            piezas.extend(p)
+        elif p == "comoda":
+            print("COMODA")
+            ancho = 400
+            alto  = 600
+            prof  = 400
+            margen = 10
+            p = comoda.comoda("cmd")
+            ass = carpinteria.ensamblar(p)
+            vis.show(ass,title="COMODA")
+            piezas.extend(p)
+        elif p == "bajomesada":
+            print("BAJOMESADA PC")
+            p = bajomesada_pc.bajomesada()
+            ass = carpinteria.ensamblar(p)
+            vis.show(ass,title="BAJOMESADA")
+            piezas.extend(p)
 
-    p = escritorio_con_bandeja.escritorio_con_bandeja(
-        "enac",
-        largo,
-        ancho,
-        alto,
-        alto_rack,
-        prof_rack,
-        alto_cajonera,
-        ancho_cajonera,
-        ancho_bandeja=ancho_bandeja,
-        alto_bandeja=alto_bandeja,
-        prof_bandeja=prof_bandeja,
-        margen=margen,
-        grosor_mdf=18,
-        grosor_finger=20
-    )
-    ass = carpinteria.ensamblar(p)
-    #ass.add(cq.Workplane().sphere(5))
-    vis.show(ass,title="ESCRITORIO NACHO")
-    piezas.extend(p)
+    print("TODAS LAS PIEZAS")
+    carpinteria.lista(piezas)
 
-if True:
-    print("ESCRITORIO DE VIOLE")
-    margen = 10
-    largo = 1000
-    ancho = 600
-    alto = 720
-    alto_rack = 300
-    prof_rack = 100
-    alto_cajon = 160
-    alto_cajonera = alto_cajon * 4
-    ancho_cajonera = 320
-    p = escritorio_simple.escritorio_simple(
-        "evio",
-        largo,
-        ancho,
-        alto,
-        alto_rack,
-        prof_rack,
-        alto_cajonera,
-        ancho_cajonera,
-        margen=margen,
-        grosor_mdf=18,
-        grosor_finger=20
-    )
-
-    ass = carpinteria.ensamblar(p)
-    vis.show(ass,title="ESCRITORIO VIOLE")
-    piezas.extend(p)
-
-
-if True:
-    print("COMODA")
-    ancho = 400
-    alto  = 600
-    prof  = 400
-    margen = 10
-    p = comoda.comoda("cmd")
-    ass = carpinteria.ensamblar(p)
-    vis.show(ass,title="COMODA")
-    piezas.extend(p)
-
-if False:
-    print("BAJOMESADA PC")
-    p = bajomesada_pc.bajomesada()
-    ass = carpinteria.ensamblar(p)
-    vis.show(ass,title="BAJOMESADA")
-    piezas.extend(p)
-
-if False:
-    print("MESA DE LUZ")
-    ancho = 400
-    alto  = 600
-    prof  = 400
-    margen = 10
-    alto_tapa = 100
-    p = mesa_de_luz.mesa_de_luz("mluz",ancho,alto,prof,alto_tapa=alto_tapa, margen=margen)
-    ass = carpinteria.ensamblar(p)
-    vis.show(ass,title="MESA DELUZ")
-    piezas.extend(p)
-
-print("TODAS LAS PIEZAS")
-carpinteria.lista(piezas)
-
-# show_object(res,name="www")
-carpinteria.exportar_barraca_parana(piezas)
+    # show_object(res,name="www")
+    carpinteria.exportar_barraca_parana(piezas)

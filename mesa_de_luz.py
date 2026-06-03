@@ -11,7 +11,7 @@ import cajon
 
 
 def mesa_de_luz(
-    nombre, ancho, alto, prof, alto_tapa=100, margen=10, grosor_mdf=18, grosor_finger=20
+    nombre, ancho, alto, prof, alto_tapa=100, margen=10, grosor_mdf=18, grosor_finger=20, color=carpinteria.COLOR_BLANCO
 ):
     piezas = list()
     #
@@ -45,7 +45,7 @@ def mesa_de_luz(
         ancho=prof_lado,
         grosor=grosor_mdf,
         canto_aba=1,canto_arr=1,canto_izq=1,canto_der=0,
-        color=carpinteria.COLOR_BLANCO
+        color=color
     )
     lado.rotar(0,-90,0)        
     lado.trasladar(x_lado,y_lado, 0)
@@ -58,7 +58,7 @@ def mesa_de_luz(
         ancho=prof_lado,
         grosor=grosor_mdf,
         canto_aba=1,canto_arr=1,canto_izq=1,canto_der=0,
-        color=carpinteria.COLOR_BLANCO
+        color=color
     )
     lado.rotar(0,-90,0)        
     x_lado += ancho_hueco + grosor_mdf
@@ -76,7 +76,7 @@ def mesa_de_luz(
         largo=ancho_fondo,
         grosor=grosor_mdf,
         canto_aba=1,canto_arr=0,canto_izq=1,canto_der=1,
-        color=carpinteria.COLOR_BLANCO
+        color=color
     )
     fondo.rotar(90,0,0)
     x_fondo = 0
@@ -108,9 +108,9 @@ def mesa_de_luz(
             margen_horiz=grosor_mdf//2,
             margen_vert=10,
             grosor_placa=grosor_mdf,
-            color_frente=carpinteria.CQ_COLOR_MDF,
-            color_lado=carpinteria.CQ_COLOR_MDF,
-            color_base=carpinteria.CQ_COLOR_MDF,
+            color_frente=color,
+            color_lado=color,
+            color_base=color,
         )
         carpinteria.trasladar(cajon,x_cajon, y_cajon, z_cajon)
         piezas.extend(cajon)
@@ -125,30 +125,10 @@ def mesa_de_luz(
         largo=ancho_tapa,
         grosor=grosor_mdf,
         canto_aba=1,canto_arr=1,canto_der=1,canto_izq=1,
-        color=carpinteria.COLOR_BLANCO
+        color=color
     )
     tapa.rotar(90,0,0)
     tapa.trasladar(0, y_lado, z_tapa)
     piezas.append(tapa)
-    
-    # offset_z += alto_hueco_cajon - guarda_vert
-    # alto_tapa = offset_z - margen
-    # offset_z = margen
-    # ancho_tapa = ancho - 2 * margen 
-    # tapa, pie = carpinteria.crear_placa_cq(
-    #     orientacion="frente",
-    #     ancho=alto_tapa,
-    #     largo=ancho_tapa,
-    #     grosor=grosor_mdf,
-    #     material="MDF",
-    #     nombre=f"{nombre}_tapa",
-    # )
-    # piezas.append(pie)
-
-    # objetos.add(
-    #     tapa.translate((margen, margen, offset_z)),
-    #     name=f"{nombre}_tapa",
-    #     color=carpinteria.CQ_COLOR_MDF,
-    # )
-
+   
     return piezas

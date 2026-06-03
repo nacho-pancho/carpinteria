@@ -5,3 +5,5 @@ cadquery-ocp
 typing-extensions
 multimethod
 typish
+ezdxf
+nlopt

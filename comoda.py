@@ -108,9 +108,9 @@ def comoda(nombre,
                 margen_horiz=grosor_mdf//2-2,
                 margen_vert=10,
                 grosor_placa=grosor_mdf,
-                color_frente=carpinteria.CQ_COLOR_MDF,
-                color_lado=carpinteria.CQ_COLOR_MDF,
-                color_base=carpinteria.CQ_COLOR_MDF,
+                color_frente=color,
+                color_lado=color,
+                color_base=color,
             )
             carpinteria.trasladar(cajon,x_cajon, y_cajon, z_cajon)
             piezas.extend(cajon)

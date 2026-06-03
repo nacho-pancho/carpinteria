@@ -1,6 +1,7 @@
-jupyter
-matplotlib
+numpy
 scipy
 cadquery
-jupyter-cadquery
-CQ-editor
+cadquery-ocp
+typing-extensions
+multimethod
+typish

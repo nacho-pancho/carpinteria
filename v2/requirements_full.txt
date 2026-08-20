@@ -1,0 +1,6 @@
+jupyter
+matplotlib
+scipy
+cadquery
+jupyter-cadquery
+CQ-editor

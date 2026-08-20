@@ -118,6 +118,7 @@ def mesa_de_luz(
     # tapa
     #
     z_tapa = z_cajon - alto_tapa - guarda_vert
+    print("z_tapa=",z_tapa)
     ancho_tapa = ancho - 2 * margen 
     tapa = carpinteria.crear_placa(
         f"{nombre}_tapa", "MDF",

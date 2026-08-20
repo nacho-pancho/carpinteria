@@ -126,6 +126,8 @@ if __name__ == "__main__":
             ass = carpinteria.ensamblar(p)
             vis.show(ass,title="APARADOR")
             piezas.extend(p)
+    else:
+        print(f"Modelo {p} no definido.")
 
     print("TODAS LAS PIEZAS")
     carpinteria.lista(piezas)

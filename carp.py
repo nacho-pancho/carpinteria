@@ -15,6 +15,10 @@ TOP   = 'top'
 BOTTOM = 'bottom'
 CENTER = 'center'
 
+X_COORD = 0
+Y_COORD = 1
+Z_COORD = 2
+
 class Layout():
     
     def __init__(self, width:float, height:float, depth:float):
@@ -72,11 +76,12 @@ class Piece():
 
     def __init__(self, 
                  name:str, 
-                 color:str, 
                  material:str,
                  size:tuple[float]=None,
                  min_size:tuple[float]=None, 
-                 max_size:tuple[float]=None):
+                 max_size:tuple[float]=None,
+                 color:str=None
+                 ):
         self.name = name
         self.color = color
         self.material = material
@@ -143,13 +148,12 @@ class Void(Piece):
     a void piece is a piece that is not printed.
     """
 
-    def __init__(self, name:str, size:tuple[float],
+    def __init__(self, size:tuple[float],
                  min_size:tuple[float]=None, 
                  max_size:tuple[float]=None
                  ):
         super().__init__('void', 
                          None, 
-                         'none', 
                          size=size, 
                          min_size=min_size, 
                          max_size=max_size)
@@ -181,8 +185,36 @@ class Sheet(Piece):
     A sheet has a fixed thickness and variable width and height 
     It can be created so that it runs along the X-Y axis (frontal), along the X-Z axis 
     """
-    ORIENT_SIDE = 'sideways'
-    ORIENT_FRONT = 'frontal'
-    ORIENT_HORIZONTAL = 'horizontal'
+    ORIENT_LATERAL = 'lateral' # Y-Z,  width goes to the back, height goes up, thickness is in X
+    ORIENT_FRONTAL = 'frontal' # X-Z, width goes sideways, height goes up, thickness in Y
+    ORIENT_HORIZONTAL = 'horizontal' # width goes sideways, height goes back, thickness in Z
 
-    def __init__(thickness, orientation):
+    def __init__(self, name, material, thickness, orientation, min_size=None, max_size=None, color=None):
+        if min_size is None:
+            min_size = [None,None,None]
+        if max_size is None:
+            max_size = [None,None,None]
+        if orientation == Sheet.ORIENT_LATERAL:
+            if min_size[X_COORD] is not None:
+                print('Warning: min_size specified for X in lateral sheet is overwritten by thicnkess.')
+            min_size[X_COORD] = thickness
+            if max_size[X_COORD] is not None:
+                print('Warning: max_size specified for X in lateral sheet is overwritten by thicnkess.')
+            max_size[X_COORD] = thickness
+        elif orientation == Sheet.ORIENT_FRONTAL:
+            if min_size[Y_COORD] is not None:
+                print('Warning: min_size specified for Y in  lateral sheet is overwritten by thicnkess.')
+            min_size[Y_COORD] = thickness
+            if max_size[Y_COORD] is not None:
+                print('Warning: max_size specified for Y in lateral sheet is overwritten by thicnkess.')
+            max_size[Y_COORD] = thickness
+        elif orientation == Sheet.ORIENT_HORIZONTAL:
+            if min_size[Z_COORD] is not None:
+                print('Warning: min_size specified for Z in horizontal sheet is overwritten by thickness.')
+            min_size[Z_COORD] = thickness
+            if max_size[Z_COORD] is not None:
+                print('Warning: max_size specified for Z in horixontal sheet is overwritten by thickness.')
+            max_size[Z_COORD] = thickness
+        super.__init__(name,material,min_size,max_size,color)
+        self.orientation = orientation
+

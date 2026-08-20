@@ -32,5 +32,8 @@ The rules then are as follows:
 
 ## Coordinates
 
-* X runs sideways
-* Y runs 
+* Right handed system
+* X increases to the right
+* Y increases to the back
+* Z increases up
+

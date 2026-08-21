@@ -5,7 +5,8 @@
 # relative position of piece within a layout (used mostly with default Layout)
 # 
 from dataclasses import dataclass
-
+import numpy as np
+import math
 
 BACK  = 'back'
 FRONT = 'front'
@@ -19,6 +20,67 @@ X_COORD = 0
 Y_COORD = 1
 Z_COORD = 2
 
+
+@dataclass
+class Margin():
+    """
+    reserves space within a volume 
+    """
+    left: float
+    right: float
+    top: float
+    bottom: float
+    back: float
+    front: float
+
+    def __init__(self,size=0):
+        left = size
+        right = size
+        top = size
+        bottom = size
+        back = size
+        front = size
+
+@dataclass
+class Padding():
+    """
+    extends a volume outside its base size
+    """
+    left: float
+    right: float
+    top: float
+    bottom: float
+    back: float
+    front: float
+
+    def __init__(self,size=0):
+        left = size
+        right = size
+        top = size
+        bottom = size
+        back = size
+        front = size
+
+class Volume():
+    """
+    place where pieces are put
+    """
+    width: float
+    height: float
+    depth: float
+
+    def __init__(self,size=0):
+        self.width = size
+        self.height = size
+        self.depth = size
+        self.padding = Padding()
+        self.margin = Margin()
+        self.weight = [0,0,0]
+        self.depth_alignment = CENTER
+        self.horizontal_alignment = CENTER
+        self.vertical_alignment = CENTER
+        self.piece = None
+
 class Layout():
     
     def __init__(self, width:float, height:float, depth:float):
@@ -29,6 +91,9 @@ class Layout():
     def apply(self, volume: float):
         pass
 
+    def places(self):
+        return 1
+
 class DefaultLayout(Layout):
 
     def __init__(self):
@@ -36,6 +101,9 @@ class DefaultLayout(Layout):
 
     def apply(self, volume: float):
         pass
+
+    def places(self):
+        return 1
 
 class ZStackLayout(Layout): 
     """ 
@@ -89,57 +157,72 @@ class Piece():
         self.size = size
         self.min_size = min_size
         self.max_size = max_size
-        self.holes = list()
+        self.offset = [0,0,0]
+
+    def translate(self,t:tuple[float]):
+        self.offset[0] += t[0]
+        self.offset[1] += t[1]
+        self.offset[2] += t[2]
+
+    def rotate(self,axis:float, angle:float):
+        x,y,z = self.offset[:]
+        if axis == X_COORD:
+            new_x = x
+            new_y = y*math.cos(angle) + -z*math.sin(angle)
+            new_z = y*math.sin(angle) +  z*math.cos(angle)
+        elif axis == Y_COORD:
+            new_x = x*math.cos(angle) + -z*math.sin(angle)
+            new_y = y
+            new_z = x*math.sin(angle) +  z*math.cos(angle)
+        elif axis == Z_COORD:
+            new_x = x*math.cos(angle) + -y*math.sin(angle)
+            new_y = x*math.sin(angle) +  y*math.cos(angle)
+            new_z = z
+        self.offset = [new_x,new_y,new_z]
 
 
-    def translate(self,dx:float,dy:float,dz:float):
+class CompositePiece(Piece):
+
+    """
+    a piece made up of other pieces
+    sibling pieces are laid out according to a layout
+    """
+    def __init__(self, 
+                 name:str, 
+                 material:str,
+                 size:tuple[float]=None,
+                 min_size:tuple[float]=None, 
+                 max_size:tuple[float]=None,
+                 color:str=None
+                 ):
+        super().__init__(name,'composite',size,min_size,max_size,color)
+        self.margin = Margin()
+        self.padding = Padding()
+        self.layout = DefaultLayout()
+        vol = Volume()
+        self.volumes = [vol]*self.layout.places()
+
+
+    def translate(self,t:tuple[float]):
+        super().translate(self,t)
         for p in self.parts:
-            p.translate(dx,dy,dz)
+            if p is not None:
+                p.translate(t)
 
 
-    def rotate(self,rx:float,ry:float,rz:float):
+    def rotate(self,axis:float, angle:float):
+        super().rotate(self,axis,angle)
         for p in self.parts:
-            p.rotate(rx,ry,rz)
+            if p is not None:
+                p.rotate(axis, angle)
 
-@dataclass
-class Margin():
-    """
-    reserves space within a volume 
-    """
-    left: float
-    right: float
-    top: float
-    bottom: float
-    back: float
-    front: float
 
-    def __init__(self,size=0):
-        left = size
-        right = size
-        top = size
-        bottom = size
-        back = size
-        front = size
+    def add_piece(self, piece:Piece, position=0):
+        self.volumes[position].piece = piece
 
-@dataclass
-class Padding():
-    """
-    extends a volume outside its base size
-    """
-    left: float
-    right: float
-    top: float
-    bottom: float
-    back: float
-    front: float
 
-    def __init__(self,size=0):
-        left = size
-        right = size
-        top = size
-        bottom = size
-        back = size
-        front = size
+    def apply_layout(self):
+        pass
 
 
 class Void(Piece):
@@ -148,7 +231,7 @@ class Void(Piece):
     a void piece is a piece that is not printed.
     """
 
-    def __init__(self, size:tuple[float],
+    def __init__(self, size:tuple[float]=None,
                  min_size:tuple[float]=None, 
                  max_size:tuple[float]=None
                  ):
@@ -158,26 +241,6 @@ class Void(Piece):
                          min_size=min_size, 
                          max_size=max_size)
     
-class Volume():
-
-    def __init__(self, width:float, height:float, depth:float, position: tuple[float]):
-        self.width = width
-        self.height = height
-        self.depth = depth
-        self.position = position
-        self.margin = Margin()
-        self.padding = Padding()
-        self.depth_alignment = CENTER
-        self.horizontal_alignment = CENTER
-        self.vertical_alignment = CENTER     
-        self.pieces = list()
-        self.layout = DefaultLayout(width, height, depth)
-        self.weight = tuple[float] 
-
-    def add_piece(self, piece:Piece, position=None):
-        self.pieces.append((piece, position))
-        self.layout.apply(piece)
-
 
 class Sheet(Piece):
     """

@@ -37,3 +37,8 @@ The rules then are as follows:
 * Y increases to the back
 * Z increases up
 
+## Display
+
+We use PyVista for the display.
+Some notes:
+* box faces appear in this order: left, right, back, front, bottom, up

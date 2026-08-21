@@ -179,7 +179,6 @@ class Volume():
         self.layout.apply(piece)
 
 
-
 class Sheet(Piece):
     """
     A sheet has a fixed thickness and variable width and height 
@@ -218,3 +217,72 @@ class Sheet(Piece):
         super.__init__(name,material,min_size,max_size,color)
         self.orientation = orientation
 
+
+class Board(Sheet):
+    """
+    A board is a sheet that may have a layer of coating on any of its two faces and any of its four sides.
+    """
+    def __init__(self, 
+                 name, 
+                 material, 
+                 thickness, 
+                 orientation, 
+                 min_size=None, 
+                 max_size=None, 
+                 color=None, 
+                 top=False, bottom=False, left=False, right=False, back=False, front=False):
+        """
+        Cretes a Board.
+        This is identical to a Sheet, but adds 6 boolean parameters that specify whether
+        there is coating on its top, bottom faces or any of its left, right, back and front sides.
+        Here "front", "back", "left", "right", "bottom", "top" are to be imagined with the board
+        laying horizontally on the floor, regardless of the actual orientation specified.
+        """
+        super.__init__(name,material,thickness,orientation,max_size,min_size,color)
+        self.coating_top = top
+        self.coating_bottom = bottom
+        self.coating_back = back
+        self.coating_front = front
+        self.coating_left = left
+        self.coating_rigth = right
+
+class Screw(Piece):
+    """
+    a screw. Appears vertically by default
+    """
+    FLAT_HEAD = 'flat'
+    WOOD = 'wood'
+
+    def __init__(self,name, caliber,length, direction, _type):
+        self.type = _type
+        self.caliber = caliber
+        self.length = length
+        self.direction = direction
+        if self.type == Screw.FLAT_HEAD:
+            color = (0.7,0.8,0.9)
+            head_radius = caliber * 2
+        elif self.type == Screw.WOOD:
+            color = (0.8,0.7,0.6)
+            head_radius = caliber
+        material = f'screw_{_type}_{caliber}mmx{length}mm'
+        min_size = (2*head_radius,2*head_radius,length)
+        max_size = min_size
+        size = min_size   
+        super.__init__(name,material,size,min_size,max_size,color)
+
+class DrawerGuide(Piece):
+    """
+    drawer guide. stretches along positive Y  (to the back)
+    """
+    DEFAULT_THICKNESS = 13 # they are about 13mm thick
+    DEFAULT_WIDTH = 40 # good ones about 4cm
+    def __init__(self,name, length, orientation, thickness=DEFAULT_THICKNESS, width=DEFAULT_WIDTH):
+        self.orientation = orientation
+        self.length = length
+        self.thickness = thickness
+        color = (0.7,0.8,0.9)
+        material = f'guide_{length}mm'
+        min_size = (self.thickness,self.width,length)
+        max_size = min_size
+        size = min_size   
+        super.__init__(name,material,size,min_size,max_size,color)

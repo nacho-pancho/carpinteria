@@ -240,7 +240,7 @@ class Layout():
     def apply(self, composite: CompositePiece):
         pass
 
-    def places(self):
+    def slots(self):
         return 1
 
 def effective_dim(_min:float, _max:float, _weight:float, _available:float):
@@ -397,7 +397,7 @@ class DefaultLayout(Layout):
         logger.info(f'Final volume {piece.volume} (after alignment)')
 
 
-    def places(self):
+    def slots(self):
         return 1
 
     def __str__(self):
@@ -409,11 +409,14 @@ class ZStackLayout(Layout):
     splits a volume into a vertical pile of slices along the Z axis
     """
 
-    def __init__(self):
-        pass
+    def __init__(self,num_slots:int):
+        self.num_slots = num_slots
 
     def apply(self, volume: float):
         pass
+
+    def slots(self):
+        return self.num_slots
 
 
 class XStackLayout(Layout): 
@@ -421,22 +424,28 @@ class XStackLayout(Layout):
     splits a volume horizontally in blocks along the X axis
     """
     
-    def __init__(self):
-        pass
+    def __init__(self,num_slots:int):
+        self.num_slots = num_slots
 
     def apply(self, volume: float):
         pass
+
+    def slots(self):
+        return self.num_slots
 
 class YStackLayout(Layout): 
     """ 
     splits a volume horizontally in blocks along the Y axis
     """
     
-    def __init__(self):
-        pass
+    def __init__(self,num_slots:int):
+        self.num_slots = num_slots
 
     def apply(self, volume: float):
         pass
+
+    def slots(self):
+        return self.num_slots
 
 
 class Piece():
@@ -495,7 +504,7 @@ class CompositePiece(Piece):
                  ):
         super().__init__(name,'composite',size,color)
         self.layout = DefaultLayout()
-        self.parts = [None]*self.layout.places()
+        self.parts = [None]*self.layout.slots()
 
     def translate(self,t:Vector):
         super().translate(self,t)

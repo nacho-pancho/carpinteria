@@ -94,12 +94,26 @@ class Layout():
     def places(self):
         return 1
 
+def effective_size(_min, _max, _fixed, _available):
+    if _fixed is not None:
+        return _fixed
+    if _min is None:
+        _min = 0
+    if _max is None:
+        _max = _available
+    if _min < _available:
+        return min(_max,_available) # ok, we take all that we can
+    else:
+        print(f'WARNING: minimum size {_min} does not fit in available space {_available}')
+        return _min
+
+
 class DefaultLayout(Layout):
 
     def __init__(self):
         pass
 
-    def apply(self, volume: float):
+    def apply(self, composite_piece: CompositePiece):
         pass
 
     def places(self):
@@ -196,8 +210,6 @@ class CompositePiece(Piece):
                  color:str=None
                  ):
         super().__init__(name,'composite',size,min_size,max_size,color)
-        self.margin = Margin()
-        self.padding = Padding()
         self.layout = DefaultLayout()
         vol = Volume()
         self.volumes = [vol]*self.layout.places()

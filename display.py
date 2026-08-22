@@ -61,8 +61,7 @@ if __name__ == '__main__':
     thing.add_piece(carp.Void())
     thing.apply_layout()
     paint(pl,thing)
-
-    vol = carp.Volume(5,5,5) 
+ 
     box = pv.Box((0,1,0,2,0,3))
     print(box.faces)
     color_idx = (1,0,0,0,0,0)

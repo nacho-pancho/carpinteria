@@ -1,13 +1,36 @@
 #!/usr/bin/env python3
 #-*- coding: utf-8 -*-
+"""
+Core carpentry library
 
-#
-# relative position of piece within a layout (used mostly with default Layout)
-# 
+Here we find definitions of things such as Size, Volume, Margin, Padding, the base Piece class,
+the base CompositePiece class, and the different Layout methods.
+
+Geometry-related definitions favor clarity over performance. This is not a computationally-intensive
+library so we don't care about adding vectors by hand as long as each element has a clear meaning.
+
+"""
+
+import copy
+import typing
 from dataclasses import dataclass
 import numpy as np
 import math
+import logging
 
+def get_logger():
+    if get_logger._logger is None:
+        logging.basicConfig(level=logging.INFO)
+        get_logger._logger = logging.getLogger()
+    return get_logger._logger
+get_logger._logger = None
+
+def set_logging_level(level):
+    get_logger().setLevel(level)
+
+def debug_mode():
+    return get_logger().level == logging.DEBUG
+        
 BACK  = 'back'
 FRONT = 'front'
 LEFT  = 'left'
@@ -20,59 +43,170 @@ X_COORD = 0
 Y_COORD = 1
 Z_COORD = 2
 
+INFINITY = 1000000000 # 1000km is quite large for a furniture
+#
+# ==========================================================
+# Basic types
+# ==========================================================
+#
+
+class Vector():
+
+    def __init__(self,x=0,y=0,z=0):
+        self.coords = [0,0,0]
+
+    def __getitem__(self,i):
+        return self.coords[i]
+
+    def add(self,dv:Vector):
+        self.coords[X_COORD] += dv[X_COORD]
+        self.coords[Y_COORD] += dv[Y_COORD]
+        self.coords[Z_COORD] += dv[Z_COORD]
+
+    def translate(self,dv:Vector):
+        return self.add(dv)
+
+    def rotate(self,axis:int, angle:float):
+        x,y,z = self.coords[:]
+        if axis == X_COORD:
+            new_x = x
+            new_y = y*math.cos(angle) + -z*math.sin(angle)
+            new_z = y*math.sin(angle) +  z*math.cos(angle)
+        elif axis == Y_COORD:
+            new_x = x*math.cos(angle) + -z*math.sin(angle)
+            new_y = y
+            new_z = x*math.sin(angle) +  z*math.cos(angle)
+        elif axis == Z_COORD:
+            new_x = x*math.cos(angle) + -y*math.sin(angle)
+            new_y = x*math.sin(angle) +  y*math.cos(angle)
+            new_z = z
+        else:
+            raise ValueError(f'Rotation axis can be 0, 1 or 2. {axis} given.')
+        self.coords = [new_x,new_y,new_z]
+
+    def __str__(self):
+        return self.coords.__str__()
+    
+# conceptully different but same thing inside
+type Point = Vector
+
 
 @dataclass
-class Margin():
+class SizeModifier():
     """
     reserves space within a volume 
     """
-    left: float
-    right: float
-    top: float
-    bottom: float
-    back: float
-    front: float
+ 
+    def __init__(self,_type,_size=None):
 
-    def __init__(self,size=0):
-        left = size
-        right = size
-        top = size
-        bottom = size
-        back = size
-        front = size
+        self.values = [[0,0],[0,0],[0,0]]
+        if _size is None:
+            return
+        #
+        # a million ways to define a margin
+        # - a single value: repeat this value on all side
+        # - 3 scalars: same value o both sides along each direction
+        # - 6 scalars: a particular value for each direction and side
+        # - 3 tuples of 2: same as 6 but overly complicated
+        #
+        if type(_size) == tuple:
+            if len(_size) == 6:
+                for i in range(6):
+                    self.values[i] = _size[i]
+            elif len(_size) == 3:
+                for i in range(3):
+                    if type(_size[i]) == tuple:
+                        if len(_size[i]) == 2:
+                            self.values[2*i] = self.values[2*i+1] = _size[i]
+                        else:
+                            raise ValueError(f'{_type} argument must be either a scalar, a tuple of 3, a tuple of 6, or a tuple of 3 tuples of 2')                            
+            else:
+                raise ValueError(f'{_type} argument must be either a scalar, a tuple of 3, a tuple of 6, or a tuple of 3 tuples of 2')
+        else:
+            for i in range(6):
+                self.values[i] = _size
 
-@dataclass
-class Padding():
+    def left(self):
+        return self.values[X_COORD][0]
+
+    def right(self):
+        return self.values[X_COORD][1]
+
+    def top(self):
+        return self.values[Z_COORD][0]
+
+    def bottom(self):
+        return self.values[Z_COORD][1]
+
+    def front(self):
+        return self.values[Y_COORD][0]
+
+    def back(self):
+        return self.values[Y_COORD][1]
+    
+    def __getitem__(self,i):
+        return self.values[i]
+
+    def __str__(self):
+        return f'_{type} left:{self.left()} right:{self.right()} top:{self.top()} bottom:{self.bottom()} front:{self.front()} back: {self.back()}'
+
+
+class Padding(SizeModifier):
+    def __init__(self,_size):
+        super().__init__('Padding',_size)
+
+class Margin(SizeModifier):
+    def __init__(self,_size):
+        super().__init__('Margin',_size)
+
+type Weight = Vector
+
+class Size():
+
+    def __init__(self,sx:float=0,sy:float=0,sz:float=0):
+        self.dim = [sx,sy,sz]
+
+
+    def width(self): 
+        return self.dim[X_COORD]
+
+
+    def height(self):
+        return self.dim[Z_COORD]
+
+
+    def depth(self):
+        return self.dim[Y_COORD]
+
+    
+    def grow(self,size:Size):
+        self.dim[X_COORD] += size.dim[X_COORD]
+        self.dim[Y_COORD] += size.dim[Y_COORD]
+        self.dim[Z_COORD] += size.dim[Z_COORD]
+
+    def shrink(self,size:Size):
+        self.dim[X_COORD] -= size.dim[X_COORD]
+        self.dim[Y_COORD] -= size.dim[Y_COORD]
+        self.dim[Z_COORD] -= size.dim[Z_COORD]
+
+
+    def __getitem__(self,i):
+        return self.dim[i]
+
+    def __str__(self):
+        return self.dim.__str__()
+
+    
+class LayoutConstraints():
     """
-    extends a volume outside its base size
+    Contains some information about how
+    to put a piece inside of it, such as margins to the sides, padding, alignment in all directions.
+    For some layout methods it also contains a 'weight' which is between 0 and 1. If space needs to 
+    be shared between objects, then this specifies how much of the space should be taken, if possible.
+    Weight is a soft constraint; hard constraints such as minimum and fixed sizes prevail, if defined.
     """
-    left: float
-    right: float
-    top: float
-    bottom: float
-    back: float
-    front: float
 
-    def __init__(self,size=0):
-        left = size
-        right = size
-        top = size
-        bottom = size
-        back = size
-        front = size
-
-class Volume():
-    """
-    place where pieces are put
-    """
-    width: float
-    height: float
-    depth: float
-
-    def __init__(self,size=0):
-        self.width = size
-        self.height = size
-        self.depth = size
+    def __init__(self):
         self.padding = Padding()
         self.margin = Margin()
         self.weight = [0,0,0]
@@ -82,42 +216,122 @@ class Volume():
         self.piece = None
 
 class Layout():
-    
-    def __init__(self, width:float, height:float, depth:float):
-        self.width = width
-        self.height = height
-        self.depth = depth
+    """
+    Strategy or method by which pieces are put inside a composite piece.
+    This is a typical concept in UI design. I'm copying it here.
+    """
+    def __init__(self):
+        pass
 
-    def apply(self, volume: float):
+    def apply(self, composite: CompositePiece):
         pass
 
     def places(self):
         return 1
 
-def effective_size(_min, _max, _fixed, _available):
+def effective_dim(_min:float, _max:float, _fixed:float, _weight:float, _available:float):
+    """
+    determine the value of a dimension taking into account the available magnitude hard and soft constraints
+    * If a fixed value is specified, then just return this value.
+    * The desired size is _weight*_available
+    * If the minimum is not specified, it is assumed to be 0
+    * If the maximum is not specified, it is assumed to be infinite
+    * If the available size is smaller than the minimum, return the minimum **but with a warning**
+    * If the desired size is larger than the maximum, return the maximum
+    * If the desired size is smaller than the minimum, return the minimum
+    """
     if _fixed is not None:
         return _fixed
     if _min is None:
         _min = 0
-    if _max is None:
-        _max = _available
-    if _min < _available:
-        return min(_max,_available) # ok, we take all that we can
-    else:
-        print(f'WARNING: minimum size {_min} does not fit in available space {_available}')
-        return _min
 
+    _desired = _weight * _available
+    if _max is None:
+        _max = _desired
+    #
+    # the weight only applies if the desired size falls within [_min,_max]
+    # the degenerate case is when _min > _available
+    #
+    if _min > _available:
+        print(f'WARNING: minimum size {_min} does not fit in available space {_available}')
+        _weight = 1 # force weight to be 1 in this case
+
+    return max(_min,min(_max,_desired))
+
+
+def effective_size(_min,_max,_fixed,_weight,_available):
+    return Size(effective_dim(_min[i],_max[i],_fixed[i],_weight[i],_available[i]) for i in range(3))
+
+
+@dataclass
+class Volume():
+    """
+    A rectangular region in space
+    """
+    size:Size
+    offset:Vector # lower left front corner
+
+    def __str__(self):
+        return f'Volume of size {self.size} at offset {self.offset}'
+ 
+@dataclass 
+class Part():
+    """
+    part of a multi-piece object
+    """
+    piece: Piece
+    constraints: LayoutConstraints
+
+    def __str__(self):
+        return f'Part with piece {self.piece} and constraints {self.constrints}'
 
 class DefaultLayout(Layout):
-
+    """
+    puts one thing inside
+    """
     def __init__(self):
         pass
 
-    def apply(self, composite_piece: CompositePiece):
-        pass
+    def apply(self, _volume, _parts:tuple[Part]):
+        # determine size of object
+        if _parts[0] is None:
+            return
+        piece = _parts[0].piece
+        cons  = _parts[0].constraints
+        #
+        # determine available size
+        #
+        #
+        # determine size and position of piece
+        #
+        piece.offset = copy.deepcopy(_volume.offset)
+        _avail_size = copy.deepcopy(_volume.size)
+        # displace offset of volume by the padding and margin given
+        # grow or shrink volume available for putting the piece on both sides
+        dx0 = -cons.padding[X_COORD][0] + cons.margin[X_COORD][0]
+        dx1 =  cons.padding[X_COORD][1] - cons.margin[X_COORD][1]
+        dy0 = -cons.padding[Y_COORD][0] + cons.margin[Y_COORD][0]
+        dy1 =  cons.padding[Y_COORD][1] - cons.margin[Y_COORD][1]
+        dz0 = -cons.padding[Z_COORD][0] + cons.margin[Z_COORD][0]
+        dz1 =  cons.padding[Z_COORD][1] - cons.margin[Z_COORD][1]
+        # padding and margin displace offset by dx0,dy0,dz0
+        piece.offset.translate(Vector(dx0,dy0,dz0))
+        # and grow (or shrink) on both sides
+        _avail_size.grow(Size(dx1-dx0,dy1-dy0,dz1-dz0))
+        # now we have the available size and the offset
+        # put the piece according to the constraints
+        piece.size = effective_size(cons.min_size, 
+                                    cons.max_size, 
+                                    cons.fixed_size, 
+                                    cons.weight,
+                                    _avail_size)
 
     def places(self):
         return 1
+
+    def __str__(self):
+        return 'Default layout'
+    
 
 class ZStackLayout(Layout): 
     """ 
@@ -159,24 +373,28 @@ class Piece():
     def __init__(self, 
                  name:str, 
                  material:str,
-                 size:tuple[float]=None,
-                 min_size:tuple[float]=None, 
-                 max_size:tuple[float]=None,
+                 size:Size=None,
+                 min_size:Size=None,
+                 max_size:Size=None,
                  color:str=None
                  ):
+        self.size = size
         self.name = name
         self.color = color
         self.material = material
-        self.parts = list()
-        self.size = size
-        self.min_size = min_size
+        self.offset = Vector()
+        self.min_size = min_size 
         self.max_size = max_size
-        self.offset = [0,0,0]
 
-    def translate(self,t:tuple[float]):
-        self.offset[0] += t[0]
-        self.offset[1] += t[1]
-        self.offset[2] += t[2]
+    def __str__(self):
+        return f'''
+Piece {self.name} made of {self.material} \
+with size {self.size} \
+(minimum size {self.min_size} \
+and maximum size {self.max_size}) at offset {self.offset}.'''
+    
+    def translate(self,t:Vector):
+        self.offset.translate(t)
 
     def rotate(self,axis:float, angle:float):
         x,y,z = self.offset[:]
@@ -203,38 +421,33 @@ class CompositePiece(Piece):
     """
     def __init__(self, 
                  name:str, 
-                 material:str,
                  size:tuple[float]=None,
-                 min_size:tuple[float]=None, 
-                 max_size:tuple[float]=None,
                  color:str=None
                  ):
-        super().__init__(name,'composite',size,min_size,max_size,color)
+        super().__init__(name,'composite',size,color)
         self.layout = DefaultLayout()
-        vol = Volume()
-        self.volumes = [vol]*self.layout.places()
+        self.parts = [None]*self.layout.places()
 
 
-    def translate(self,t:tuple[float]):
+    def translate(self,t:Vector):
         super().translate(self,t)
         for p in self.parts:
             if p is not None:
-                p.translate(t)
+                p.offset.translate(t)
 
 
-    def rotate(self,axis:float, angle:float):
-        super().rotate(self,axis,angle)
-        for p in self.parts:
-            if p is not None:
-                p.rotate(axis, angle)
-
-
-    def add_piece(self, piece:Piece, position=0):
-        self.volumes[position].piece = piece
-
+    def add_piece(self, piece:Piece, constraints:LayoutConstraints, position=0):
+        if self.parts[position] is not None:
+            get_logger().warning(f'There is already a piece at position {position}.')
+        self.parts[position] = Part(piece,constraints)
 
     def apply_layout(self):
         pass
+
+        def __str__(self):
+            str = f'Composite piece with layout {self.layout} and {len(self.parts)} parts:\n'
+            for p in self.parts:
+                str += p.__str__()
 
 
 class Void(Piece):
@@ -243,16 +456,11 @@ class Void(Piece):
     a void piece is a piece that is not printed.
     """
 
-    def __init__(self, size:tuple[float]=None,
-                 min_size:tuple[float]=None, 
-                 max_size:tuple[float]=None
-                 ):
+    def __init__(self, size:Size):
         super().__init__('void', 
-                         None, 
-                         size=size, 
-                         min_size=min_size, 
-                         max_size=max_size)
-    
+                         'nothing', 
+                         size=size)
+
 
 class Sheet(Piece):
     """
@@ -263,7 +471,7 @@ class Sheet(Piece):
     ORIENT_FRONTAL = 'frontal' # X-Z, width goes sideways, height goes up, thickness in Y
     ORIENT_HORIZONTAL = 'horizontal' # width goes sideways, height goes back, thickness in Z
 
-    def __init__(self, name, material, thickness, orientation, min_size=None, max_size=None, color=None):
+    def __init__(self, name, material, thickness, orientation, color=None):
         if min_size is None:
             min_size = [None,None,None]
         if max_size is None:

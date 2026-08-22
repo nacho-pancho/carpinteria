@@ -31,10 +31,9 @@ def paint_drawer_guide(plotter:pv.Plotter, obj:carp.DrawerGuide):
     return plotter
 
 def paint_composite(plotter:pv.Plotter,obj:carp.CompositePiece):
-    for v in obj.volumes:
-        p = v.piece
+    for p in obj.parts:
         if p is not None:
-            plotter = paint(plotter,p)
+            plotter = paint(plotter,p.piece)
     return plotter
 
 def paint(plotter:pv.Plotter,obj):
@@ -54,23 +53,30 @@ def paint(plotter:pv.Plotter,obj):
 
 if __name__ == '__main__':
     pl = pv.Plotter()
+
+    # works
     #sphere = pv.Sphere()
     #pl.add_mesh(sphere,color='red',opacity=0.5,show_edges=True)
-    size = carp.Size(1,2,3)
-    piece =  carp.Void(size)
-    print(piece)
-    paint(pl,piece)
 
-    comp = carp.CompositePiece('Compuesto de nada',size=size)
-    cons = carp.LayoutConstraints()
-    comp.add_piece(piece,cons)
-    comp.apply_layout()
-
- 
+    # works
     #box = pv.Box((0,1,0,2,0,3))
     #print(box.faces)
     #color_idx = (1,0,0,0,0,0)
     #pl.add_mesh(box,color='blue',opacity=1,show_edges=True,scalars=color_idx,cmap='jet')   
-    pl.add_floor('-z',color='gray',lighting=True,pad=1) 
-    pl.view_vector((0,-5,0))
-    pl.show()
+
+    size = carp.Size(1,2,3)
+    piece =  carp.Void(size)
+    print(piece)
+    #paint(pl,piece)
+
+    # works
+    comp = carp.CompositePiece('Compuesto de nada',size=size)
+    cons = carp.LayoutConstraints()
+    comp.add_piece(piece,cons)
+    comp.apply_layout()
+    print(comp)
+    paint(pl,comp)
+
+    #pl.add_floor('-z',color='gray',lighting=True,pad=1) 
+    #pl.view_vector((0,-5,0))
+    #pl.show()

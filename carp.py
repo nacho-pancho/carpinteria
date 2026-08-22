@@ -100,6 +100,7 @@ class SizeModifier():
     def __init__(self,_type,_size=None):
 
         self.values = [[0,0],[0,0],[0,0]]
+        self.type = _type
         if _size is None:
             return
         #
@@ -111,8 +112,8 @@ class SizeModifier():
         #
         if type(_size) == tuple:
             if len(_size) == 6:
-                for i in range(6):
-                    self.values[i] = _size[i]
+                for i in range(3):
+                    self.values[i] = _size[2*i:2*(i+1)]
             elif len(_size) == 3:
                 for i in range(3):
                     if type(_size[i]) == tuple:
@@ -123,8 +124,9 @@ class SizeModifier():
             else:
                 raise ValueError(f'{_type} argument must be either a scalar, a tuple of 3, a tuple of 6, or a tuple of 3 tuples of 2')
         else:
-            for i in range(6):
-                self.values[i] = _size
+            for i in range(3):
+                for j in range(2):
+                    self.values[i][j] = _size
 
     def left(self):
         return self.values[X_COORD][0]
@@ -148,17 +150,25 @@ class SizeModifier():
         return self.values[i]
 
     def __str__(self):
-        return f'_{type} left:{self.left()} right:{self.right()} top:{self.top()} bottom:{self.bottom()} front:{self.front()} back: {self.back()}'
+        return f'{self.type} (left:{self.left()} right:{self.right()} top:{self.top()} bottom:{self.bottom()} front:{self.front()} back: {self.back()})'
 
 
 class Padding(SizeModifier):
-    def __init__(self,_size):
+    def __init__(self,_size=0):
         super().__init__('Padding',_size)
 
+
+    def __str__(self):
+        return super().__str__()
+    
 class Margin(SizeModifier):
-    def __init__(self,_size):
+    def __init__(self,_size=0):
         super().__init__('Margin',_size)
 
+    def __str__(self):
+            return super().__str__()
+
+    
 type Weight = Vector
 
 class Size():
@@ -215,6 +225,14 @@ class LayoutConstraints():
         self.vertical_alignment = CENTER
         self.piece = None
 
+    def __str__(self):
+        return f'''LayoutConstraints:\
+ {self.padding}\
+ {self.margin} weight {self.weight}\
+ alignment ({self.depth_alignment},\
+ {self.horizontal_alignment},\
+ {self.vertical_alignment})'''
+    
 class Layout():
     """
     Strategy or method by which pieces are put inside a composite piece.
@@ -283,7 +301,7 @@ class Part():
     constraints: LayoutConstraints
 
     def __str__(self):
-        return f'Part with piece {self.piece} and constraints {self.constrints}'
+        return f'Part:\n\t{self.piece}\n\t{self.constraints}'
 
 class DefaultLayout(Layout):
     """
@@ -387,8 +405,7 @@ class Piece():
         self.max_size = max_size
 
     def __str__(self):
-        return f'''
-Piece {self.name} made of {self.material} \
+        return f'''Piece {self.name} made of {self.material} \
 with size {self.size} \
 (minimum size {self.min_size} \
 and maximum size {self.max_size}) at offset {self.offset}.'''
@@ -444,10 +461,11 @@ class CompositePiece(Piece):
     def apply_layout(self):
         pass
 
-        def __str__(self):
-            str = f'Composite piece with layout {self.layout} and {len(self.parts)} parts:\n'
-            for p in self.parts:
-                str += p.__str__()
+    def __str__(self):
+        str = f'Composite piece with layout {self.layout} and {len(self.parts)} parts:\n'
+        for i,p in enumerate(self.parts):
+            str += f'{i})\n{p}'
+        return str
 
 
 class Void(Piece):

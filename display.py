@@ -57,12 +57,15 @@ if __name__ == '__main__':
     #sphere = pv.Sphere()
     #pl.add_mesh(sphere,color='red',opacity=0.5,show_edges=True)
     size = carp.Size(1,2,3)
-    thing = carp.Void(size)
-    print(thing)
-    #thing = carp.CompositePiece('vacio',size=size)
-    #thing.add_piece(carp.Void(size))
-    #thing.apply_layout()
-    paint(pl,thing)
+    piece =  carp.Void(size)
+    print(piece)
+    paint(pl,piece)
+
+    comp = carp.CompositePiece('Compuesto de nada',size=size)
+    cons = carp.LayoutConstraints()
+    comp.add_piece(piece,cons)
+    comp.apply_layout()
+
  
     #box = pv.Box((0,1,0,2,0,3))
     #print(box.faces)

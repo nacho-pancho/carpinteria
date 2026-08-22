@@ -219,7 +219,7 @@ class LayoutConstraints():
     def __init__(self):
         self.padding = Padding()
         self.margin = Margin()
-        self.weight = [0,0,0]
+        self.weight = [1,1,1]
         self.depth_alignment = CENTER
         self.horizontal_alignment = CENTER
         self.vertical_alignment = CENTER
@@ -247,7 +247,7 @@ class Layout():
     def places(self):
         return 1
 
-def effective_dim(_min:float, _max:float, _fixed:float, _weight:float, _available:float):
+def effective_dim(_min:float, _max:float, _weight:float, _available:float):
     """
     determine the value of a dimension taking into account the available magnitude hard and soft constraints
     * If a fixed value is specified, then just return this value.
@@ -258,14 +258,10 @@ def effective_dim(_min:float, _max:float, _fixed:float, _weight:float, _availabl
     * If the desired size is larger than the maximum, return the maximum
     * If the desired size is smaller than the minimum, return the minimum
     """
-    if _fixed is not None:
-        return _fixed
-    if _min is None:
-        _min = 0
-
+    logger = get_logger()
+    logger.debug(f'effective_dim: min {_min} _max {_max} _weight {_weight} _available {_available}')
     _desired = _weight * _available
-    if _max is None:
-        _max = _desired
+    logger.debug(f'_desired {_desired}')
     #
     # the weight only applies if the desired size falls within [_min,_max]
     # the degenerate case is when _min > _available
@@ -274,11 +270,12 @@ def effective_dim(_min:float, _max:float, _fixed:float, _weight:float, _availabl
         print(f'WARNING: minimum size {_min} does not fit in available space {_available}')
         _weight = 1 # force weight to be 1 in this case
 
-    return max(_min,min(_max,_desired))
+    _effective = max(_min,min(_max,_desired))
+    logger.debug(f'effective {_effective}')
+    return _effective
 
-
-def effective_size(_min,_max,_fixed,_weight,_available):
-    return Size(effective_dim(_min[i],_max[i],_fixed[i],_weight[i],_available[i]) for i in range(3))
+def effective_size(_min,_max,_weight,_available):
+    return Size(*[effective_dim(_min[i],_max[i],_weight[i],_available[i]) for i in range(3)])
 
 
 @dataclass
@@ -310,12 +307,17 @@ class DefaultLayout(Layout):
     def __init__(self):
         pass
 
-    def apply(self, _volume, _parts:tuple[Part]):
+    def apply(self, _volume:Volume, _parts:tuple[Part]):
+
+        logger = get_logger()
+        logger.info(f'Applying layout {self} to volume {_volume}')
         # determine size of object
         if _parts[0] is None:
+            logger.info(f'No parts to lay out.')
             return
         piece = _parts[0].piece
         cons  = _parts[0].constraints
+        logger.info(f'laying out {piece}\nwith {cons}')
         #
         # determine available size
         #
@@ -333,16 +335,20 @@ class DefaultLayout(Layout):
         dz0 = -cons.padding[Z_COORD][0] + cons.margin[Z_COORD][0]
         dz1 =  cons.padding[Z_COORD][1] - cons.margin[Z_COORD][1]
         # padding and margin displace offset by dx0,dy0,dz0
-        piece.offset.translate(Vector(dx0,dy0,dz0))
+        doff = do=Vector(dx0,dy0,dz0)
+        logger.info(f'Translating offset by {doff}')
+        piece.offset.translate(doff)
         # and grow (or shrink) on both sides
-        _avail_size.grow(Size(dx1-dx0,dy1-dy0,dz1-dz0))
+        dsize = Size(dx1-dx0,dy1-dy0,dz1-dz0)
+        logger.info(f'Growing volume by {dsize}')
+        _avail_size.grow(dsize)
         # now we have the available size and the offset
         # put the piece according to the constraints
-        piece.size = effective_size(cons.min_size, 
-                                    cons.max_size, 
-                                    cons.fixed_size, 
+        piece.size = effective_size(piece.min_size, 
+                                    piece.max_size, 
                                     cons.weight,
                                     _avail_size)
+        logger.info(f'Final effective size {piece.size} and position {piece.offset}.')
 
     def places(self):
         return 1
@@ -392,8 +398,8 @@ class Piece():
                  name:str, 
                  material:str,
                  size:Size=None,
-                 min_size:Size=None,
-                 max_size:Size=None,
+                 min_size:Size=Size(0,0,0),
+                 max_size:Size=Size(INFINITY,INFINITY,INFINITY),
                  color:str=None
                  ):
         self.size = size
@@ -459,7 +465,8 @@ class CompositePiece(Piece):
         self.parts[position] = Part(piece,constraints)
 
     def apply_layout(self):
-        pass
+        _volume = Volume(self.size,self.offset)
+        self.layout.apply(_volume,self.parts)
 
     def __str__(self):
         str = f'Composite piece with layout {self.layout} and {len(self.parts)} parts:\n'

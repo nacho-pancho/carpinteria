@@ -64,8 +64,10 @@ if __name__ == '__main__':
     #color_idx = (1,0,0,0,0,0)
     #pl.add_mesh(box,color='blue',opacity=1,show_edges=True,scalars=color_idx,cmap='jet')   
 
-    size = carp.Size(1,2,3)
+    size = carp.Size(100,200,300)
     piece =  carp.Void(size)
+    piece.max_size.dim[1] = 20
+    piece.min_size.dim[2] = 10
     print(piece)
     #paint(pl,piece)
 
@@ -77,6 +79,13 @@ if __name__ == '__main__':
     print(comp)
     paint(pl,comp)
 
+    # test
+    cons.margin = carp.Margin((10,20,30,40,50,60)) # +30, +70, + 110
+    cons.padding = carp.Padding((1,2,3,4,5,6))     # -3, -7, - 11
+    # total +27, +63, +99
+    comp.add_piece(piece,cons)
+    comp.apply_layout()
+    print(comp)
     #pl.add_floor('-z',color='gray',lighting=True,pad=1) 
     #pl.view_vector((0,-5,0))
     #pl.show()

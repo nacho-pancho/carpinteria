@@ -53,7 +53,7 @@ INFINITY = 1000000000 # 1000km is quite large for a furniture
 class Vector():
 
     def __init__(self,x=0,y=0,z=0):
-        self.coords = [0,0,0]
+        self.coords = [x,y,z]
 
     def __getitem__(self,i):
         return self.coords[i]
@@ -286,16 +286,53 @@ class Volume():
     size:Size
     offset:Vector # lower left front corner
 
+    def __init__(self,size:Size=Size(),off:Vector=Vector()):
+        self.size = size
+        self.offset = off
+
+
+    def add_padding(self,p:Padding):
+        """
+        padding enlarges the volume and shifts the offset outwards
+        """
+        for i in range(3):
+            self.size.dim[i] += p[i][1] + p[i][0]
+            self.offset.coords[i] -= p[i][0]
+
+    def add_margin(self,m:Margin):
+        """
+        margin reduces the volume and shifts the offset to the interior
+        """
+        for i in range(3):
+            self.size.dim[i] -= m[i][1] + m[i][0]
+            self.offset.coords[i] += m[i][0]
+
+
     def __str__(self):
         return f'Volume of size {self.size} at offset {self.offset}'
- 
-@dataclass 
+
+def add_padding(v:Volume,p:Padding):
+    ret = copy.deepcopy(v)
+    ret.add_padding(p)
+    return ret
+
+def add_margin(v:Volume,m:Margin):
+    ret = copy.deepcopy(v)
+    ret.add_margin(m)
+    return ret
+
+
 class Part():
     """
     part of a multi-piece object
     """
-    piece: Piece
-    constraints: LayoutConstraints
+
+    def __init__(self,piece:Piece,constraints:LayoutConstraints):
+        self.base_volume = Volume()
+        self.padded_volume = Volume()
+        self.available_volume = Volume()
+        self.piece = piece
+        self.constraints = constraints
 
     def __str__(self):
         return f'Part:\n\t{self.piece}\n\t{self.constraints}'
@@ -315,39 +352,31 @@ class DefaultLayout(Layout):
         if _parts[0] is None:
             logger.info(f'No parts to lay out.')
             return
-        piece = _parts[0].piece
-        cons  = _parts[0].constraints
+
+        part = _parts[0]
+        piece = part.piece
+        cons  = part.constraints
         logger.info(f'laying out {piece}\nwith {cons}')
         #
-        # determine available size
+        # there are three volumes:
+        # the base volume
+        # the padded volume, which results from the base volume being grown
+        # the available volume, which results from the padded volume being reduced by the margins
         #
-        #
-        # determine size and position of piece
-        #
-        piece.offset = copy.deepcopy(_volume.offset)
-        _avail_size = copy.deepcopy(_volume.size)
-        # displace offset of volume by the padding and margin given
-        # grow or shrink volume available for putting the piece on both sides
-        dx0 = -cons.padding[X_COORD][0] + cons.margin[X_COORD][0]
-        dx1 =  cons.padding[X_COORD][1] - cons.margin[X_COORD][1]
-        dy0 = -cons.padding[Y_COORD][0] + cons.margin[Y_COORD][0]
-        dy1 =  cons.padding[Y_COORD][1] - cons.margin[Y_COORD][1]
-        dz0 = -cons.padding[Z_COORD][0] + cons.margin[Z_COORD][0]
-        dz1 =  cons.padding[Z_COORD][1] - cons.margin[Z_COORD][1]
-        # padding and margin displace offset by dx0,dy0,dz0
-        doff = do=Vector(dx0,dy0,dz0)
-        logger.info(f'Translating offset by {doff}')
-        piece.offset.translate(doff)
-        # and grow (or shrink) on both sides
-        dsize = Size(dx1-dx0,dy1-dy0,dz1-dz0)
-        logger.info(f'Growing volume by {dsize}')
-        _avail_size.grow(dsize)
+        # we keep track of them all
+        part.base_volume = copy.deepcopy(_volume)
+        logger.info(f'Base volume {part.base_volume}')
+        part.padded_volume = add_padding(part.base_volume,cons.padding)
+        logger.info(f'Padded volume {part.padded_volume}')
+        part.available_volume = add_margin(part.padded_volume,cons.margin)
+        logger.info(f'Available volume {part.available_volume}')
+
         # now we have the available size and the offset
         # put the piece according to the constraints
         piece.size = effective_size(piece.min_size, 
                                     piece.max_size, 
                                     cons.weight,
-                                    _avail_size)
+                                    part.available_volume.size)
         logger.info(f'Final effective size {piece.size} and position {piece.offset}.')
 
     def places(self):
@@ -450,7 +479,7 @@ class CompositePiece(Piece):
         super().__init__(name,'composite',size,color)
         self.layout = DefaultLayout()
         self.parts = [None]*self.layout.places()
-
+        self.volume = Volume(size,self.offset)
 
     def translate(self,t:Vector):
         super().translate(self,t)
@@ -465,8 +494,7 @@ class CompositePiece(Piece):
         self.parts[position] = Part(piece,constraints)
 
     def apply_layout(self):
-        _volume = Volume(self.size,self.offset)
-        self.layout.apply(_volume,self.parts)
+        self.layout.apply(self.volume,self.parts)
 
     def __str__(self):
         str = f'Composite piece with layout {self.layout} and {len(self.parts)} parts:\n'

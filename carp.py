@@ -220,18 +220,14 @@ class LayoutConstraints():
         self.padding = Padding()
         self.margin = Margin()
         self.weight = [1,1,1]
-        self.depth_alignment = CENTER
-        self.horizontal_alignment = CENTER
-        self.vertical_alignment = CENTER
+        self.alignment = [CENTER,CENTER,CENTER]
         self.piece = None
 
     def __str__(self):
         return f'''LayoutConstraints:\
  {self.padding}\
  {self.margin} weight {self.weight}\
- alignment ({self.depth_alignment},\
- {self.horizontal_alignment},\
- {self.vertical_alignment})'''
+ alignment {self.alignment}'''
     
 class Layout():
     """
@@ -331,6 +327,7 @@ class Part():
         self.base_volume = Volume()
         self.padded_volume = Volume()
         self.available_volume = Volume()
+        self.piece_volume = Volume()
         self.piece = piece
         self.constraints = constraints
 
@@ -371,13 +368,34 @@ class DefaultLayout(Layout):
         part.available_volume = add_margin(part.padded_volume,cons.margin)
         logger.info(f'Available volume {part.available_volume}')
 
-        # now we have the available size and the offset
+        # now we have the available volume
+        # we take into account the piece's own constraints (min and max size)
+        # to determine its final size
+        piece_size = effective_size(piece.min_size, 
+                                piece.max_size, 
+                                cons.weight,
+                                part.available_volume.size)
+        part.piece_volume = Volume(piece_size,copy.deepcopy(part.available_volume.offset))
+
+        logger.info(f'Piece volume {part.piece_volume} (prior to alignment)')
+        for i in range(3):
+            delta = (part.available_volume.size.dim[i] - part.piece_volume.size.dim[i])
+            logger.info(f'Excess volume at dimension {i} is {delta}')
+            if cons.alignment[i] == CENTER:
+                logger.info(f'Center alignment implies displacement by {delta/2}.')
+                part.piece_volume.offset.coords[i] += delta / 2
+            elif cons.alignment[i] == RIGHT or cons.alignment == BACK or cons.alignment == TOP:
+                logger.info(f'right/top/back alignment implies displacement by {delta}.')
+                part.piece_volume.offset.coords[i] += delta
+        #
+        # the final part is the placement of the piece if the piece
+        # is smaller than the effective volume, it needs to be arranged
+        # according to the alignment
+        # 
         # put the piece according to the constraints
-        piece.size = effective_size(piece.min_size, 
-                                    piece.max_size, 
-                                    cons.weight,
-                                    part.available_volume.size)
-        logger.info(f'Final effective size {piece.size} and position {piece.offset}.')
+        piece.volume = copy.deepcopy(part.piece_volume)
+        logger.info(f'Final volume {piece.volume} (after alignment)')
+
 
     def places(self):
         return 1
@@ -431,19 +449,18 @@ class Piece():
                  max_size:Size=Size(INFINITY,INFINITY,INFINITY),
                  color:str=None
                  ):
-        self.size = size
         self.name = name
         self.color = color
         self.material = material
-        self.offset = Vector()
         self.min_size = min_size 
         self.max_size = max_size
+        self.volume = Volume(size,Vector())
 
     def __str__(self):
-        return f'''Piece {self.name} made of {self.material} \
-with size {self.size} \
-(minimum size {self.min_size} \
-and maximum size {self.max_size}) at offset {self.offset}.'''
+        return f'''Piece {self.name} made of {self.material}\
+ at offset {self.volume.offset} size {self.volume.size}\
+ (minimum size {self.min_size} \
+ and maximum size {self.max_size}).'''
     
     def translate(self,t:Vector):
         self.offset.translate(t)
@@ -479,7 +496,6 @@ class CompositePiece(Piece):
         super().__init__(name,'composite',size,color)
         self.layout = DefaultLayout()
         self.parts = [None]*self.layout.places()
-        self.volume = Volume(size,self.offset)
 
     def translate(self,t:Vector):
         super().translate(self,t)

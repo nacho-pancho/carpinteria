@@ -35,6 +35,7 @@ class Sheet(Piece):
             get_logger().warning(f'max_size specified along orientation {o} is overwritten by thicnkess.')
             self.max_size.dim[o] = thickness
         self.volume.size.dim[o] = thickness
+        self.screws = list()
 
     def id(self):
         if self.face_orientation == X_COORD:
@@ -48,6 +49,15 @@ class Sheet(Piece):
             dim2 = self.volume.size.dim[Y_COORD]
         w,h = min(dim1,dim2),max(dim1,dim2)
         return f'{self.material.name}_{self.thickness}_{w}mm_x_{h}mm'
+
+    def add_screw(self,position:Vector):
+        pass
+
+    def part_list(self):
+        ret = list()
+        ret.append(self.id())
+        for s in self.screws():
+            ret.append(s.id())
 
 #--------------------------------------------------------------------
 
@@ -96,6 +106,12 @@ class Board(Sheet):
     def id(self)->str:
         return super().id(self)
 
+    def part_list(self):
+        ret = list()
+        ret.append(self.id())
+        for s in self.screws():
+            ret.append(s.id())
+
 #--------------------------------------------------------------------
 
 class Screw(Piece):
@@ -126,6 +142,10 @@ class Screw(Piece):
     def id(self)->str:
         return f'screw_{self.type}_{self.caliber}mmx{self.length}mm'
 
+    def part_list(self):
+        ret = list()
+        ret.append(self.id())
+
 #--------------------------------------------------------------------
 
 class DrawerGuide(Piece):
@@ -143,5 +163,14 @@ class DrawerGuide(Piece):
         max_size = min_size
         size = min_size   
         super.__init__(name,material,size,min_size,max_size)
+
+
+    def id(self)->str:
+        return f'drawer_guide_{self.length}mm'
+
+
+    def part_list(self):
+        ret = list()
+        ret.append(self.id())
 
 #--------------------------------------------------------------------

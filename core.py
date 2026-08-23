@@ -81,6 +81,14 @@ class Piece():
         must be implemented
         """
         return None
+
+    def part_list(self):
+        """
+        for building part lists
+        besides the piece itself, or parts in a composite piece
+        might include additional things like screws 
+        """
+        return None
     
 #--------------------------------------------------------------------
 
@@ -105,6 +113,9 @@ class Void(Piece):
         all voids are equal
         """
         return 'void'
+
+    def part_list():
+        return None
 
 #--------------------------------------------------------------------
 
@@ -347,9 +358,10 @@ class CompositePiece(Piece):
 
     def translate(self,t:Vector):
         super().translate(self,t)
-        for p in self.parts:
-            if p is not None:
-                p.offset.translate(t)
+        for part in self.parts:
+            if part is not None:
+                piece = part.piece
+                piece.volume.offset.translate(t)
 
 
     def add_part(self, piece:Piece, constraints:LayoutConstraints, position):
@@ -366,3 +378,13 @@ class CompositePiece(Piece):
             str += f'{i})\n{p}'
         return str
 
+    def id(self):
+        return 'composite' # not really needed because it is not a part or piece in itself
+
+    def part_list(self):
+        ret = list()
+        for part in self.parts:
+            if part is not None:
+                pl = part.piece.part_list()
+                ret.extend(pl)
+        return ret

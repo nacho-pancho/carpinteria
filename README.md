@@ -20,3 +20,8 @@ Otras alternativas interesantes:
  * También hay kits de rieles para puertas de placard como [este](https://articulo.mercadolibre.com.uy/MLU-695059554-rieles-correderas-para-puertas-corredizas-placard-3mt-blanco-_JM?has_official_store=false&highlight=false&searchVariation=181784231586&headerTopBrand=false#polycard_client=search-nordic&searchVariation=181784231586&search_layout=grid&position=6&type=item&tracking_id=526cb94a-c9da-4246-a8b3-2355229a1420)
 
  * Tutorial roldana para puertas corredizas JP360 (gigante, para roperos grandes) https://www.youtube.com/watch?v=y-uLDW4GXA8
+
+# Algoritmo para ubicar placas (Cutting Stock Problem)
+
+ * paper https://arxiv.org/html/2604.01732v1
+ * codigo https://github.com/cutting-stock/csp. Aparentemente lo mejor que puedo usar es Symmetry Breaking (SB) y Rotation (R) CSP, 'CSP_R_SB.py'; en realidad es codigo experimental, pero se puede extraer lo ppal sin mucho trabajo. Hay algunas dependencias. Puede valer la pena para no tener que correr todo en Barraca Paraná una y otra vez.

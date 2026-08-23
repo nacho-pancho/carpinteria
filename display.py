@@ -5,7 +5,7 @@ import pyvista.core.utilities as pvutil
 import numpy as np
 
 from util import *
-from carp import *
+from core import *
 from materials import *
 from pieces import *
 from materials import *

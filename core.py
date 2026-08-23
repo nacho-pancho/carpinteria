@@ -75,6 +75,13 @@ class Piece():
             new_z = z
         self.offset = [new_x,new_y,new_z]
 
+    def id(self):
+        """
+        identifies this piece in a list of pieces
+        must be implemented
+        """
+        return None
+    
 #--------------------------------------------------------------------
 
 class Void(Piece):
@@ -93,9 +100,13 @@ class Void(Piece):
                          fixed_size=fixed_size,
                          min_size=min_size,
                          max_size=max_size)
+    def id(self)->str:
+        """
+        all voids are equal
+        """
+        return 'void'
 
 #--------------------------------------------------------------------
-
 
 class Part():
     """

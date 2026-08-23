@@ -1,7 +1,9 @@
 
 from util import *
-from carp import *
+from core import *
 from pieces import *
+
+#--------------------------------------------------------------------
 
 class Sheet(Piece):
     """
@@ -34,6 +36,19 @@ class Sheet(Piece):
             self.max_size.dim[o] = thickness
         self.volume.size.dim[o] = thickness
 
+    def id(self):
+        if self.face_orientation == X_COORD:
+            dim1 = self.volume.size.dim[Z_COORD]
+            dim2 = self.volume.size.dim[Y_COORD]
+        elif self.face_orientation == Y_COORD:
+            dim1 = self.volume.size.dim[X_COORD]
+            dim2 = self.volume.size.dim[Z_COORD]
+        else:
+            dim1 = self.volume.size.dim[X_COORD]
+            dim2 = self.volume.size.dim[Y_COORD]
+        w,h = min(dim1,dim2),max(dim1,dim2)
+        return f'{self.material.name}_{self.thickness}_{w}mm_x_{h}mm'
+
 #--------------------------------------------------------------------
 
 class CoatingSpec(SizeModifier):
@@ -46,7 +61,7 @@ class CoatingSpec(SizeModifier):
     def __init__(self,_size=0):
         super().__init__('Margin',_size)
 
-    def __str__(self):
+    def __str__(self)->str:
             return super().__str__()
 
 class Board(Sheet):
@@ -61,13 +76,7 @@ class Board(Sheet):
                  face_orientation,                  
                  fixed_size:Size=Size(None,None,None),
                  min_size:Size=Size(0,0,0),
-                 max_size:Size=Size(INFINITY,INFINITY,INFINITY),
-                 top=False, 
-                 bottom=False, 
-                 left=False, 
-                 right=False, 
-                 back=False, 
-                 front=False):
+                 max_size:Size=Size(INFINITY,INFINITY,INFINITY)):
         """
         Cretes a Board.
         This is identical to a Sheet, but adds 6 boolean parameters that specify whether
@@ -84,6 +93,10 @@ class Board(Sheet):
                        min_size=min_size)
         self.coating = coating
 
+    def id(self)->str:
+        return super().id(self)
+
+#--------------------------------------------------------------------
 
 class Screw(Piece):
     """
@@ -103,11 +116,17 @@ class Screw(Piece):
         elif self.type == Screw.WOOD:
             material = materials.WOOD_SCREW_MATERIAL
             head_radius = caliber
-        material = f'screw_{_type}_{caliber}mmx{length}mm'
-        min_size = (2*head_radius,2*head_radius,length)
-        max_size = min_size
-        size = min_size   
-        super.__init__(name,material,size,min_size,max_size)
+        else:
+            raise ValueError(f'Screw types are flat or wood for now. Received {_type}')
+        
+        size = Size(2*head_radius,2*head_radius,length) 
+
+        super.__init__(name=name,material=material,fixed_size=size)
+
+    def id(self)->str:
+        return f'screw_{self.type}_{self.caliber}mmx{self.length}mm'
+
+#--------------------------------------------------------------------
 
 class DrawerGuide(Piece):
     """
@@ -120,8 +139,9 @@ class DrawerGuide(Piece):
         self.length = length
         self.thickness = thickness
         material = materials.GUIDE_MATERIAL
-        material = f'guide_{length}mm'
         min_size = (self.thickness,self.width,length)
         max_size = min_size
         size = min_size   
         super.__init__(name,material,size,min_size,max_size)
+
+#--------------------------------------------------------------------

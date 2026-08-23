@@ -61,3 +61,7 @@ def export_parana(piezas):
                 canto_der = pieza["der"]
                 print(f"{cant}\t{p_largo}\t{p_ancho}\t{p_nombre}\t{rota}\t{canto_arr}\t{canto_aba}\t{canto_izq}\t{canto_der}",file=f)
 
+def export_gltf():
+    # :TODO: would be nice to export for super high quality rendering
+    # https://www.khronos.org/gltf/
+    

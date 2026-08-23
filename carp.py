@@ -50,6 +50,8 @@ INFINITY = 1000000000 # 1000km is quite large for a furniture
 # ==========================================================
 #
 
+#--------------------------------------------------------------------
+
 class Vector():
 
     def __init__(self,x=0,y=0,z=0):
@@ -86,12 +88,124 @@ class Vector():
 
     def __str__(self):
         return self.coords.__str__()
-    
+
+#--------------------------------------------------------------------
+
 # conceptully different but same thing inside
 type Point = Vector
 
+#--------------------------------------------------------------------
+
+class Size():
+
+    def __init__(self,sx:float=0,sy:float=0,sz:float=0):
+        self.dim = [sx,sy,sz]
+
+
+    def width(self): 
+        return self.dim[X_COORD]
+
+
+    def height(self):
+        return self.dim[Z_COORD]
+
+
+    def depth(self):
+        return self.dim[Y_COORD]
+
+    
+    def grow(self,amount:Size | SizeModifier):
+        if isinstance(amount,SizeModifier):
+            size = amount.size()
+        else:
+            size = amount
+        if self.dim[X_COORD] is not None:
+            self.dim[X_COORD] += size.dim[X_COORD]
+        if self.dim[Y_COORD] is not None:
+            self.dim[Y_COORD] += size.dim[Y_COORD]
+        if self.dim[Z_COORD] is not None:
+            self.dim[Z_COORD] += size.dim[Z_COORD]
+
+    def shrink(self,amount:Size | SizeModifier):
+        if isinstance(amount,SizeModifier):
+            size = amount.size()
+        else:
+            size = amount
+            if self.dim[X_COORD] is not None:
+                self.dim[X_COORD] -= size.dim[X_COORD]
+            if self.dim[Y_COORD] is not None:
+                self.dim[Y_COORD] -= size.dim[Y_COORD]
+            if self.dim[Z_COORD] is not None:
+                self.dim[Z_COORD] -= size.dim[Z_COORD]
+
+    def __getitem__(self,i):
+        return self.dim[i]
+
+    def defined(self):
+        return self.dim[0] is not None and self.dim[1] is not None and self.dim[2] is not None
+    
+    def __str__(self):
+        return self.dim.__str__()
+
+def grow(a:Size,b:Size | Padding):
+    ret = copy.copy(a)
+    ret.grow(b)
+    return ret
+
+def shrink(a:Size,b:Size | Padding):
+    ret = copy.copy(a)
+    ret.shrink(b)
+    return ret
+
+#--------------------------------------------------------------------
 
 @dataclass
+class Volume():
+    """
+    A rectangular region in space
+    """
+    size:Size
+    offset:Vector # lower left front corner
+
+    def __init__(self,size:Size=Size(),off:Vector=Vector()):
+        self.size = size
+        self.offset = off
+
+
+    def add_padding(self,p:Padding):
+        """
+        padding enlarges the volume and shifts the offset outwards
+        """
+        for i in range(3):
+            self.size.dim[i] += p[i][1] + p[i][0]
+            self.offset.coords[i] -= p[i][0]
+
+    def add_margin(self,m:Margin):
+        """
+        margin reduces the volume and shifts the offset to the interior
+        """
+        for i in range(3):
+            self.size.dim[i] -= m[i][1] + m[i][0]
+            self.offset.coords[i] += m[i][0]
+
+
+    def __str__(self):
+        return f'Volume of size {self.size} at offset {self.offset}'
+
+
+def add_padding(v:Volume,p:Padding):
+    ret = copy.deepcopy(v)
+    ret.add_padding(p)
+    return ret
+
+
+def add_margin(v:Volume,m:Margin):
+    ret = copy.deepcopy(v)
+    ret.add_margin(m)
+    return ret
+
+#--------------------------------------------------------------------
+
 class SizeModifier():
     """
     reserves space within a volume 
@@ -152,6 +266,13 @@ class SizeModifier():
     def __str__(self):
         return f'{self.type} (left:{self.left()} right:{self.right()} top:{self.top()} bottom:{self.bottom()} front:{self.front()} back: {self.back()})'
 
+    def size(self):
+        sx = self.values[X_COORD][0] + self.values[X_COORD][1]
+        sy = self.values[Y_COORD][0] + self.values[Y_COORD][1]
+        sz = self.values[Z_COORD][0] + self.values[Z_COORD][1]
+        return Size(sx,sy,sz)
+
+#--------------------------------------------------------------------
 
 class Padding(SizeModifier):
     def __init__(self,_size=0):
@@ -160,7 +281,9 @@ class Padding(SizeModifier):
 
     def __str__(self):
         return super().__str__()
-    
+
+#--------------------------------------------------------------------
+
 class Margin(SizeModifier):
     def __init__(self,_size=0):
         super().__init__('Margin',_size)
@@ -168,45 +291,102 @@ class Margin(SizeModifier):
     def __str__(self):
             return super().__str__()
 
-    
+#--------------------------------------------------------------------
+
+
 type Weight = Vector
 
-class Size():
+#
+# ==========================================================
+# Core types
+# ==========================================================
+#
 
-    def __init__(self,sx:float=0,sy:float=0,sz:float=0):
-        self.dim = [sx,sy,sz]
+class Piece():
+    """
+    base class for pieces
+    """
+    def __init__(self, 
+                 name:str, 
+                 material:str,
+                 fixed_size:Size=Size(None,None,None),
+                 min_size:Size=Size(0,0,0),
+                 max_size:Size=Size(INFINITY,INFINITY,INFINITY),
+                 color:str=None
+                 ):
+        print('Piece init',fixed_size,min_size,max_size)
+        self.name = name
+        self.color = color
+        self.material = material
+        self.min_size = copy.deepcopy(min_size) 
+        self.max_size = copy.deepcopy(max_size)
+        self.volume = Volume(copy.deepcopy(fixed_size),Vector())
+        # fixed_size overrides min_size and max_size 
+        for i in range(3):
+            if fixed_size[i] is not None:
+                self.min_size.dim[i] = self.max_size.dim[i] = fixed_size[i]
 
-
-    def width(self): 
-        return self.dim[X_COORD]
-
-
-    def height(self):
-        return self.dim[Z_COORD]
-
-
-    def depth(self):
-        return self.dim[Y_COORD]
-
-    
-    def grow(self,size:Size):
-        self.dim[X_COORD] += size.dim[X_COORD]
-        self.dim[Y_COORD] += size.dim[Y_COORD]
-        self.dim[Z_COORD] += size.dim[Z_COORD]
-
-    def shrink(self,size:Size):
-        self.dim[X_COORD] -= size.dim[X_COORD]
-        self.dim[Y_COORD] -= size.dim[Y_COORD]
-        self.dim[Z_COORD] -= size.dim[Z_COORD]
-
-
-    def __getitem__(self,i):
-        return self.dim[i]
 
     def __str__(self):
-        return self.dim.__str__()
-
+        return f'''Piece {self.name} made of {self.material}\
+ at offset {self.volume.offset} size {self.volume.size}\
+ (minimum size {self.min_size} \
+ and maximum size {self.max_size}).'''
     
+    def translate(self,t:Vector):
+        self.offset.translate(t)
+
+    def rotate(self,axis:float, angle:float):
+        x,y,z = self.offset[:]
+        if axis == X_COORD:
+            new_x = x
+            new_y = y*math.cos(angle) + -z*math.sin(angle)
+            new_z = y*math.sin(angle) +  z*math.cos(angle)
+        elif axis == Y_COORD:
+            new_x = x*math.cos(angle) + -z*math.sin(angle)
+            new_y = y
+            new_z = x*math.sin(angle) +  z*math.cos(angle)
+        elif axis == Z_COORD:
+            new_x = x*math.cos(angle) + -y*math.sin(angle)
+            new_y = x*math.sin(angle) +  y*math.cos(angle)
+            new_z = z
+        self.offset = [new_x,new_y,new_z]
+
+#--------------------------------------------------------------------
+
+class Void(Piece):
+
+    """ 
+    a void piece is a piece that is not printed.
+    """
+
+    def __init__(self, fixed_size:Size):
+        print(fixed_size)
+        super().__init__(name='void', 
+                         material='nothing', 
+                         fixed_size=fixed_size)
+
+#--------------------------------------------------------------------
+
+
+class Part():
+    """
+    part of a multi-piece object
+    """
+
+    def __init__(self,piece:Piece,constraints:LayoutConstraints):
+        self.base_volume = Volume()
+        self.padded_volume = Volume()
+        self.available_volume = Volume()
+        self.piece_volume = Volume()
+        self.piece = piece
+        self.constraints = constraints
+
+    def __str__(self):
+        return f'Part:\n\t{self.piece}\n\t{self.constraints}'
+
+#--------------------------------------------------------------------
+
 class LayoutConstraints():
     """
     Contains some information about how
@@ -228,7 +408,9 @@ class LayoutConstraints():
  {self.padding}\
  {self.margin} weight {self.weight}\
  alignment {self.alignment}'''
-    
+
+#--------------------------------------------------------------------
+
 class Layout():
     """
     Strategy or method by which pieces are put inside a composite piece.
@@ -243,96 +425,40 @@ class Layout():
     def slots(self):
         return 1
 
-def effective_dim(_min:float, _max:float, _weight:float, _available:float):
+#--------------------------------------------------------------------
+
+def effective_dim(_min:float, _max:float, _weight:float, _available:float, _reserved:float):
     """
     determine the value of a dimension taking into account the available magnitude hard and soft constraints
-    * If a fixed value is specified, then just return this value.
-    * The desired size is _weight*_available
-    * If the minimum is not specified, it is assumed to be 0
-    * If the maximum is not specified, it is assumed to be infinite
-    * If the available size is smaller than the minimum, return the minimum **but with a warning**
+    * The desired size if a fraction of the available space including the reserved space 
+    # desired = weight*available-desired
+    * If the available size is smaller than the minimum and the reserved, return the minimum **but with a warning**
     * If the desired size is larger than the maximum, return the maximum
     * If the desired size is smaller than the minimum, return the minimum
     """
     logger = get_logger()
-    logger.debug(f'effective_dim: min {_min} _max {_max} _weight {_weight} _available {_available}')
-    _desired = _weight * _available
+    logger.debug(f'effective_dim: min {_min} _max {_max} _weight {_weight} _available {_available} reserved {_reserved}')
+    _desired = _weight * _available 
     logger.debug(f'_desired {_desired}')
     #
     # the weight only applies if the desired size falls within [_min,_max]
     # the degenerate case is when _min > _available
     #
-    if _min > _available:
-        print(f'WARNING: minimum size {_min} does not fit in available space {_available}')
+    if (_min  + _reserved) > _available:
+        print(f'WARNING: available space {_available} not enough for min size {_min} and reserved {_reserved}')
         _weight = 1 # force weight to be 1 in this case
 
-    _effective = max(_min,min(_max,_desired))
+    _effective = max(_min, min(_max, _desired) - _reserved)
     logger.debug(f'effective {_effective}')
     return _effective
 
-def effective_size(_min,_max,_weight,_available):
-    return Size(*[effective_dim(_min[i],_max[i],_weight[i],_available[i]) for i in range(3)])
+#--------------------------------------------------------------------
 
+def effective_size(_min,_max,_weight,_available,_reserved):
+    return Size(*[effective_dim(_min[i],_max[i],_weight[i],_available[i],_reserved[i]) for i in range(3)])
 
-@dataclass
-class Volume():
-    """
-    A rectangular region in space
-    """
-    size:Size
-    offset:Vector # lower left front corner
+#--------------------------------------------------------------------
 
-    def __init__(self,size:Size=Size(),off:Vector=Vector()):
-        self.size = size
-        self.offset = off
-
-
-    def add_padding(self,p:Padding):
-        """
-        padding enlarges the volume and shifts the offset outwards
-        """
-        for i in range(3):
-            self.size.dim[i] += p[i][1] + p[i][0]
-            self.offset.coords[i] -= p[i][0]
-
-    def add_margin(self,m:Margin):
-        """
-        margin reduces the volume and shifts the offset to the interior
-        """
-        for i in range(3):
-            self.size.dim[i] -= m[i][1] + m[i][0]
-            self.offset.coords[i] += m[i][0]
-
-
-    def __str__(self):
-        return f'Volume of size {self.size} at offset {self.offset}'
-
-def add_padding(v:Volume,p:Padding):
-    ret = copy.deepcopy(v)
-    ret.add_padding(p)
-    return ret
-
-def add_margin(v:Volume,m:Margin):
-    ret = copy.deepcopy(v)
-    ret.add_margin(m)
-    return ret
-
-
-class Part():
-    """
-    part of a multi-piece object
-    """
-
-    def __init__(self,piece:Piece,constraints:LayoutConstraints):
-        self.base_volume = Volume()
-        self.padded_volume = Volume()
-        self.available_volume = Volume()
-        self.piece_volume = Volume()
-        self.piece = piece
-        self.constraints = constraints
-
-    def __str__(self):
-        return f'Part:\n\t{self.piece}\n\t{self.constraints}'
 
 class DefaultLayout(Layout):
     """
@@ -367,14 +493,21 @@ class DefaultLayout(Layout):
         logger.info(f'Padded volume {part.padded_volume}')
         part.available_volume = add_margin(part.padded_volume,cons.margin)
         logger.info(f'Available volume {part.available_volume}')
-
+        #
+        # we must reserve space for the margin, but this includes padding
+        #
+        margin_size = cons.margin.size()
+        reserved_size = shrink(margin_size,cons.padding)
         # now we have the available volume
         # we take into account the piece's own constraints (min and max size)
         # to determine its final size
+        # the margin is rigid so it needs to be taken into account in min_size
         piece_size = effective_size(piece.min_size, 
                                 piece.max_size, 
                                 cons.weight,
-                                part.available_volume.size)
+                                part.available_volume.size,
+                                reserved_size
+                                )
         part.piece_volume = Volume(piece_size,copy.deepcopy(part.available_volume.offset))
 
         logger.info(f'Piece volume {part.piece_volume} (prior to alignment)')
@@ -404,91 +537,71 @@ class DefaultLayout(Layout):
         return 'Default layout'
     
 
-class ZStackLayout(Layout): 
+class StackLayout(Layout): 
     """ 
     splits a volume into a vertical pile of slices along the Z axis
     """
 
-    def __init__(self,num_slots:int):
+    def __init__(self,num_slots:int,axis:int):
         self.num_slots = num_slots
-
-    def apply(self, volume: float):
-        pass
+        self.axis = axis
+        if axis != X_COORD and axis != Y_COORD and axis != Z_COORD:
+            raise ValueError(f'Invalid axis {axis}.')
 
     def slots(self):
         return self.num_slots
 
+    def apply(self, _volume:Volume, _parts:tuple[Part]):
+        #
+        # parts are arranged in increasing value along the axis
+        # the assignment is greedy and respects the weights
+        # if the sum of weights ls larger than 1, a warning is produced
+        # and the result will be inconsistent
 
-class XStackLayout(Layout): 
-    """ 
-    splits a volume horizontally in blocks along the X axis
-    """
-    
-    def __init__(self,num_slots:int):
-        self.num_slots = num_slots
+        logger = get_logger()
+        logger.info(f'Applying layout {self} to volume {_volume}')
+        # the initial available size is the whole volume
+        # and its offset is the same as the base volume
+        available_volume = copy.deepcopy(_volume)
+        for i,part in enumerate(_parts):
+            if part is None:
+                logger.info(f'Part {i} is empty.')
+                continue
+            piece = part.piece
+            cons  = part.constraints
+            logger.info(f'laying out {piece}\nwith {cons}')
+            # the slot size needs to accomodate the minimum size
+            # of the part
+            margin_size = cons.margin.size()
+            extra_size = cons.padding.size()
+            reserved_size = shrink(margin_size,extra_size)
+            piece_size = effective_size(piece.min_size, 
+                piece.max_size, 
+                cons.weight,
+                available_volume.size,
+                reserved_size)
+            # the slot includes the margin and the piece
+            slot_size = grow(piece_size, margin_size) # add back the reserved space (margin) to the slot
+            slot_offset = copy.deepcopy(available_volume.offset)
+            part.available_volume = Volume(slot_size,slot_offset)
+            # advance to next slot
+            # offset is moved by its size in the axis direction
+            # available size is reduced by its size in the axis direction
+            if self.axis == X_COORD:
+                available_volume.offset.coords[X_COORD] += slot_size.dim[X_COORD]
+                available_volume.size.dim[X_COORD] -= slot_size.dim[X_COORD]
+            elif self.axis == Y_COORD:
+                available_volume.offset.coords[Y_COORD] += slot_size.dim[Y_COORD]
+                available_volume.size.dim[Y_COORD] -= slot_size.dim[Y_COORD]
+            elif self.axis == Z_COORD:
+                available_volume.offset.coords[Z_COORD] += slot_size.dim[Z_COORD]
+                available_volume.size.dim[Z_COORD] -= slot_size.dim[Z_COORD]
+            
 
-    def apply(self, volume: float):
-        pass
-
-    def slots(self):
-        return self.num_slots
-
-class YStackLayout(Layout): 
-    """ 
-    splits a volume horizontally in blocks along the Y axis
-    """
-    
-    def __init__(self,num_slots:int):
-        self.num_slots = num_slots
-
-    def apply(self, volume: float):
-        pass
-
-    def slots(self):
-        return self.num_slots
+            
+        part.piece_volume = Volume(piece_size,copy.deepcopy(part.available_volume.offset))
 
 
-class Piece():
-
-    def __init__(self, 
-                 name:str, 
-                 material:str,
-                 size:Size=None,
-                 min_size:Size=Size(0,0,0),
-                 max_size:Size=Size(INFINITY,INFINITY,INFINITY),
-                 color:str=None
-                 ):
-        self.name = name
-        self.color = color
-        self.material = material
-        self.min_size = min_size 
-        self.max_size = max_size
-        self.volume = Volume(size,Vector())
-
-    def __str__(self):
-        return f'''Piece {self.name} made of {self.material}\
- at offset {self.volume.offset} size {self.volume.size}\
- (minimum size {self.min_size} \
- and maximum size {self.max_size}).'''
-    
-    def translate(self,t:Vector):
-        self.offset.translate(t)
-
-    def rotate(self,axis:float, angle:float):
-        x,y,z = self.offset[:]
-        if axis == X_COORD:
-            new_x = x
-            new_y = y*math.cos(angle) + -z*math.sin(angle)
-            new_z = y*math.sin(angle) +  z*math.cos(angle)
-        elif axis == Y_COORD:
-            new_x = x*math.cos(angle) + -z*math.sin(angle)
-            new_y = y
-            new_z = x*math.sin(angle) +  z*math.cos(angle)
-        elif axis == Z_COORD:
-            new_x = x*math.cos(angle) + -y*math.sin(angle)
-            new_y = x*math.sin(angle) +  y*math.cos(angle)
-            new_z = z
-        self.offset = [new_x,new_y,new_z]
 
 
 class CompositePiece(Piece):
@@ -499,11 +612,12 @@ class CompositePiece(Piece):
     """
     def __init__(self, 
                  name:str, 
-                 size:tuple[float]=None,
-                 color:str=None
+                 fixed_size:Size=Size(None,None,None),
+                 layout:Layout=DefaultLayout(),
+                 color:str=None,
                  ):
-        super().__init__(name,'composite',size,color)
-        self.layout = DefaultLayout()
+        super().__init__(name=name,material='composite',fixed_size=fixed_size,color=color)
+        self.layout = layout
         self.parts = [None]*self.layout.slots()
 
     def translate(self,t:Vector):
@@ -526,18 +640,6 @@ class CompositePiece(Piece):
         for i,p in enumerate(self.parts):
             str += f'{i})\n{p}'
         return str
-
-
-class Void(Piece):
-
-    """ 
-    a void piece is a piece that is not printed.
-    """
-
-    def __init__(self, size:Size):
-        super().__init__('void', 
-                         'nothing', 
-                         size=size)
 
 
 class Sheet(Piece):

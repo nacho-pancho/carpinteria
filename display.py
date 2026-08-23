@@ -78,8 +78,10 @@ def paint(plotter:pv.Plotter,obj):
     elif type(obj) == carp.CompositePiece:
         return paint_composite(plotter,obj)
 
+import logging
 
 if __name__ == '__main__':
+    carp.get_logger().setLevel(logging.DEBUG)
     pl = pv.Plotter()
 
     # works
@@ -92,30 +94,45 @@ if __name__ == '__main__':
     #color_idx = (1,0,0,0,0,0)
     #pl.add_mesh(box,color='blue',opacity=1,show_edges=True,scalars=color_idx,cmap='jet')   
 
-    size = carp.Size(100,200,300)
-    piece =  carp.Void(size)
-    piece.min_size.dim[2] = 10
-    piece.max_size.dim[1] = 17
-    piece.max_size.dim[0] = 19
-    piece.max_size.dim[2] = 23
-    print(piece)
-    paint(pl,piece)
+    #size = carp.Size(10,20,30)
+    #piece =  carp.Void(size)
+    #print(piece)
+    #paint(pl,piece)
+    #pl.add_floor('-z',color='gray',lighting=True,pad=10) 
+    #pl.view_vector((0,-5,0))
+    #pl.show()
+    #exit(1)
 
     # works
-    comp = carp.CompositePiece('Compuesto de nada',size=size)
+    comp = carp.CompositePiece('Compuesto de nada',fixed_size=carp.Size(100,200,300))
+    piece =  carp.Void(carp.Size(10,None,30))
+    print('PIECEE')
+    print(piece)
     cons = carp.LayoutConstraints()
-    #comp.add_piece(piece,cons)
-    #comp.apply_layout()
-    #print(comp)
-    #paint(pl,comp)
+    print(cons)
+    cons.margin = carp.Margin((10,20,30,40,50,60)) # +30, +70, + 110
+    cons.padding = carp.Padding((1,2,3,4,5,6))     # -3, -7, - 11
+    comp.add_piece(piece,cons)
+    enable_tracing()
+    comp.apply_layout()
+    print(comp)
+    paint(pl,comp)
+    pl.add_floor('-z',color='gray',lighting=True,pad=10) 
+    pl.view_vector((0,-5,0))
+    pl.show()
+    exit(1)
+
 
     # test
+    cons = carp.LayoutConstraints()
     cons.margin = carp.Margin((10,20,30,40,50,60)) # +30, +70, + 110
     cons.padding = carp.Padding((1,2,3,4,5,6))     # -3, -7, - 11
     cons.alignment[0] = carp.LEFT
     cons.alignment[1] = carp.CENTER
     cons.alignment[2] = carp.RIGHT
     # total +27, +63, +99
+    size = carp.Size(10,None,30) # leave depth unspecified
+    piece = carp.Void(size)
     comp.add_piece(piece,cons)
     comp.apply_layout()
     enable_tracing()
@@ -125,3 +142,31 @@ if __name__ == '__main__':
     pl.add_floor('-z',color='gray',lighting=True,pad=10) 
     pl.view_vector((0,-5,0))
     pl.show()
+    exit(1)
+
+    layout = carp.StackLayout(2,carp.X_COORD)
+
+    piece =  carp.Void(size)
+    piece.min_size.dim[2] = 10
+    piece.max_size.dim[1] = 17
+    piece.max_size.dim[0] = 19
+    piece.max_size.dim[2] = 23   
+    cons = carp.LayoutConstraints()
+    cons.margin = carp.Margin((0,0,0,0,0,0))
+    cons.padding = carp.Padding((0,0,0,0,0,0))
+    cons.alignment[0] = carp.CENTER
+    cons.alignment[1] = carp.CENTER
+    cons.alignment[2] = carp.CENTER
+
+    comp.add_piece(piece,cons)
+    comp.apply_layout()
+    enable_tracing()
+    print(trace)
+    paint(pl,comp)
+    print(comp)
+    pl.add_floor('-z',color='gray',lighting=True,pad=10) 
+    pl.view_vector((0,-5,0))
+    pl.show()
+
+
+

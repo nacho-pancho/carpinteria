@@ -17,9 +17,26 @@ def disable_tracing():
 
 
 def paint_board(plotter:pv.Plotter, obj:carp.Board):
+    x_0 = obj.volume.offset[0]
+    x_1 = x_0 + obj.volume.size[0]
+    y_0 = obj.volume.offset[1]
+    y_1 = y_0 + obj.volume.size[1]
+    z_0 = obj.volume.offset[2]
+    z_1 = z_0 + obj.volume.size[2]
+    box = pv.Box((x_0,x_1,y_0,y_1,z_0,z_1))
+    plotter.add_mesh(box,show_edges=True,color=obj.color)
     return plotter
 
 def paint_sheet(plotter:pv.Plotter, obj:carp.Sheet):
+    x_0 = obj.volume.offset[0]
+    x_1 = x_0 + obj.volume.size[0]
+    y_0 = obj.volume.offset[1]
+    y_1 = y_0 + obj.volume.size[1]
+    z_0 = obj.volume.offset[2]
+    z_1 = z_0 + obj.volume.size[2]
+    box = pv.Box((x_0,x_1,y_0,y_1,z_0,z_1))
+    plotter.add_mesh(box,show_edges=True,color=obj.color)
+    return plotter
     return plotter
 
 

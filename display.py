@@ -217,6 +217,7 @@ def test_pyvista():
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
     pl.show_axes()
+    pl.show_grid()
     pl.show()
 
 
@@ -230,6 +231,7 @@ def test_box_sides():
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
     pl.show_axes()
+    pl.show_grid()
     pl.show()
 
 def test_void():
@@ -242,6 +244,7 @@ def test_void():
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
     pl.show_axes()
+    pl.show_grid()
     pl.show()
 
 def test_composite():
@@ -260,6 +263,7 @@ def test_composite():
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
     pl.show_axes()
+    pl.show_grid()
     pl.show()
 
 
@@ -297,6 +301,7 @@ def test_stack():
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
     pl.show_axes()
+    pl.show_grid()
     pl.show()
 
 
@@ -314,6 +319,7 @@ def test_sheet():
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
     pl.show_axes()
+    pl.show_grid()
     pl.show()
 
 
@@ -331,6 +337,7 @@ def test_board():
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
     pl.show_axes()
+    pl.show_grid()
     pl.show()
 
 
@@ -346,6 +353,7 @@ def test_guide():
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
     pl.show_axes()
+    pl.show_grid()
     pl.show()
 
 def test_screw():
@@ -361,6 +369,7 @@ def test_screw():
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
     pl.show_axes()
+    pl.show_grid()
     pl.show()
 
 if __name__ == '__main__':

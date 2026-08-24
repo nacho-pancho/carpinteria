@@ -354,7 +354,7 @@ def test_screw():
     piece =  Screw(name='screw',
                    caliber=3,
                    length=15,
-                   _type=Screw.WOOD,
+                   _type=Screw.FLAT_HEAD,
                    direction=TOP_TO_BOTTOM)
     print(piece)
     paint(pl,piece)

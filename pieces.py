@@ -3,6 +3,75 @@ from util import *
 from core import *
 from pieces import *
 
+
+class Beam(Piece):
+    """
+    A wooden beam here is just a box made of wood with two dimensions
+    that define the material in the materials list and a variable length
+    the thicknesses are assigned as follows:
+    if orientation is X, thickness 1 is about Y, and thickness 2 is about Z
+    if orientation is Y, thickness 1 is about X, and thickness 2 is about Z
+    if orietnation is Z, thickness 1 is about X, and thickness 2 is about Z
+    that is, they fill in the dimensions that do not go along its direction,
+    in the natural order.
+    """
+
+    def __init__(self, 
+                 name, 
+                 material, 
+                 thickness1,
+                 thickness2, 
+                 orientation,
+                 fixed_length:float=None,
+                 min_length:float=0,
+                 max_length:float=INFINITY
+                 ):
+
+        if orientation == Z_COORD:
+            min_size = Size(thickness1,thickness2,min_length)
+            max_size = Size(thickness1,thickness2,max_length)
+
+        elif orientation == Y_COORD:
+            min_size = Size(thickness1,min_length,thickness2)
+            max_size = Size(thickness1,min_length,thickness2)
+
+        elif orientation == X_COORD:
+            min_size = Size(min_length,thickness1,thickness2)
+            max_size = Size(max_length,thickness1,thickness2)
+
+        if fixed_length is not None:
+            min_size.dim[orientation] = fixed_length
+            max_size.dim[orientation] = fixed_length
+
+        super().__init__(name=name,
+                       material=material,
+                       min_size=min_size,
+                       max_size=max_size)  
+        self.orientation = orientation
+        self.screws = list()
+
+    def id(self):
+        if self.face_orientation == X_COORD:
+            dim1 = self.volume.size.dim[Z_COORD]
+            dim2 = self.volume.size.dim[Y_COORD]
+        elif self.face_orientation == Y_COORD:
+            dim1 = self.volume.size.dim[X_COORD]
+            dim2 = self.volume.size.dim[Z_COORD]
+        else:
+            dim1 = self.volume.size.dim[X_COORD]
+            dim2 = self.volume.size.dim[Y_COORD]
+        w,h = min(dim1,dim2),max(dim1,dim2)
+        return f'{self.material.name}_{self.thickness}mm_x_{self.thickness}mm'
+
+    def add_screw(self,position:Vector):
+        pass
+
+    def part_list(self):
+        ret = list()
+        ret.append(self.id())
+        for s in self.screws():
+            ret.append(s.id())
+
 #--------------------------------------------------------------------
 
 class Sheet(Piece):
@@ -48,7 +117,7 @@ class Sheet(Piece):
             dim1 = self.volume.size.dim[X_COORD]
             dim2 = self.volume.size.dim[Y_COORD]
         w,h = min(dim1,dim2),max(dim1,dim2)
-        return f'{self.material.name}_{self.thickness}_{w}mm_x_{h}mm'
+        return f'{self.material.name}_{self.thickness}mm'
 
     def add_screw(self,position:Vector):
         pass
@@ -194,3 +263,4 @@ class DrawerGuide(Piece):
         ret.append(self.id())
 
 #--------------------------------------------------------------------
+

@@ -337,6 +337,12 @@ class StackLayout(Layout):
             unallocated_volume.size.dim[self.axis]      -= part.slot_volume.size.dim[self.axis]
             unallocated_volume.offset.coords[self.axis] += part.slot_volume.size.dim[self.axis]
 
+            #
+            # if the part is a composite, lay it out
+            #
+            if isinstance(part.piece,CompositePiece):
+                part.piece.apply_layout()
+
 
 #--------------------------------------------------------------------
 

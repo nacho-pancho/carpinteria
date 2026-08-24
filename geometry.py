@@ -3,17 +3,34 @@ import numpy
 import math
 from dataclasses import dataclass
 
-BACK  = 'back'
-FRONT = 'front'
-LEFT  = 'left'
-RIGHT = 'right'
-TOP   = 'top'
-BOTTOM = 'bottom'
-CENTER = 'center'
-
+#
+# coordinates/orientatios
+#
 X_COORD = 0
 Y_COORD = 1
 Z_COORD = 2
+
+#
+# anchors
+#
+BACK   = 'back'
+FRONT  = 'front'
+LEFT   = 'left'
+RIGHT  = 'right'
+TOP    = 'top'
+BOTTOM = 'bottom'
+CENTER = 'center'
+
+#
+# directions
+#
+FRONT_TO_BACK = 'y'
+BACK_TO_FRONT = '-y'
+BOTTOM_TO_TOP = 'z'
+TOP_TO_BOTTOM = '-z'
+LEFT_TO_RIGHT = 'x'
+RIGHT_TO_LEFT = '-x'
+
 
 INFINITY = 1000000000 # 1000km is quite large for a furniture
 #

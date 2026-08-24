@@ -42,12 +42,12 @@ def paint_void(plotter:pv.Plotter, obj:Void):
     plotter.add_mesh(box,show_edges=True,style='wireframe')
     return plotter
 
-def paint_box(plotter:pv.Plotter,box:pv.Box,tex:Texture):
+def paint_obj(plotter:pv.Plotter,obj:pv.PolyData,tex:Texture):
     if tex.texture_map is not None:
         tex_map = pv.read_texture(tex.texture_map)
     else:
         tex_map = None
-    plotter.add_mesh(box,show_edges=False,
+    plotter.add_mesh(obj,show_edges=False,
                      color=tex.color,
                      ambient=tex.ambient,
                      diffuse=tex.diffuse,
@@ -57,7 +57,6 @@ def paint_box(plotter:pv.Plotter,box:pv.Box,tex:Texture):
                      roughness=tex.roughness,
                      texture=tex_map)
     return plotter
-
 
 def paint_sheet(plotter:pv.Plotter, obj:Sheet):
     size = obj.volume.size
@@ -72,8 +71,13 @@ def paint_sheet(plotter:pv.Plotter, obj:Sheet):
             box.texture_map_to_plane(origin=orig.coords,point_u=(size[0],0,0),point_v=(0,0,size[2]),inplace=True)
         elif obj.face_orientation == X_COORD:
             box.texture_map_to_plane(origin=orig.coords,point_u=(0,size[1],0),point_v=(0,0,size[2]),inplace=True)
-    plotter = paint_box(plotter,box,texture)
+    plotter = paint_obj(plotter,box,texture)
     return plotter
+
+
+def paint_drawer_guide(plotter:pv.Plotter, obj:DrawerGuide):
+    box = pv.Box(volume_to_box(obj.volume))
+    return paint_obj(plotter,box,obj.material.exterior)
 
 
 def paint_board(plotter:pv.Plotter, obj:Board):
@@ -99,7 +103,7 @@ def paint_board(plotter:pv.Plotter, obj:Board):
     # 
     # interior of board made of MDF
     #
-    plotter = paint_box(plotter,int_box,int_tex)
+    plotter = paint_obj(plotter,int_box,int_tex)
     #
     # paint coating, one face at a time
     #
@@ -109,7 +113,7 @@ def paint_board(plotter:pv.Plotter, obj:Board):
             coat_vol = copy.deepcopy(volume)
             coat_vol.size.dim[i] = coat_thk
             coat_box = pv.Box(volume_to_box(coat_vol))
-            plotter = paint_box(plotter,coat_box,ext_tex)
+            plotter = paint_obj(plotter,coat_box,ext_tex)
 
         if coating[i][1] > 0:
             coat_thk = coating[i][1]
@@ -117,15 +121,65 @@ def paint_board(plotter:pv.Plotter, obj:Board):
             coat_vol.size.dim[i] = coat_thk
             coat_vol.offset.coords[i] = volume.size.dim[i] - coat_thk
             coat_box = pv.Box(volume_to_box(coat_vol))
-            plotter = paint_box(plotter,coat_box,ext_tex)
-
+            plotter = paint_obj(plotter,coat_box,ext_tex)
     return plotter
+
 
 def paint_screw(plotter:pv.Plotter, obj:Screw):
+    # most stupid piece
+    # most complicated to draw
+    #
+    volume = obj.volume # this is actually the bounding box
+    offset = volume.offset
+    size   = volume.size
+    tex = obj.material.exterior
+    #
+    # we don't support arbitrary directions
+    # so we treat each direction separtely
+    # not very elegant but very simple to implement without errors
+    #
+    # base_pos lies inside the screw at the center of the junction of the beam with the head
+    beam_center = [
+        offset.coords[0] + size.dim[0]/2,
+        offset.coords[1] + size.dim[1]/2,
+        offset.coords[2] + size.dim[2]/2]
+    beam_height = obj.length
+    head_height = obj.head_height
+    beam_radius = obj.radius
+    head_radius = obj.head_radius
+    head_shift  = ( head_height + beam_height ) / 2
+    head_center = [
+        offset.coords[0] + size.dim[0]/2,
+        offset.coords[1] + size.dim[1]/2,
+        offset.coords[2] + size.dim[2]/2]
+    if obj.direction == BACK_TO_FRONT:
+        head_center[1] += head_shift
+        cyl_dir = (0,1,0)
+    elif obj.direction == FRONT_TO_BACK:
+        head_center[1] -= head_shift
+        cyl_dir = (0,1,0)
+    elif obj.direction == RIGHT_TO_LEFT:
+        head_center[0] += head_shift
+        cyl_dir = (1,0,0)
+    elif obj.direction == LEFT_TO_RIGHT:
+        head_center[0] -= head_shift
+        cyl_dir = (1,0,0)
+    elif obj.direction == TOP_TO_BOTTOM:
+        head_center[2] += head_shift
+        cyl_dir = (0,0,1)
+    elif obj.direction == BOTTOM_TO_TOP:
+        head_center[2] -= head_shift
+        cyl_dir = (0,0,1)
+    else:
+        raise ValueError(f'Invalid direction')
+
+    pd = pv.Cylinder(center=head_center,direction=cyl_dir,radius=head_radius,height=head_height)
+    plotter = paint_obj(plotter,pd,tex)
+    pd = pv.Cylinder(center=beam_center,direction=cyl_dir,radius=beam_radius,height=beam_height)
+    plotter = paint_obj(plotter,pd,tex)
+
     return plotter
 
-def paint_drawer_guide(plotter:pv.Plotter, obj:DrawerGuide):
-    return plotter
 
 def paint_composite(plotter:pv.Plotter,obj:CompositePiece):
     for part in obj.parts:
@@ -160,8 +214,9 @@ def test_pyvista():
     pl = pv.Plotter()
     sphere = pv.Sphere()
     pl.add_mesh(sphere,color='red',opacity=0.5,show_edges=True)
-    pl.add_floor('-z',color='gray',lighting=True,pad=10) 
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
+    pl.show_axes()
     pl.show()
 
 
@@ -172,8 +227,9 @@ def test_box_sides():
     print(box.faces)
     color_idx = (1,0,0,0,0,0)
     pl.add_mesh(box,color='blue',opacity=1,show_edges=True,scalars=color_idx,cmap='jet')   
-    pl.add_floor('-z',color='gray',lighting=True,pad=10) 
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
+    pl.show_axes()
     pl.show()
 
 def test_void():
@@ -183,8 +239,9 @@ def test_void():
     piece =  Void(size)
     print(piece)
     paint(pl,piece)
-    pl.add_floor('-z',color='gray',lighting=True,pad=10) 
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
+    pl.show_axes()
     pl.show()
 
 def test_composite():
@@ -200,8 +257,9 @@ def test_composite():
     comp.apply_layout()
     print(comp)
     paint(pl,comp)
-    pl.add_floor('-z',color='gray',lighting=True,pad=10) 
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
+    pl.show_axes()
     pl.show()
 
 
@@ -236,13 +294,14 @@ def test_stack():
     enable_tracing()
     paint(pl,comp)
     print(comp)
-    pl.add_floor('-z',color='gray',lighting=True,pad=10) 
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
+    pl.show_axes()
     pl.show()
 
 
 def test_sheet():
-    # works!!
+    # works
     get_logger().setLevel(logging.DEBUG)
     pl = pv.Plotter()
     piece =  Sheet('sheet',
@@ -252,8 +311,9 @@ def test_sheet():
                         fixed_size=Size(1000,600,None))
     print(piece)
     paint(pl,piece)
-    pl.add_floor('-z',color='gray',lighting=True,pad=10) 
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
+    pl.show_axes()
     pl.show()
 
 
@@ -268,12 +328,43 @@ def test_board():
                         fixed_size=Size(1000,600,None))
     print(piece)
     paint(pl,piece)
-    pl.add_floor('-z',color='gray',lighting=True,pad=10) 
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
+    pl.show_axes()
+    pl.show()
+
+
+def test_guide():
+    # works
+    get_logger().setLevel(logging.DEBUG)
+    pl = pv.Plotter()
+    piece =  DrawerGuide('guide',
+                        orientation=Y_COORD,
+                        length=400)
+    print(piece)
+    paint(pl,piece)
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
+    pl.view_vector((0,-5,0))
+    pl.show_axes()
+    pl.show()
+
+def test_screw():
+    get_logger().setLevel(logging.DEBUG)
+    pl = pv.Plotter()
+    piece =  Screw(name='screw',
+                   caliber=3,
+                   length=15,
+                   _type=Screw.WOOD,
+                   direction=TOP_TO_BOTTOM)
+    print(piece)
+    paint(pl,piece)
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
+    pl.view_vector((0,-5,0))
+    pl.show_axes()
     pl.show()
 
 if __name__ == '__main__':
-    test_board()
+    test_screw()
 
 
 

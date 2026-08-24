@@ -126,18 +126,27 @@ class Screw(Piece):
         self.caliber = caliber
         self.length = length
         self.direction = direction
+        self.radius = caliber / 2
         if self.type == Screw.FLAT_HEAD:
             material = materials.FLAT_SCREW_MATERIAL
-            head_radius = caliber * 2
+            self.head_radius = caliber * 2
+            self.head_height = self.head_radius / 2
         elif self.type == Screw.WOOD:
             material = materials.WOOD_SCREW_MATERIAL
-            head_radius = caliber
+            self.head_radius = caliber
+            self.head_height = self.radius
         else:
             raise ValueError(f'Screw types are flat or wood for now. Received {_type}')
-        
-        size = Size(2*head_radius,2*head_radius,length) 
 
-        super.__init__(name=name,material=material,fixed_size=size)
+        if self.direction == BOTTOM_TO_TOP or self.direction == TOP_TO_BOTTOM:        
+            size = Size(2*self.head_radius,2*self.head_radius,self.length)
+        elif self.direction == LEFT_TO_RIGHT or self.direction == RIGHT_TO_LEFT:        
+            size = Size(self.length, 2*self.head_radius,2*self.head_radius)
+        elif self.direction == FRONT_TO_BACK or self.direction == BACK_TO_FRONT:        
+            size = Size(2*self.head_radius,self.length,2*self.head_radius)
+        else:
+            raise ValueError(f'Invalid screw direction {self.direction}.')
+        super().__init__(name=name,material=material,fixed_size=size)
 
     def id(self)->str:
         return f'screw_{self.type}_{self.caliber}mmx{self.length}mm'
@@ -154,15 +163,26 @@ class DrawerGuide(Piece):
     """
     DEFAULT_THICKNESS = 13 # they are about 13mm thick
     DEFAULT_WIDTH = 40 # good ones about 4cm
-    def __init__(self,name, length, orientation, thickness=DEFAULT_THICKNESS, width=DEFAULT_WIDTH):
+    def __init__(self, 
+                 name:str, 
+                 length:float, 
+                 orientation:int, 
+                 thickness=DEFAULT_THICKNESS, 
+                 width=DEFAULT_WIDTH):
         self.orientation = orientation
         self.length = length
         self.thickness = thickness
-        material = materials.GUIDE_MATERIAL
-        min_size = (self.thickness,self.width,length)
-        max_size = min_size
-        size = min_size   
-        super.__init__(name,material,size,min_size,max_size)
+        self.width = width
+        if self.orientation == Z_COORD: # weird for a guide but ok..., assume it is attached to a frontal plane
+            fixed_size = Size(self.thickness,self.width,self.length)
+        elif self.orientation == X_COORD: # a little less weird, assume attached to a vertical plane
+            fixed_size = Size(self.length,self.thickness,self.width)
+        elif self.orientation == Y_COORD: # most common, assume it is attached to a vertical plane
+            fixed_size = Size(self.thickness,self.length,self.width)
+        else:
+            raise ValueError(f'Invalid guide orientation {self.orientation}.')
+
+        super().__init__(name=name,material=materials.GUIDE_MATERIAL,fixed_size=fixed_size)
 
 
     def id(self)->str:

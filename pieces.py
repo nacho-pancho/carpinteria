@@ -50,6 +50,10 @@ class Beam(Piece):
         self.orientation = orientation
         self.screws = list()
 
+    def type(self):
+        return 'beam'
+
+
     def id(self):
         if self.face_orientation == X_COORD:
             dim1 = self.volume.size.dim[Z_COORD]
@@ -106,6 +110,9 @@ class Sheet(Piece):
         self.volume.size.dim[o] = thickness
         self.screws = list()
 
+    def type(self):
+        return 'sheet'
+    
     def id(self):
         if self.face_orientation == X_COORD:
             dim1 = self.volume.size.dim[Z_COORD]
@@ -217,6 +224,10 @@ class Screw(Piece):
             raise ValueError(f'Invalid screw direction {self.direction}.')
         super().__init__(name=name,material=material,fixed_size=size)
 
+    def type(self):
+        return 'screw'
+
+    
     def id(self)->str:
         return f'screw_{self.type}_{self.caliber}mmx{self.length}mm'
 
@@ -257,10 +268,29 @@ class DrawerGuide(Piece):
     def id(self)->str:
         return f'drawer_guide_{self.length}mm'
 
+    def type(str):
+        return 'drawer_guide'
 
     def part_list(self):
         ret = list()
         ret.append(self.id())
 
 #--------------------------------------------------------------------
+# 
+#
 
+class Dowel(Piece):
+    """
+    Dowel or Dowel pin in English
+    Tarugo in spanish (only way I can remember this)
+    Small peg of wood used to join two boards or something like that
+    """
+    pass
+
+
+class CornerBrace(Piece):
+    """
+    prism shaped plastic piece for 90 degrees joints from within; 
+    useful for table surfaces and drawer fronts
+    """
+    pass

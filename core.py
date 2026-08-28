@@ -108,11 +108,16 @@ class Void(Piece):
                          fixed_size=fixed_size,
                          min_size=min_size,
                          max_size=max_size)
+    def type()->str:
+        'void'
+
+
     def id(self)->str:
         """
         all voids are equal
         """
-        return 'void'
+        return self.type()
+    
 
     def part_list():
         return None
@@ -384,8 +389,11 @@ class CompositePiece(Piece):
             str += f'{i})\n{p}'
         return str
 
+    def type(self):
+        return 'composite'
+    
     def id(self):
-        return 'composite' # not really needed because it is not a part or piece in itself
+        return self.type() # not really needed because it is not a part or piece in itself
 
     def part_list(self):
         ret = list()
@@ -394,3 +402,26 @@ class CompositePiece(Piece):
                 pl = part.piece.part_list()
                 ret.extend(pl)
         return ret
+
+
+#
+# the mechanisms for customizing object encoding and decoding are quite different
+# encoding objects can be done in an object oriented manner by overriding the default() class in json.JSONEncoder
+# but json.JSONDecoder has a decoder from raw strings, not a dictionary or something like that,
+# so the way to custom decode is to write an 'object hook' function that turns a particular dictionary into a class
+#
+import json
+
+class PieceEncoder(json.JSONEncoder):
+
+    def default(self,obj):
+        if isinstance(obj,Piece):
+            return obj.__json__()
+        else:
+            return super().decode(obj)
+
+
+def piece_object_hook(d:dict):
+    if 'material' in d:
+        t = d['type']
+    return None

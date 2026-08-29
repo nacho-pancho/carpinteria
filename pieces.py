@@ -2,7 +2,7 @@
 from util import *
 from core import *
 from pieces import *
-
+from materials import *
 
 class Beam(Piece):
     """
@@ -150,6 +150,8 @@ class CoatingSpec(SizeModifier):
     def __str__(self)->str:
             return super().__str__()
 
+#--------------------------------------------------------------------
+
 class Board(Sheet):
     """
     A board is a sheet that may have a layer of coating on any of its two faces and any of its four sides.
@@ -190,53 +192,6 @@ class Board(Sheet):
 
 #--------------------------------------------------------------------
 
-class Screw(Piece):
-    """
-    a screw. Appears vertically by default
-    """
-    FLAT_HEAD = 'flat'
-    WOOD = 'wood'
-
-    def __init__(self,name, caliber,length, direction, _type):
-        self.type = _type
-        self.caliber = caliber
-        self.length = length
-        self.direction = direction
-        self.radius = caliber / 2
-        if self.type == Screw.FLAT_HEAD:
-            material = materials.FLAT_SCREW_MATERIAL
-            self.head_radius = caliber * 2
-            self.head_height = self.head_radius / 2
-        elif self.type == Screw.WOOD:
-            material = materials.WOOD_SCREW_MATERIAL
-            self.head_radius = caliber
-            self.head_height = self.radius
-        else:
-            raise ValueError(f'Screw types are flat or wood for now. Received {_type}')
-
-        if self.direction == BOTTOM_TO_TOP or self.direction == TOP_TO_BOTTOM:        
-            size = Size(2*self.head_radius,2*self.head_radius,self.length)
-        elif self.direction == LEFT_TO_RIGHT or self.direction == RIGHT_TO_LEFT:        
-            size = Size(self.length, 2*self.head_radius,2*self.head_radius)
-        elif self.direction == FRONT_TO_BACK or self.direction == BACK_TO_FRONT:        
-            size = Size(2*self.head_radius,self.length,2*self.head_radius)
-        else:
-            raise ValueError(f'Invalid screw direction {self.direction}.')
-        super().__init__(name=name,material=material,fixed_size=size)
-
-    def type(self):
-        return 'screw'
-
-    
-    def id(self)->str:
-        return f'screw_{self.type}_{self.caliber}mmx{self.length}mm'
-
-    def part_list(self):
-        ret = list()
-        ret.append(self.id())
-
-#--------------------------------------------------------------------
-
 class DrawerGuide(Piece):
     """
     drawer guide. stretches along positive Y  (to the back)
@@ -266,31 +221,120 @@ class DrawerGuide(Piece):
 
 
     def id(self)->str:
-        return f'drawer_guide_{self.length}mm'
+        return f'{self.type()}_{self.length}mm'
 
-    def type(str):
+    def type(self):
         return 'drawer_guide'
 
     def part_list(self):
         ret = list()
         ret.append(self.id())
 
-#--------------------------------------------------------------------
-# 
-#
 
-class Dowel(Piece):
+#--------------------------------------------------------------------
+
+class NailLike(Piece):
+    """
+    A little thing with a beam and a head, like a screw or a nail
+    """
+
+    def __init__(self,name, material, caliber, length, direction):
+        self.caliber = caliber
+        self.length = length
+        self.direction = direction
+        self.radius = caliber / 2
+
+        if self.direction == BOTTOM_TO_TOP or self.direction == TOP_TO_BOTTOM:        
+            size = Size(2*self.head_radius,2*self.head_radius,self.length)
+        elif self.direction == LEFT_TO_RIGHT or self.direction == RIGHT_TO_LEFT:        
+            size = Size(self.length, 2*self.head_radius,2*self.head_radius)
+        elif self.direction == FRONT_TO_BACK or self.direction == BACK_TO_FRONT:        
+            size = Size(2*self.head_radius,self.length,2*self.head_radius)
+        else:
+            raise ValueError(f'Invalid direction {self.direction}.')
+        super().__init__(name=name,material=material,fixed_size=size)
+    
+    def part_list(self):
+        ret = list()
+        ret.append(self.id())
+
+#--------------------------------------------------------------------
+
+class Screw(NailLike):
+    """
+    a screw. 
+    """
+
+    def __init__(self,name, material, caliber, length, direction):
+        super().__init__(name,material,caliber,length,direction)
+
+    def type(self)->str:
+        return 'screw'
+
+    def id(self)->str:
+        return f'{self.type()}_{self.caliber}mm_x_{self.length}mm'
+
+#--------------------------------------------------------------------
+
+class Nail(NailLike):
     """
     Dowel or Dowel pin in English
     Tarugo in spanish (only way I can remember this)
     Small peg of wood used to join two boards or something like that
     """
-    pass
 
+    def __init__(self,name, caliber, length, direction):
+        super().__init__(name,NAIL_MATERIAL,caliber,length,direction)
+
+    def type(self)->str:
+        return 'nail'
+
+    def id(self)->str:
+        return f'{self.type()}_{self.caliber}mm_x_{self.length}mm'
+
+#--------------------------------------------------------------------
+
+class Dowel(NailLike):
+    """
+    Dowel or Dowel pin in English
+    Tarugo in spanish (only way I can remember this)
+    Small peg of wood used to join two boards or something like that
+    """
+
+    def __init__(self,name, length, direction):
+        super().__init__(name=name,
+                         material=DOWEL_MATERIAL,
+                         caliber=6,
+                         length=length,
+                         direction=direction)
+
+    def type(self):
+        return 'dowel'
+
+    def id(self)->str:
+        return f'{self.type()}_{self.length}mm'
+
+
+#--------------------------------------------------------------------
 
 class CornerBrace(Piece):
     """
     prism shaped plastic piece for 90 degrees joints from within; 
     useful for table surfaces and drawer fronts
     """
-    pass
+    def __init__(self,name, orientation):
+        if orientation == X_COORD:
+            size = Size(40,20,20)
+        elif orientation == Y_COORD:
+            size = Size(20,40,20)
+        elif orientation == Z_COORD:
+            size = Size(20,20,40)
+        super().__init__(name,CORNER_MATERIAL,fixed_size=size)
+
+    def type(self):
+        return 'corner_brace'
+
+    def id(self):
+        return self.type()
+
+#--------------------------------------------------------------------

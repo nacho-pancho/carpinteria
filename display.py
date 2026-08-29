@@ -327,7 +327,7 @@ def test_board():
     get_logger().setLevel(logging.DEBUG)
     pl = pv.Plotter()
     piece =  Board('board',
-                        material=materials.MDF_MATERIAL,
+                        material=MDF_MATERIAL,
                         thickness=18,
                         face_orientation=Z_COORD,
                         coating=CoatingSpec((1,1,0,0,1,1)),
@@ -373,7 +373,7 @@ def test_screw():
     pl.show()
 
 if __name__ == '__main__':
-    test_screw()
+    test_board()
 
 
 

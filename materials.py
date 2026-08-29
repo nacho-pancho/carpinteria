@@ -3,8 +3,11 @@ from  dataclasses import dataclass
 Define properties of materials, including their name, specifications and textures
 """
 
+#==========================================================
+
 type ColorSpec = tuple[float,float,float]
 
+#==========================================================
 
 BROWN_COLOR = (0.6,0.4,0.1)
 WHITE_COLOR = (1.0,0.9,0.8)
@@ -12,6 +15,8 @@ EUCALYPTUS_COLOR = (0.8,0.7,0.5)
 STEEL_COLOR = (0.8,0.9,1.0)
 BRONZE_COLOR = (0.8,0.6,0.4)
 LIGHT_WOOD_COLOR = (0.9,0.75,0.6)
+
+#==========================================================
 
 @dataclass 
 class Texture():
@@ -25,11 +30,15 @@ class Texture():
     specular_power:float=None # see pyvista.add_mesh
     metallic:float=None # see pyvista.add_mesh
 
+#==========================================================
+
 @dataclass 
 class Material():
     name:str
     interior:Texture
     exterior:Texture
+
+#==========================================================
 
 FINGER_TEXTURE = Texture(color=EUCALYPTUS_COLOR,texture_map='textures/finger.jpg',specular=0.2)
 MDF_INT_TEXTURE = Texture(color=BROWN_COLOR)
@@ -38,6 +47,8 @@ STEEL_TEXTURE   = Texture(color=STEEL_COLOR,metallic=1,roughness=0.5)
 BRONZE_TEXTURE   = Texture(color=BRONZE_COLOR,metallic=1,roughness=0.25)
 LIGHT_WOOD_TEXTURE = Texture(color=LIGHT_WOOD_COLOR)
 WHITE_PLASTIC_TEXTURE = Texture(color=WHITE_COLOR)
+
+#==========================================================
 
 MDF_MATERIAL    = Material('MDF',interior=MDF_INT_TEXTURE,exterior=MDF_EXT_TEXTURE)
 FINGER_MATERIAL = Material('FINGER',interior=FINGER_TEXTURE,exterior=FINGER_TEXTURE)

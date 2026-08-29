@@ -1,19 +1,31 @@
-from geometry import *
-from core import *
-from pieces import *
 
 import json
 
-class PieceEncoder(json.JSONEncoder):
+from jsonable import *
+from geometry import *
+from pieces import *
+from materials import *
+from layout import *
 
+
+class PieceEncoder(json.JSONEncoder):
+    """
+    custom class for using JSONable objects
+    """
     def default(self,obj):
-        if isinstance(obj,Piece):
+        if isinstance(obj,JSONable):
             return obj.__json__()
         else:
-            return super().decode(obj)
+            return super().default(obj)
+
+"""
+custom function to decode objects from JSON
+"""
+def jsonable_object_hook(d:dict):
+    if 'type' in d:
+        t = globals(d['type'])
+    return t.__fromjson__(d)
 
 
-def piece_object_hook(d:dict):
-    if 'material' in d:
-        t = d['type']
-    return None
+if __name__ == '__main__':
+    print(globals())

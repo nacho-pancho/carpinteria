@@ -78,6 +78,10 @@ class Vector():
     def __str__(self):
         return self.coords.__str__()
 
+    def __json__(self):
+        return self.coords # already serializable
+    
+
 def translate_vector(a:Vector,b:Vector|Size):
     ret = Vector()
     if type(b) == Vector:
@@ -148,6 +152,10 @@ class Size():
     def __str__(self):
         return self.dim.__str__()
 
+    def __json__(self):
+        return self.dim # already serializable
+    
+    
 def grow_size(a:Size,b:Size | SizeModifier):
     ret = copy.copy(a)
     ret.grow(b)
@@ -193,6 +201,9 @@ class Volume():
     def __str__(self):
         return f'Volume of size {self.size} at offset {self.offset}'
 
+    def __json__(self):
+        return {"size":self.size.__json__(), "offset": self.offset.__json__() }
+    
 
 def grow_volume(v:Volume,p:Padding):
     ret = copy.deepcopy(v)
@@ -279,6 +290,8 @@ class SizeModifier():
         oz = self.values[Z_COORD][0]
         return Vector(ox,oy,oz)
 
+    def __json__(self):
+        return {"type": self.type, "values": self.values}
 #--------------------------------------------------------------------
 
 class Padding(SizeModifier):

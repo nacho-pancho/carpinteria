@@ -13,13 +13,12 @@ library so we don't care about adding vectors by hand as long as each element ha
 
 import copy
 from dataclasses import dataclass
-import numpy as np
 import math
-import logging
 
+from jsonable import *
 from util import *
 from geometry import *
-import materials
+from  materials import *
 
         
 #
@@ -28,13 +27,13 @@ import materials
 # ==========================================================
 #
 
-class Piece():
+class Piece(JSONable):
     """
     base class for pieces
     """
     def __init__(self, 
                  name:str, 
-                 material:materials.Material,
+                 material:Material,
                  fixed_size:Size=Size(None,None,None),
                  min_size:Size=Size(0,0,0),
                  max_size:Size=Size(INFINITY,INFINITY,INFINITY),
@@ -75,12 +74,14 @@ class Piece():
             new_z = z
         self.offset = [new_x,new_y,new_z]
 
-    def id(self):
+
+    
+    def part_description(self):
         """
-        identifies this piece in a list of pieces
-        must be implemented
+        for building a list of parts
         """
-        return None
+        raise NotImplementedError()
+
 
     def part_list(self):
         """
@@ -88,7 +89,20 @@ class Piece():
         besides the piece itself, or parts in a composite piece
         might include additional things like screws 
         """
-        return None
+        raise NotImplementedError()
+
+
+    def __tojson__(self)->dict:
+        d = super().__tojson__()
+        d["name"] = self.name
+        d["material"] =  self.material.__json__()
+        d["min_size"] =  self.min_size.__json__()
+        d["max_size"] =  self.max_size.__json__()
+        d["volume"]   =    self.volume.__json() 
+        return d
+
+    def __fromjson__(d:dict): # class method
+        raise NotImplementedError()
     
 #--------------------------------------------------------------------
 
@@ -104,27 +118,65 @@ class Void(Piece):
                  max_size:Size=Size(INFINITY,INFINITY,INFINITY),
                  ):
         super().__init__(name='void', 
-                         material='nothing', 
+                         material=None, 
                          fixed_size=fixed_size,
                          min_size=min_size,
                          max_size=max_size)
-    def type()->str:
-        'void'
+
+    def part_list():
+        return []
 
 
-    def id(self)->str:
+    def description(self)->str:
         """
         all voids are equal
         """
-        return self.type()
+        return self.typename()
     
-
-    def part_list():
-        return None
+    def __fromjson__(d:dict):
+        min_size = Size.__fromjson__(d['min_size'])
+        max_size = Size.__fromjson__(d['max_size'])
+        return Void(min_size=min_size,max_size=max_size)
+                
 
 #--------------------------------------------------------------------
 
-class Part():
+class LayoutConstraints(JSONable):
+    """
+    Contains some information about how
+    to put a piece inside of it, such as margins to the sides, padding, alignment in all directions.
+    For some layout methods it also contains a 'weight' which is between 0 and 1. If space needs to 
+    be shared between objects, then this specifies how much of the space should be taken, if possible.
+    Weight is a soft constraint; hard constraints such as minimum and fixed sizes prevail, if defined.
+    """
+
+    def __init__(self):
+        self.padding = Padding()
+        self.margin = Margin()
+        self.weight = [1,1,1]
+        self.alignment = [CENTER,CENTER,CENTER]
+
+    def __str__(self):
+        return f'''LayoutConstraints:\
+ {self.padding}\
+ {self.margin} weight {self.weight}\
+ alignment {self.alignment}'''
+
+    def __tojson__(self):
+        return {'padding': self.padding.__tojson__(self),
+                'margin': self.margin.__tojson__(self),
+                'weight': self.weight,
+                'alignment': self.alignment}
+
+    def __fromjson__(d:dict):
+        padding = Padding.__fromjson__(d['padding'])
+        margin  = Margin.__fromjson__(d['margin'])
+        weight = d['weight']
+        alignment = d['alignment']
+
+#--------------------------------------------------------------------
+
+class Part(JSONable):
     """
     part of a multi-piece object
     """
@@ -140,33 +192,18 @@ class Part():
     def __str__(self):
         return f'Part:\n\t{self.piece}\n\t{self.constraints}'
 
-#--------------------------------------------------------------------
+    def __tojson__(self)->dict:
+        d = super().__tojson__()
+        d['piece'] = self.piece.__json__(),
+        d['constraints'] = self.constraints.__json__()
+        return d
 
-class LayoutConstraints():
-    """
-    Contains some information about how
-    to put a piece inside of it, such as margins to the sides, padding, alignment in all directions.
-    For some layout methods it also contains a 'weight' which is between 0 and 1. If space needs to 
-    be shared between objects, then this specifies how much of the space should be taken, if possible.
-    Weight is a soft constraint; hard constraints such as minimum and fixed sizes prevail, if defined.
-    """
-
-    def __init__(self):
-        self.padding = Padding()
-        self.margin = Margin()
-        self.weight = [1,1,1]
-        self.alignment = [CENTER,CENTER,CENTER]
-        self.piece = None
-
-    def __str__(self):
-        return f'''LayoutConstraints:\
- {self.padding}\
- {self.margin} weight {self.weight}\
- alignment {self.alignment}'''
+    def __fromjson__(d:dict):
+        return Part(Piece.__fromjson__(d['piece']),LayoutConstraints.__fromjson__(d['constraints']))
 
 #--------------------------------------------------------------------
 
-class Layout():
+class Layout(JSONable):
     """
     Strategy or method by which pieces are put inside a composite piece.
     This is a typical concept in UI design. I'm copying it here.
@@ -181,6 +218,14 @@ class Layout():
         return 1
 
 
+    def __tojson__(self):
+        d = super.__tojson__()
+        d['slots'] = self.slots()
+        return d
+
+    def __fromjson__():
+        raise NotImplementedError
+    
 #--------------------------------------------------------------------
 
 def simple_layout(_volume:Volume, part:Part):
@@ -248,6 +293,7 @@ def simple_layout(_volume:Volume, part:Part):
     part.piece_volume = part.piece.volume
     logger.info(f'Final volume {piece.volume} (after alignment)')
 
+
 #--------------------------------------------------------------------
 
 class DefaultLayout(Layout):
@@ -273,6 +319,9 @@ class DefaultLayout(Layout):
 
     def __str__(self):
         return 'Default layout'
+
+    def __fromjson__(d:dict):
+        return DefaultLayout()
 
 
 #--------------------------------------------------------------------
@@ -348,6 +397,13 @@ class StackLayout(Layout):
             if isinstance(part.piece,CompositePiece):
                 part.piece.apply_layout()
 
+    def __tojson__(self):
+        d = super().__tojson__()
+        d['axis'] = self.axis
+        return d
+    
+    def __fromjson__(d:dict):
+        return StackLayout(d['slots'],d['axis'])
 
 #--------------------------------------------------------------------
 
@@ -389,10 +445,8 @@ class CompositePiece(Piece):
             str += f'{i})\n{p}'
         return str
 
-    def type(self):
-        return 'composite'
     
-    def id(self):
+    def description(self):
         return self.type() # not really needed because it is not a part or piece in itself
 
     def part_list(self):
@@ -403,25 +457,9 @@ class CompositePiece(Piece):
                 ret.extend(pl)
         return ret
 
-
-#
-# the mechanisms for customizing object encoding and decoding are quite different
-# encoding objects can be done in an object oriented manner by overriding the default() class in json.JSONEncoder
-# but json.JSONDecoder has a decoder from raw strings, not a dictionary or something like that,
-# so the way to custom decode is to write an 'object hook' function that turns a particular dictionary into a class
-#
-import json
-
-class PieceEncoder(json.JSONEncoder):
-
-    def default(self,obj):
-        if isinstance(obj,Piece):
-            return obj.__json__()
-        else:
-            return super().decode(obj)
-
-
-def piece_object_hook(d:dict):
-    if 'material' in d:
-        t = d['type']
-    return None
+    def __tojson__(self):
+        d = {}
+        d['layout'] = self.layout.__tojson__()
+        d['parts'] = list( p.__tojson__() for p in self.parts )
+        return d
+        

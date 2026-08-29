@@ -101,8 +101,9 @@ class Piece(JSONable):
         d["volume"]   =    self.volume.__json() 
         return d
 
-    def __fromjson__(d:dict): # class method
+    def type(self):
         raise NotImplementedError()
+
     
 #--------------------------------------------------------------------
 
@@ -133,11 +134,6 @@ class Void(Piece):
         """
         return self.typename()
     
-    def __fromjson__(d:dict):
-        min_size = Size.__fromjson__(d['min_size'])
-        max_size = Size.__fromjson__(d['max_size'])
-        return Void(min_size=min_size,max_size=max_size)
-                
 
 #--------------------------------------------------------------------
 
@@ -168,11 +164,6 @@ class LayoutConstraints(JSONable):
                 'weight': self.weight,
                 'alignment': self.alignment}
 
-    def __fromjson__(d:dict):
-        padding = Padding.__fromjson__(d['padding'])
-        margin  = Margin.__fromjson__(d['margin'])
-        weight = d['weight']
-        alignment = d['alignment']
 
 #--------------------------------------------------------------------
 
@@ -198,8 +189,8 @@ class Part(JSONable):
         d['constraints'] = self.constraints.__json__()
         return d
 
-    def __fromjson__(d:dict):
-        return Part(Piece.__fromjson__(d['piece']),LayoutConstraints.__fromjson__(d['constraints']))
+    #def __fromjson__(d:dict):
+    #    return Part(Piece.__fromjson__(d['piece']),LayoutConstraints.__fromjson__(d['constraints']))
 
 #--------------------------------------------------------------------
 
@@ -223,9 +214,9 @@ class Layout(JSONable):
         d['slots'] = self.slots()
         return d
 
-    def __fromjson__():
-        raise NotImplementedError
-    
+    def type(self):
+        return NotImplementedError()
+ 
 #--------------------------------------------------------------------
 
 def simple_layout(_volume:Volume, part:Part):
@@ -313,15 +304,15 @@ class DefaultLayout(Layout):
             return
         simple_layout(_volume,_parts[0])
 
-
+    def type(self):
+        return 'default'
+    
     def slots(self):
         return 1
 
     def __str__(self):
         return 'Default layout'
 
-    def __fromjson__(d:dict):
-        return DefaultLayout()
 
 
 #--------------------------------------------------------------------
@@ -397,10 +388,15 @@ class StackLayout(Layout):
             if isinstance(part.piece,CompositePiece):
                 part.piece.apply_layout()
 
+    def type(self):
+        return 'stack'
+
+    
     def __tojson__(self):
         d = super().__tojson__()
         d['axis'] = self.axis
         return d
+
     
     def __fromjson__(d:dict):
         return StackLayout(d['slots'],d['axis'])
@@ -457,9 +453,35 @@ class CompositePiece(Piece):
                 ret.extend(pl)
         return ret
 
+
+    def type(self):
+        return 'composite'
+
+
     def __tojson__(self):
         d = {}
         d['layout'] = self.layout.__tojson__()
         d['parts'] = list( p.__tojson__() for p in self.parts )
         return d
-        
+
+
+class Project(JSONable):
+    def __init__(self,name="no name",version="no version",date="no date",author="no one",description='no description'):
+        self.name = name
+        self.version = version
+        self.date = date
+        self.author = author
+        self.pieces = list()
+
+    def add_piece(self,p:Piece):
+        self.pieces.add(p)
+
+    def __tojson__(self):
+        d = {}
+        d['name'] = self.name
+        d['version'] = self.version
+        d['date'] = self.date
+        d['author'] = self.author
+        d['description'] = self.description
+        d['pieces'] = list( p.__tojson__() for p in self.pieces )
+        return d

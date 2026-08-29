@@ -1,7 +1,12 @@
+"""
+the idea is that projects can be fully specified as a JSON file
+a project has a list of parts, a name, a date and an author
+"""
 
 import json
 
 from jsonable import *
+from core import *
 from geometry import *
 from pieces import *
 from materials import *
@@ -25,6 +30,13 @@ def jsonable_object_hook(d:dict):
     if 'type' in d:
         t = globals(d['type'])
     return t.__fromjson__(d)
+
+
+def load_project():
+    pass
+
+def save_project():
+    pass
 
 
 if __name__ == '__main__':

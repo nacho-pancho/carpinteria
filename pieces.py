@@ -190,6 +190,9 @@ class Board(Sheet):
         for s in self.screws():
             ret.append(s.id())
 
+    def type(self):
+        return 'board'
+
 #--------------------------------------------------------------------
 
 class DrawerGuide(Piece):

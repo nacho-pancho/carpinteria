@@ -244,17 +244,23 @@ class SizeModifier():
         # - 6 scalars: a particular value for each direction and side
         # - 3 tuples of 2: same as 6 but overly complicated
         #
-        if type(_size) == tuple:
+        print(_size)
+        if type(_size) == tuple or type(_size) == list:
             if len(_size) == 6:
                 for i in range(3):
                     self.values[i] = _size[2*i:2*(i+1)]
             elif len(_size) == 3:
                 for i in range(3):
-                    if type(_size[i]) == tuple:
-                        if len(_size[i]) == 2:
-                            self.values[2*i] = self.values[2*i+1] = _size[i]
+                    _size_i = _size[i]
+                    print(_size_i)
+                    if type(_size_i) == tuple or type(_size_i) == list:
+                        if len(_size_i) == 2:
+                            self.values[i][0] = _size_i[0]
+                            self.values[i][1] = _size_i[1]
                         else:
-                            raise ValueError(f'{_type} argument must be either a scalar, a tuple of 3, a tuple of 6, or a tuple of 3 tuples of 2')                            
+                            raise ValueError(f'{_type} argument must be either a scalar, a tuple of 3, a tuple of 6, or a tuple of 3 tuples of 2')  
+                    else:
+                        self.values[i][0] = self.values[i][1] = _size_i # same value left and right                          
             else:
                 raise ValueError(f'{_type} argument must be either a scalar, a tuple of 3, a tuple of 6, or a tuple of 3 tuples of 2')
         else:

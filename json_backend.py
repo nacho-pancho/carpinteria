@@ -34,6 +34,7 @@ def save_project(fname:str,p:Project):
 
 def dict_to_layout(d:dict):
     layout_type = d['type']
+    print(f'loading layout {layout_type}')
     return LAYOUTS[layout_type].from_dict()
 
 
@@ -61,6 +62,7 @@ def dict_to_piece(d:dict):
     else:
         # the rest (non composite) have their own way of decoding themselves
         piece_type = PIECE_TYPES[type]
+        print(f'loading piece of type {piece_type}')
         return piece_type.from_dict(d)
 
 

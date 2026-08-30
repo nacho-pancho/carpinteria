@@ -34,6 +34,9 @@ class Void(Piece):
         all voids are equal
         """
         return self.type()
+
+    def from_dict(d:dict):
+        return Void(d['name'])
     
  #--------------------------------------------------------------------
 
@@ -107,6 +110,13 @@ class Beam(Piece):
         for s in self.screws():
             ret.append(s.id())
 
+    def from_dict(d:dict):
+        return NotImplementedError()
+
+    def to_dict(self):
+        return NotImplementedError()
+    
+
 #--------------------------------------------------------------------
 
 class Sheet(Piece):
@@ -131,7 +141,6 @@ class Sheet(Piece):
                        fixed_size=fixed_size,
                        min_size=min_size,
                        max_size=max_size)  
-        print(self)   
         self.face_orientation = face_orientation
         o = self.face_orientation
         if self.min_size[o] is not None:
@@ -141,6 +150,7 @@ class Sheet(Piece):
             get_logger().warning(f'max_size specified along orientation {o} is overwritten by thicnkess.')
             self.max_size.dim[o] = thickness
         self.volume.size.dim[o] = thickness
+        self.thickness = thickness
         self.screws = list()
 
     
@@ -166,6 +176,21 @@ class Sheet(Piece):
         for s in self.screws():
             ret.append(s.id())
 
+    def from_dict(d:dict):
+        return Board(
+            name=d['name'],
+            material=Material.from_dict(d['material']),
+            thickness=d['thickness'],
+            face_orientation=d['face_orientation'],
+            min_size=Size.from_dict(d['min_size']),
+            max_size=Size.from_dict(d['max_size']))
+
+    def to_dict(self):
+        d_base = super().to_dict()
+        d_base['thickness'] =  self.thickness
+        d_base['face_orientation'] =  self.face_orientation
+        return d_base
+
 #--------------------------------------------------------------------
 
 class CoatingSpec(SizeModifier):
@@ -176,7 +201,7 @@ class CoatingSpec(SizeModifier):
     a nonzero value specifies its thickness.
     """
     def __init__(self,_size=0):
-        super().__init__('Margin',_size)
+        super().__init__('Coating',_size)
 
     def __str__(self)->str:
             return super().__str__()
@@ -184,8 +209,8 @@ class CoatingSpec(SizeModifier):
     def to_dict(self):
         return super().to_dict()
 
-    def from_dict():
-        raise NotImplementedError()      
+    def from_dict(d):
+        return CoatingSpec(_size=d)
 
 #--------------------------------------------------------------------
 
@@ -228,6 +253,24 @@ class Board(Sheet):
         for s in self.screws():
             ret.append(s.id())
 
+    def from_dict(d:dict):
+        return Board(
+            name=d['name'],
+            material=Material.from_dict(d['material']),
+            thickness=d['thickness'],
+            face_orientation=d['face_orientation'],
+            min_size=Size.from_dict(d['min_size']),
+            max_size=Size.from_dict(d['max_size']),
+            coating=CoatingSpec.from_dict(d['coating']))
+
+    def __str__(self):
+        return  super().__str__() + f' coating {self.coating}'
+    
+    def to_dict(self):
+        d_base = super().to_dict()
+        d_base['coating'] = self.coating.to_dict()
+        return d_base
+    
 #--------------------------------------------------------------------
 
 class DrawerGuide(Piece):

@@ -48,6 +48,10 @@ class Piece(JSONable):
         for i in range(3):
             if fixed_size[i] is not None:
                 self.min_size.dim[i] = self.max_size.dim[i] = fixed_size[i]
+            # fixed size may be implicit if min = max
+            # in either case, the volume is fixed in that dimension
+            if self.min_size.dim[i] == self.max_size.dim[i]:
+                self.volume.size.dim[i] = self.min_size.dim[i]
 
 
     def __str__(self):

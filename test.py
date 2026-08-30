@@ -6,7 +6,7 @@ from materials import *
 from pieces import *
 from materials import *
 from display import *
-from io import *
+from json_backend import *
 
 def test_pyvista():
     get_logger().setLevel(logging.DEBUG)
@@ -134,10 +134,19 @@ def test_board():
                         fixed_size=Size(1000,600,None))
     print(piece)
     proj.add_piece(piece)
+
+    # test I/O
+    print('PROJECT CREATED')
     print(proj)
     print(proj.to_dict())
     save_project('test.json',proj)
     proj2 = load_project('test.json')
+    print('LOADED PROJECT')
+    print(proj2)
+    print(proj2.to_dict())
+    save_project('test2.json',proj2)
+
+    # test display
     paint(pl,piece)
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))

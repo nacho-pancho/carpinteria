@@ -77,7 +77,7 @@ class DefaultLayout(Layout):
     puts one thing inside
     """
     def __init__(self):
-        pass
+        super().__init__('default')
 
     def apply(self, _volume:Volume, _parts:tuple[Part]):
 
@@ -89,14 +89,12 @@ class DefaultLayout(Layout):
             return
         simple_layout(_volume,_parts[0])
 
-    def type(self):
-        return 'default'
     
     def slots(self):
         return 1
 
     def __str__(self):
-        return 'Default layout'
+        return self.type()
 
 
 
@@ -108,6 +106,7 @@ class StackLayout(Layout):
     """
 
     def __init__(self,num_slots:int,axis:int):
+        super().__init__('stack')
         self.num_slots = num_slots
         self.axis = axis
         if axis != X_COORD and axis != Y_COORD and axis != Z_COORD:
@@ -173,15 +172,17 @@ class StackLayout(Layout):
             if isinstance(part.piece,CompositePiece):
                 part.piece.apply_layout()
 
-    def type(self):
-        return 'stack'
 
     
-    def __tojson__(self):
+    def to_dict(self):
         d = super().__tojson__()
         d['axis'] = self.axis
         return d
 
     
-    def __fromjson__(d:dict):
+    def from_dict(d:dict):
         return StackLayout(d['slots'],d['axis'])
+
+LAYOUTS={'default':DefaultLayout,
+         'stack':StackLayout
+         }

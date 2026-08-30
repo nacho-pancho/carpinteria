@@ -1,8 +1,7 @@
 import copy
-import numpy
 import math
 from dataclasses import dataclass
-
+from jsonable import JSONable
 #
 # coordinates/orientatios
 #
@@ -24,11 +23,11 @@ CENTER = 'center'
 #
 # directions
 #
-FRONT_TO_BACK = 'y'
+FRONT_TO_BACK = '+y'
 BACK_TO_FRONT = '-y'
-BOTTOM_TO_TOP = 'z'
+BOTTOM_TO_TOP = '+z'
 TOP_TO_BOTTOM = '-z'
-LEFT_TO_RIGHT = 'x'
+LEFT_TO_RIGHT = '+x'
 RIGHT_TO_LEFT = '-x'
 
 
@@ -41,7 +40,7 @@ INFINITY = 1000000000 # 1000km is quite large for a furniture
 
 #--------------------------------------------------------------------
 
-class Vector():
+class Vector(JSONable):
 
     def __init__(self,x=0,y=0,z=0):
         self.coords = [x,y,z]
@@ -78,8 +77,11 @@ class Vector():
     def __str__(self):
         return self.coords.__str__()
 
-    def __json__(self):
+    def to_dict(self):
         return self.coords # already serializable
+
+    def from_dict(d): # this would be a list or tuple, not a dict
+        return Vector(*d)
     
 
 def translate_vector(a:Vector,b:Vector|Size):
@@ -101,7 +103,7 @@ type Point = Vector
 
 #--------------------------------------------------------------------
 
-class Size():
+class Size(JSONable):
 
     def __init__(self,sx:float=0,sy:float=0,sz:float=0):
         self.dim = [sx,sy,sz]
@@ -152,8 +154,11 @@ class Size():
     def __str__(self):
         return self.dim.__str__()
 
-    def __json__(self):
+    def to_dict(self):
         return self.dim # already serializable
+
+    def from_dict(d): # a list or tuple
+         return Size(*d)
     
     
 def grow_size(a:Size,b:Size | SizeModifier):
@@ -169,7 +174,7 @@ def shrink_size(a:Size,b:Size | SizeModifier):
 #--------------------------------------------------------------------
 
 @dataclass
-class Volume():
+class Volume(JSONable):
     """
     A rectangular region in space
     """
@@ -201,9 +206,12 @@ class Volume():
     def __str__(self):
         return f'Volume of size {self.size} at offset {self.offset}'
 
-    def __json__(self):
-        return {"size":self.size.__json__(), "offset": self.offset.__json__() }
-    
+    def to_dict(self):
+        return {"size":self.size.to_dict(), "offset": self.offset.to_dict() }
+
+    def from_dict(d:dict):
+        return Volume(Size(d['size']),Vector(d['offset']))
+
 
 def grow_volume(v:Volume,p:Padding):
     ret = copy.deepcopy(v)
@@ -290,8 +298,10 @@ class SizeModifier():
         oz = self.values[Z_COORD][0]
         return Vector(ox,oy,oz)
 
-    def __json__(self):
-        return {"type": self.type, "values": self.values}
+    def to_dict(self):
+        return self.values
+
+
 #--------------------------------------------------------------------
 
 class Padding(SizeModifier):
@@ -302,6 +312,10 @@ class Padding(SizeModifier):
     def __str__(self):
         return super().__str__()
 
+    
+    def from_dict(d): # type is not really important
+        return SizeModifier('padding',d)
+
 #--------------------------------------------------------------------
 
 class Margin(SizeModifier):
@@ -310,6 +324,9 @@ class Margin(SizeModifier):
 
     def __str__(self):
             return super().__str__()
+
+    def from_dict(d): # type is not really important
+        return SizeModifier('margin',d)
 
 #--------------------------------------------------------------------
 

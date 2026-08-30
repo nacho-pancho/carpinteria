@@ -1,3 +1,4 @@
+from jsonable import JSONable
 from  dataclasses import dataclass
 """
 Define properties of materials, including their name, specifications and textures
@@ -19,7 +20,7 @@ LIGHT_WOOD_COLOR = (0.9,0.75,0.6)
 #==========================================================
 
 @dataclass 
-class Texture():
+class Texture(JSONable):
     color:list[float]=None,
     opacity:float=1
     texture_map:str=None # optional name of image for texture mapping
@@ -30,13 +31,52 @@ class Texture():
     specular_power:float=None # see pyvista.add_mesh
     metallic:float=None # see pyvista.add_mesh
 
+    def to_dict(self):
+        return {
+            'color': self.color,
+            'opacity': self.opacity,
+            'texture_map': self.texture_map,
+            'ambient': self.ambient,
+            'diffuse': self.diffuse,
+            'roughness': self.roughness,
+            'specular': self.specular,
+            'specular_power': self.specular_power,
+            'metallic': self.metallic
+        }
+
+    def from_dict(d:dict):
+        return Texture(
+            color=d['color'],
+            opacity=d['opacity'],
+            texture_map=d['texture_map'],
+            ambient=d['ambient'],
+            diffuse = d['diffuse'],
+            roughness=d['roughness'],
+            specular=d['specular'],
+            specular_power=d['specular_power'],
+            metallic=d['metallic']
+        )
+
 #==========================================================
 
 @dataclass 
-class Material():
+class Material(JSONable):
     name:str
     interior:Texture
     exterior:Texture
+
+    def to_dict(self):
+        return { 
+            'name': self.name,
+            'interior': self.interior.to_dict(),
+            'exterior': self.exterior.to_dict()
+        }
+
+    def from_dict(d:dict):
+        return Material(name=d['name'],
+                        interior=Texture.from_dict(d['interior']),
+                        exterior=Texture.from_dict(d['exterior']))
+
 
 #==========================================================
 

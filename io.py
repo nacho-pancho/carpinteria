@@ -51,12 +51,13 @@ def save_project(fname:str,p:Project):
 
 
 def dict_to_layout(d:dict):
-    type = d['type']
-
+    layout_type = d['type']
+    return LAYOUTS[layout_type].from_dict()
 
 
 def dict_to_part(d:dict):
-    return Part(dict_to_piece(d['piece']),constraints=LayoutConstraints.from_dict(d['constraints']))
+    return Part(dict_to_piece(d['piece']),
+                constraints=LayoutConstraints.from_dict(d['constraints']))
 
 
 def dict_to_composite(d:dict):

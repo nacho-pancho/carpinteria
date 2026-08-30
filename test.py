@@ -1,0 +1,182 @@
+from util import *
+from core import *
+from materials import *
+from pieces import *
+from materials import *
+from display import *
+
+def test_pyvista():
+    get_logger().setLevel(logging.DEBUG)
+    pl = pv.Plotter()
+    sphere = pv.Sphere()
+    pl.add_mesh(sphere,color='red',opacity=0.5,show_edges=True)
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
+    pl.view_vector((0,-5,0))
+    pl.show_axes()
+    pl.show_grid()
+    pl.show()
+
+
+def test_box_sides():
+    get_logger().setLevel(logging.DEBUG)
+    pl = pv.Plotter()
+    box = pv.Box((0,1,0,2,0,3))
+    print(box.faces)
+    color_idx = (1,0,0,0,0,0)
+    pl.add_mesh(box,color='blue',opacity=1,show_edges=True,scalars=color_idx,cmap='jet')   
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
+    pl.view_vector((0,-5,0))
+    pl.show_axes()
+    pl.show_grid()
+    pl.show()
+
+def test_void():
+    get_logger().setLevel(logging.DEBUG)
+    pl = pv.Plotter()
+    size = Size(10,20,30)
+    piece =  Void(size)
+    print(piece)
+    paint(pl,piece)
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
+    pl.view_vector((0,-5,0))
+    pl.show_axes()
+    pl.show_grid()
+    pl.show()
+
+def test_composite():
+    get_logger().setLevel(logging.DEBUG)
+    pl = pv.Plotter()
+    comp = CompositePiece('Compuesto de nada',fixed_size=Size(100,200,300))
+    piece =  Void(Size(10,None,30))
+    cons = LayoutConstraints()
+    cons.margin = Margin((10,20,30,40,50,60)) # +30, +70, + 110
+    cons.padding = Padding((1,2,3,4,5,6))     # -3, -7, - 11
+    comp.add_piece(piece,cons)
+    enable_tracing()
+    comp.apply_layout()
+    print(comp)
+    paint(pl,comp)
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
+    pl.view_vector((0,-5,0))
+    pl.show_axes()
+    pl.show_grid()
+    pl.show()
+
+
+def test_stack():
+    get_logger().setLevel(logging.DEBUG)
+    pl = pv.Plotter()
+
+    # works
+    comp = CompositePiece('Compuesto de nada',
+                               fixed_size=Size(100,200,300),
+                               layout=StackLayout(num_slots=3,axis=Z_COORD))
+
+    piece = Void(fixed_size=Size(None,None,20)) # fix height    
+    cons = LayoutConstraints()
+    cons.margin = Margin((5,5,5,5,10,20)) 
+    cons.padding = Padding((0,0,0,0,0,0))
+    comp.add_part(piece,cons,0)
+
+    piece = Void(fixed_size=Size(None,None,40)) # fix height    
+    cons = LayoutConstraints()
+    cons.margin = Margin((5,5,5,5,10,10)) 
+    cons.padding = Padding((0,0,0,0,0,0))
+    comp.add_part(piece,cons,1)
+
+    piece = Void(fixed_size=Size(None,None,60)) # fix height    
+    cons = LayoutConstraints()
+    cons.margin = Margin((5,5,5,5,10,10)) 
+    cons.padding = Padding((20,0,0,0,0,0))
+    comp.add_part(piece,cons,2)
+
+    comp.apply_layout()
+    enable_tracing()
+    paint(pl,comp)
+    print(comp)
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
+    pl.view_vector((0,-5,0))
+    pl.show_axes()
+    pl.show_grid()
+    pl.show()
+
+
+def test_sheet():
+    # works
+    get_logger().setLevel(logging.DEBUG)
+    pl = pv.Plotter()
+    piece =  Sheet('sheet',
+                        material=materials.FINGER_MATERIAL,
+                        thickness=20,
+                        face_orientation=Z_COORD,
+                        fixed_size=Size(1000,600,None))
+    print(piece)
+    paint(pl,piece)
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
+    pl.view_vector((0,-5,0))
+    pl.show_axes()
+    pl.show_grid()
+    pl.show()
+
+
+def test_board():
+    proj = Project(name='Test board',version='1.0',date='1/1/1',author='Ignacio Ramirez',description='bah')
+    get_logger().setLevel(logging.DEBUG)
+    pl = pv.Plotter()
+    piece =  Board('board',
+                        material=MDF_MATERIAL,
+                        thickness=18,
+                        face_orientation=Z_COORD,
+                        coating=CoatingSpec((1,1,0,0,1,1)),
+                        fixed_size=Size(1000,600,None))
+    print(piece)
+    proj.add_piece(piece)
+    print(proj)
+    print(proj.to_dict())
+    paint(pl,piece)
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
+    pl.view_vector((0,-5,0))
+    pl.show_axes()
+    pl.show_grid()
+    pl.show()
+
+
+def test_guide():
+    # works
+    get_logger().setLevel(logging.DEBUG)
+    pl = pv.Plotter()
+    piece =  DrawerGuide('guide',
+                        orientation=Y_COORD,
+                        length=400)
+    print(piece)
+    paint(pl,piece)
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
+    pl.view_vector((0,-5,0))
+    pl.show_axes()
+    pl.show_grid()
+    pl.show()
+
+def test_screw():
+    get_logger().setLevel(logging.DEBUG)
+    pl = pv.Plotter()
+    piece =  Screw(name='screw',
+                   caliber=3,
+                   length=15,
+                   _type=Screw.FLAT_HEAD,
+                   direction=TOP_TO_BOTTOM)
+    print(piece)
+    paint(pl,piece)
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
+    pl.view_vector((0,-5,0))
+    pl.show_axes()
+    pl.show_grid()
+    pl.show()
+
+if __name__ == '__main__':
+    test_board()
+
+
+
+
+
+

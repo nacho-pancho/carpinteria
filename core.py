@@ -95,12 +95,12 @@ class Piece(JSONable):
 
     def to_dict(self)->dict:
         d = {}
-        d["type"] = self.type()
+        d["type"] = self.type
         d["name"] = self.name
-        d["material"] =  self.material.__json__()
-        d["min_size"] =  self.min_size.__json__()
-        d["max_size"] =  self.max_size.__json__()
-        d["volume"]   =    self.volume.__json() 
+        d["material"] =  self.material.to_dict()
+        d["min_size"] =  self.min_size.to_dict()
+        d["max_size"] =  self.max_size.to_dict()
+        d["volume"]   =    self.volume.to_dict() 
         return d
 
     # should never be called
@@ -140,8 +140,8 @@ class LayoutConstraints(JSONable):
  alignment {self.alignment}'''
 
     def to_dict(self):
-        return {'padding': self.padding.__tojson__(self),
-                'margin': self.margin.__tojson__(self),
+        return {'padding': self.padding.to_dict(self),
+                'margin': self.margin.to_dict(self),
                 'weight': self.weight,
                 'alignment': self.alignment}
 
@@ -281,11 +281,20 @@ class Project(JSONable):
         self.version = version
         self.date = date
         self.author = author
+        self.description = description
         self.pieces = list()
 
     def add_piece(self,p:Piece):
-        self.pieces.add(p)
+        self.pieces.append(p)
 
+    def __str__(self):
+        str = f'Project: {self.name} v{self.version}, date {self.date}, author {self.author}.\n'
+        str += f'Description:{self.description}\n'
+        str += 'Parts:\n'
+        for p in self.pieces:
+            str += p.__str__() + '\n'
+        return str
+    
     def to_dict(self):
         d = {}
         d['name'] = self.name
@@ -293,5 +302,5 @@ class Project(JSONable):
         d['date'] = self.date
         d['author'] = self.author
         d['description'] = self.description
-        d['pieces'] = list( p.__tojson__() for p in self.pieces )
+        d['pieces'] = list( p.to_dict() for p in self.pieces )
         return d

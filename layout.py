@@ -175,7 +175,7 @@ class StackLayout(Layout):
 
     
     def to_dict(self):
-        d = super().__tojson__()
+        d = super().to_dict()
         d['axis'] = self.axis
         return d
 

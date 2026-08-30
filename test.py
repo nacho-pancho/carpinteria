@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from util import *
 from core import *
 from materials import *

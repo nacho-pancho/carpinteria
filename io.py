@@ -20,7 +20,7 @@ class PieceEncoder(json.JSONEncoder):
     """
     def default(self,obj):
         if isinstance(obj,JSONable):
-            return obj.__tojson__()
+            return obj.to_dict()
         else:
             return super().default(obj)
 
@@ -46,7 +46,7 @@ def save_project(fname:str,p:Project):
     save project to file
     """
     with open(fname,'w',encoding='utf8') as f:
-        d = p.__tojson__()
+        d = p.to_dict()
         json.dump(d,f)
 
 

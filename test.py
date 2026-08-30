@@ -6,6 +6,7 @@ from materials import *
 from pieces import *
 from materials import *
 from display import *
+from io import *
 
 def test_pyvista():
     get_logger().setLevel(logging.DEBUG)
@@ -108,7 +109,7 @@ def test_sheet():
     get_logger().setLevel(logging.DEBUG)
     pl = pv.Plotter()
     piece =  Sheet('sheet',
-                        material=materials.FINGER_MATERIAL,
+                        material=FINGER_MATERIAL,
                         thickness=20,
                         face_orientation=Z_COORD,
                         fixed_size=Size(1000,600,None))
@@ -135,6 +136,8 @@ def test_board():
     proj.add_piece(piece)
     print(proj)
     print(proj.to_dict())
+    save_project('test.json',proj)
+    proj2 = load_project('test.json')
     paint(pl,piece)
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))

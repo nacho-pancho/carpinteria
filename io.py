@@ -14,25 +14,6 @@ from pieces import *
 from materials import *
 
 
-class PieceEncoder(json.JSONEncoder):
-    """
-    custom class for using JSONable objects
-    """
-    def default(self,obj):
-        if isinstance(obj,JSONable):
-            return obj.to_dict()
-        else:
-            return super().default(obj)
-
-"""
-custom function to decode objects from JSON
-"""
-def jsonable_object_hook(d:dict):
-    if 'type' in d:
-        t = globals(d['type'])
-    return t.__fromjson__(d)
-
-
 def load_project(fname):
     """
     load project from file
@@ -40,6 +21,7 @@ def load_project(fname):
     with open(fname,'r',encoding='utf-8') as f:
         d = json.load(f)
         return dict_to_project(d) 
+
 
 def save_project(fname:str,p:Project):
     """

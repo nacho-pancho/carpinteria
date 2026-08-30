@@ -4,6 +4,39 @@ from core import *
 from pieces import *
 from materials import *
 
+#--------------------------------------------------------------------
+
+class Void(Piece):
+
+    """ 
+    a void piece is a piece that is not printed.
+    """
+
+    def __init__(self, 
+                 name='emptyness',
+                 fixed_size:Size=Size(None,None,None),
+                 min_size:Size=Size(0,0,0),
+                 max_size:Size=Size(INFINITY,INFINITY,INFINITY),
+                 ):
+        super().__init__(name,
+                         type='void', 
+                         material=None, 
+                         fixed_size=fixed_size,
+                         min_size=min_size,
+                         max_size=max_size)
+
+    def part_list():
+        return []
+
+
+    def description(self)->str:
+        """
+        all voids are equal
+        """
+        return self.type()
+    
+ #--------------------------------------------------------------------
+
 class Beam(Piece):
     """
     A wooden beam here is just a box made of wood with two dimensions
@@ -44,14 +77,12 @@ class Beam(Piece):
             max_size.dim[orientation] = fixed_length
 
         super().__init__(name=name,
+                         type='beam',
                        material=material,
                        min_size=min_size,
                        max_size=max_size)  
         self.orientation = orientation
         self.screws = list()
-
-    def type(self):
-        return 'beam'
 
 
     def id(self):
@@ -86,6 +117,7 @@ class Sheet(Piece):
 
     def __init__(self, 
                  name, 
+                 type,
                  material, 
                  thickness, 
                  face_orientation,
@@ -94,6 +126,7 @@ class Sheet(Piece):
                  max_size:Size=Size(INFINITY,INFINITY,INFINITY),
                  ):
         super().__init__(name=name,
+                         type=type,
                        material=material,
                        fixed_size=fixed_size,
                        min_size=min_size,
@@ -110,10 +143,8 @@ class Sheet(Piece):
         self.volume.size.dim[o] = thickness
         self.screws = list()
 
-    def type(self):
-        return 'sheet'
     
-    def id(self):
+    def part_description(self):
         if self.face_orientation == X_COORD:
             dim1 = self.volume.size.dim[Z_COORD]
             dim2 = self.volume.size.dim[Y_COORD]
@@ -150,6 +181,12 @@ class CoatingSpec(SizeModifier):
     def __str__(self)->str:
             return super().__str__()
 
+    def to_dict(self):
+        return super().to_dict()
+
+    def from_dict():
+        raise NotImplementedError()      
+
 #--------------------------------------------------------------------
 
 class Board(Sheet):
@@ -173,6 +210,7 @@ class Board(Sheet):
         laying horizontally on the floor, regardless of the actual orientation specified.
         """
         super().__init__(name=name,
+                         type='board',
                        material=material,
                        thickness=thickness,
                        face_orientation=face_orientation,
@@ -181,17 +219,14 @@ class Board(Sheet):
                        min_size=min_size)
         self.coating = coating
 
-    def id(self)->str:
-        return super().id(self)
+    def part_description(self)->str:
+        return super().part_description(self)
 
     def part_list(self):
         ret = list()
         ret.append(self.id())
         for s in self.screws():
             ret.append(s.id())
-
-    def type(self):
-        return 'board'
 
 #--------------------------------------------------------------------
 
@@ -220,14 +255,15 @@ class DrawerGuide(Piece):
         else:
             raise ValueError(f'Invalid guide orientation {self.orientation}.')
 
-        super().__init__(name=name,material=materials.GUIDE_MATERIAL,fixed_size=fixed_size)
+        super().__init__(name=name,
+                         type='guide',
+                         material=GUIDE_MATERIAL,
+                         fixed_size=fixed_size)
 
 
-    def id(self)->str:
+    def part_description(self)->str:
         return f'{self.type()}_{self.length}mm'
 
-    def type(self):
-        return 'drawer_guide'
 
     def part_list(self):
         ret = list()
@@ -241,7 +277,12 @@ class NailLike(Piece):
     A little thing with a beam and a head, like a screw or a nail
     """
 
-    def __init__(self,name, material, caliber, length, direction):
+    def __init__(self, name:str, 
+                 type:str, 
+                 material:Material, 
+                 caliber:int, 
+                 length:int, 
+                 direction:int):
         self.caliber = caliber
         self.length = length
         self.direction = direction
@@ -255,7 +296,7 @@ class NailLike(Piece):
             size = Size(2*self.head_radius,self.length,2*self.head_radius)
         else:
             raise ValueError(f'Invalid direction {self.direction}.')
-        super().__init__(name=name,material=material,fixed_size=size)
+        super().__init__(name=name, type=type, material=material,fixed_size=size)
     
     def part_list(self):
         ret = list()
@@ -268,13 +309,15 @@ class Screw(NailLike):
     a screw. 
     """
 
-    def __init__(self,name, material, caliber, length, direction):
-        super().__init__(name,material,caliber,length,direction)
+    def __init__(self, name, material, caliber, length, direction):
+        super().__init__(name=name,
+                         type='screw',
+                         material=material,
+                         caliber=caliber,
+                         length=length,
+                         direction=direction)
 
-    def type(self)->str:
-        return 'screw'
-
-    def id(self)->str:
+    def part_description(self)->str:
         return f'{self.type()}_{self.caliber}mm_x_{self.length}mm'
 
 #--------------------------------------------------------------------
@@ -289,10 +332,8 @@ class Nail(NailLike):
     def __init__(self,name, caliber, length, direction):
         super().__init__(name,NAIL_MATERIAL,caliber,length,direction)
 
-    def type(self)->str:
-        return 'nail'
 
-    def id(self)->str:
+    def part_description(self)->str:
         return f'{self.type()}_{self.caliber}mm_x_{self.length}mm'
 
 #--------------------------------------------------------------------
@@ -306,15 +347,14 @@ class Dowel(NailLike):
 
     def __init__(self,name, length, direction):
         super().__init__(name=name,
+                         type='dowel',
                          material=DOWEL_MATERIAL,
                          caliber=6,
                          length=length,
                          direction=direction)
 
-    def type(self):
-        return 'dowel'
 
-    def id(self)->str:
+    def part_description(self)->str:
         return f'{self.type()}_{self.length}mm'
 
 
@@ -332,12 +372,26 @@ class CornerBrace(Piece):
             size = Size(20,40,20)
         elif orientation == Z_COORD:
             size = Size(20,20,40)
-        super().__init__(name,CORNER_MATERIAL,fixed_size=size)
+        super().__init__(name=name,
+                         type='corner',
+                         material=CORNER_MATERIAL,
+                         fixed_size=size)
 
-    def type(self):
-        return 'corner_brace'
 
-    def id(self):
+    def part_description(self):
         return self.type()
 
 #--------------------------------------------------------------------
+
+PIECE_TYPES = {
+    'composite': CompositePiece,
+    'void': Void, 
+    'beam': Beam,
+    'sheet': Sheet,
+    'board': Board,
+    'nail': Nail,
+    'dowel': Dowel,
+    'screw': Screw,
+    'guide': DrawerGuide,
+    'corner': CornerBrace
+}

@@ -156,7 +156,7 @@ def test_beam():
                         thickness1=40,
                         thickness2=40,
                         orientation=X_COORD,
-                        fixed_length=1000)
+                        length=1000)
 
     # test I/O
     proj = Project(name='Test beam',version='1.0',date='1/1/1',author='Ignacio Ramirez',description='bah')

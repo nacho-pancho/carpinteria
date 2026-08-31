@@ -58,7 +58,7 @@ class Beam(Piece):
                  thickness1,
                  thickness2, 
                  orientation,
-                 fixed_length:float=None,
+                 length:float=None,
                  min_length:float=0,
                  max_length:float=INFINITY
                  ):
@@ -75,9 +75,11 @@ class Beam(Piece):
             min_size = Size(min_length,thickness1,thickness2)
             max_size = Size(max_length,thickness1,thickness2)
 
-        if fixed_length is not None:
-            min_size.dim[orientation] = fixed_length
-            max_size.dim[orientation] = fixed_length
+        if length is not None:
+            min_size.dim[orientation] = length
+            max_size.dim[orientation] = length
+            min_length = length
+            max_length = length
 
         super().__init__(name=name,
                          type='beam',
@@ -85,14 +87,19 @@ class Beam(Piece):
                        min_size=min_size,
                        max_size=max_size)  
         self.orientation = orientation
+        self.thickness1= thickness1
+        self.thickness2= thickness2
+        self.min_length = min_length
+        self.max_length = max_length
+        self.length = length
         self.screws = list()
 
 
     def id(self):
-        if self.face_orientation == X_COORD:
+        if self.orientation == X_COORD:
             dim1 = self.volume.size.dim[Z_COORD]
             dim2 = self.volume.size.dim[Y_COORD]
-        elif self.face_orientation == Y_COORD:
+        elif self.orientation == Y_COORD:
             dim1 = self.volume.size.dim[X_COORD]
             dim2 = self.volume.size.dim[Z_COORD]
         else:
@@ -111,10 +118,25 @@ class Beam(Piece):
             ret.append(s.id())
 
     def from_dict(d:dict):
-        raise NotImplementedError()
+        return Beam(
+            name=d['name'],
+            material=Material.from_dict(d['material']),
+            thickness1=d['thickness1'],
+            thickness2=d['thickness2'],
+            orientation=d['orientation'],
+            length=d['length'],
+            min_length=d['min_length'],
+            max_length=d['max_length'])
 
     def to_dict(self):
-        raise NotImplementedError()
+        d_base = super().to_dict()
+        d_base['thickness1'] =  self.thickness1
+        d_base['thickness2'] =  self.thickness2
+        d_base['length'] =  self.length
+        d_base['orientation'] =  self.orientation
+        d_base['min_length'] =  self.min_length
+        d_base['max_length'] =  self.max_length
+        return d_base
     
 
 #--------------------------------------------------------------------

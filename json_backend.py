@@ -39,7 +39,7 @@ def dict_to_layout(d:dict):
 
 
 def dict_to_part(d:dict):
-    return Part(dict_to_piece(d['piece']),
+    return PieceSpec(dict_to_piece(d['piece']),
                 constraints=LayoutConstraints.from_dict(d['constraints']))
 
 
@@ -51,7 +51,7 @@ def dict_to_composite(d:dict):
     piece = CompositePiece(name=name,min_size=min_size,max_size=max_size,layout=layout)
     parts = d['parts']
     for p in parts:
-        piece.add_part(dict_to_part(p))
+        piece.add_piece(dict_to_part(p))
 
 
 

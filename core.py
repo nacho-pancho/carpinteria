@@ -162,7 +162,7 @@ class LayoutConstraints(JSONable):
 
 #--------------------------------------------------------------------
 
-class Part(JSONable):
+class PieceSpec(JSONable):
     """
     part of a multi-piece object
     """
@@ -176,12 +176,12 @@ class Part(JSONable):
         self.constraints = constraints
 
     def __str__(self):
-        return f'Part:\n\t{self.piece}\n\t{self.constraints}'
+        return f'Piece Specification:\n\t{self.piece}\n\t{self.constraints}'
 
     def to_dict(self)->dict:
         d = {}
-        d['piece'] = self.piece.__json__(),
-        d['constraints'] = self.constraints.__json__()
+        d['piece'] = self.piece.to_dict(),
+        d['constraints'] = self.constraints.to_dict()
         return d
 
 #--------------------------------------------------------------------
@@ -204,8 +204,102 @@ class Layout(JSONable):
         return {'type': self.type(), 'slots': self.slots() }
 
     def type(self):
-        return self.type
+        return self._type
  
+
+#--------------------------------------------------------------------
+
+def simple_layout(_volume:Volume, part:PieceSpec):
+    logger = get_logger()
+    logger.info(f'Layoing out part {part.piece} within  {_volume} with coinstraints {part.constraints}')
+
+    piece = part.piece
+    cons  = part.constraints
+    #
+    # there are three volumes:
+    # the slot volume; that is the total size inside the volume in this case
+    # the padded volume, which results from the base volume being grown by the padding
+    # the available volume, which results from the padded volume being reduced by the margins
+    #
+    # we keep track of them all
+    part.base_volume = copy.deepcopy(_volume)
+    logger.info(f'Base volume {part.base_volume}')
+    part.slot_volume = copy.deepcopy(part.base_volume)
+    # apply weights
+    for i in range(3):
+        part.slot_volume.size.dim[i] *= cons.weight[i]
+
+    logger.info(f'Slot volume {part.slot_volume} after applying weight')
+    part.padded_volume = grow_volume(part.slot_volume,cons.padding)
+    logger.info(f'Padded volume {part.padded_volume}')
+    part.available_volume = shrink_volume(part.padded_volume,cons.margin)
+    logger.info(f'Available volume {part.available_volume}')
+    #
+    # we must reserve space for the margin, but this includes padding
+    #
+    margin_size = cons.margin.size()
+    reserved_size = shrink_size(margin_size,cons.padding)
+    # now we have the available volume
+    # we take into account the piece's own constraints (min and max size)
+    # to determine its final size
+    # the margin is rigid so it needs to be taken into account in min_size
+
+    piece_size = Size()
+    for i in range(3):
+        _min = piece.min_size.dim[i]
+        _max = piece.max_size.dim[i]
+        _ava = part.available_volume.size.dim[i]
+        if _min  > _ava:
+            logger.warning(f'Available space {_ava} not enough for min size {_min}!')
+        piece_size.dim[i] = max(_min, min(_ava,_max))
+
+    part.piece.volume = Volume(piece_size,copy.deepcopy(part.available_volume.offset))
+
+    logger.info(f'Piece volume {part.piece.volume} (prior to alignment)')
+    for i in range(3):
+        delta = (part.available_volume.size.dim[i] - part.piece.volume.size.dim[i])
+        logger.info(f'Excess volume at dimension {i} is {delta}')
+        if cons.alignment[i] == CENTER:
+            logger.info(f'Center alignment implies displacement by {delta/2}.')
+            part.piece.volume.offset.coords[i] += delta / 2
+        elif cons.alignment[i] == RIGHT or cons.alignment == BACK or cons.alignment == TOP:
+            logger.info(f'right/top/back alignment implies displacement by {delta}.')
+            part.piece.volume.offset.coords[i] += delta
+    #
+    # the final part is the placement of the piece if the piece
+    # is smaller than the effective volume, it needs to be arranged
+    # according to the alignment
+    # 
+    # put the piece according to the constraints
+    part.piece_volume = part.piece.volume
+    logger.info(f'Final volume {piece.volume} (after alignment)')
+
+
+#--------------------------------------------------------------------
+
+class DefaultLayout(Layout):
+    """
+    puts one thing inside
+    """
+    def __init__(self):
+        super().__init__('default')
+
+    def apply(self, _volume:Volume, _parts:tuple[PieceSpec]):
+
+        logger = get_logger()
+        logger.info(f'Applying layout {self} to volume {_volume}')
+        # determine size of object
+        if _parts[0] is None:
+            logger.info(f'No parts to lay out.')
+            return
+        simple_layout(_volume,_parts[0])
+
+    
+    def slots(self):
+        return 1
+
+    def __str__(self):
+        return self.type()
 
 #--------------------------------------------------------------------
 
@@ -221,7 +315,7 @@ class CompositePiece(Piece):
                  fixed_size:Size=Size(None,None,None),
                  min_size:Size=Size(0,0,0),
                  max_size:Size=Size(INFINITY,INFINITY,INFINITY),
-                 layout:Layout=None):
+                 layout:Layout=DefaultLayout()):
         super().__init__(name=name,
                          type='composite',
                          material=None,
@@ -239,10 +333,10 @@ class CompositePiece(Piece):
                 piece.volume.offset.translate(t)
 
 
-    def add_part(self, piece:Piece, constraints:LayoutConstraints, position):
+    def add_piece(self, piece:Piece, constraints:LayoutConstraints, position):
         if self.parts[position] is not None:
             get_logger().warning(f'There is already a piece at position {position}.')
-        self.parts[position] = Part(piece,constraints)
+        self.parts[position] = PieceSpec(piece,constraints)
 
     def apply_layout(self):
         if self.layout is None:

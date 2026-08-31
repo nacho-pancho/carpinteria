@@ -13,7 +13,7 @@ class Void(Piece):
     """
 
     def __init__(self, 
-                 name='emptyness',
+                 name:str,
                  fixed_size:Size=Size(None,None,None),
                  min_size:Size=Size(0,0,0),
                  max_size:Size=Size(INFINITY,INFINITY,INFINITY),
@@ -141,6 +141,59 @@ class Beam(Piece):
 
 #--------------------------------------------------------------------
 
+class Block(Piece):
+    """
+    A wooden block of arbitrary size
+    """
+
+    def __init__(self, 
+                 name, 
+                 material=PINE_WOOD_MATERIAL,
+                fixed_size:Size=Size(None,None,None),
+                 min_size:Size=Size(0,0,0),
+                 max_size:Size=Size(INFINITY,INFINITY,INFINITY),
+                 ):
+        super().__init__(name=name,
+                         type='block',
+                       material=material,
+                       fixed_size=fixed_size,
+                       min_size=min_size,
+                       max_size=max_size)  
+        self.screws = list()
+
+    
+    def part_description(self):
+        dims = ['?','?','?']
+        if self.volume is not None:
+            for i in range(3):
+                if self.volume.size[i] is not None:
+                    dims[i] = self.volume.size[i]
+        w,d,h = dims        
+        return f'block_of_{self.material.name}_{w}_x_{h}_x_{d}_mm'
+
+    def add_screw(self,position:Vector):
+        pass
+
+    def part_list(self):
+        ret = list()
+        ret.append(self.id())
+        for s in self.screws():
+            ret.append(s.id())
+
+    def from_dict(d:dict):
+        return Block(
+            name=d['name'],
+            min_size=Size.from_dict(d['min_size']),
+            max_size=Size.from_dict(d['max_size']),
+            material=Material.from_dict(d['material'])
+            )
+    
+    def to_dict(self):
+        d_base = super().to_dict()
+        return d_base
+
+#--------------------------------------------------------------------
+
 class Sheet(Piece):
     """
     A sheet has a fixed thickness and variable width and height
@@ -149,7 +202,6 @@ class Sheet(Piece):
 
     def __init__(self, 
                  name, 
-                 type,
                  material, 
                  thickness, 
                  face_orientation,
@@ -158,7 +210,7 @@ class Sheet(Piece):
                  max_size:Size=Size(INFINITY,INFINITY,INFINITY),
                  ):
         super().__init__(name=name,
-                         type=type,
+                         type='sheet',
                        material=material,
                        fixed_size=fixed_size,
                        min_size=min_size,
@@ -199,14 +251,14 @@ class Sheet(Piece):
             ret.append(s.id())
 
     def from_dict(d:dict):
-        return Board(
+        return Sheet(
             name=d['name'],
             material=Material.from_dict(d['material']),
             thickness=d['thickness'],
             face_orientation=d['face_orientation'],
             min_size=Size.from_dict(d['min_size']),
             max_size=Size.from_dict(d['max_size']))
-
+    
     def to_dict(self):
         d_base = super().to_dict()
         d_base['thickness'] =  self.thickness
@@ -257,13 +309,13 @@ class Board(Sheet):
         laying horizontally on the floor, regardless of the actual orientation specified.
         """
         super().__init__(name=name,
-                         type='board',
                        material=material,
                        thickness=thickness,
                        face_orientation=face_orientation,
                        fixed_size=fixed_size,
                        max_size=max_size,
                        min_size=min_size)
+        self.type = 'board' # overwrite 'sheet'
         self.coating = coating
 
     def part_description(self)->str:
@@ -345,21 +397,23 @@ class NailLike(Piece):
     def __init__(self, name:str, 
                  type:str, 
                  material:Material, 
-                 caliber:int, 
+                 caliber:int,
+                 head_width:int, 
+                 head_height:int,
                  length:int, 
                  direction:int):
         self.caliber = caliber
         self.length = length
         self.direction = direction
-        self.head_radius = caliber / 2
-        self.head_height = 1 # 1mm
+        self.head_width = head_width
+        self.head_height = head_height
 
         if self.direction == BOTTOM_TO_TOP or self.direction == TOP_TO_BOTTOM:        
-            size = Size(2*self.head_radius,2*self.head_radius,self.length)
+            size = Size(self.head_width,self.head_width,self.length)
         elif self.direction == LEFT_TO_RIGHT or self.direction == RIGHT_TO_LEFT:        
-            size = Size(self.length, 2*self.head_radius,2*self.head_radius)
+            size = Size(self.length, self.head_width,self.head_width)
         elif self.direction == FRONT_TO_BACK or self.direction == BACK_TO_FRONT:        
-            size = Size(2*self.head_radius,self.length,2*self.head_radius)
+            size = Size(self.head_width,self.length,self.head_width)
         else:
              raise ValueError(f'Invalid direction {self.direction}.')
         super().__init__(name=name, type=type, material=material,fixed_size=size)
@@ -373,7 +427,8 @@ class NailLike(Piece):
         d['caliber'] = self.caliber
         d['direction'] = self.direction
         d['length'] = self.length
-        d['head_radius'] = self.head_radius
+        d['head_width'] = self.head_width
+        d['head_height'] = self.head_height
         return d
 
 
@@ -390,6 +445,8 @@ class Screw(NailLike):
                          material=material,
                          caliber=caliber,
                          length=length,
+                         head_height=1,
+                         head_width=2*caliber,
                          direction=direction)
 
     def part_description(self)->str:
@@ -416,6 +473,8 @@ class Nail(NailLike):
                          material=NAIL_MATERIAL,
                          caliber=caliber,
                          length=length,
+                         head_height=1,
+                         head_width=2*caliber,
                          direction=direction)
 
 
@@ -443,6 +502,8 @@ class Dowel(NailLike):
                          material=DOWEL_MATERIAL,
                          caliber=6,
                          length=length,
+                         head_height=0,
+                         head_width=6,
                          direction=direction)
 
 
@@ -487,6 +548,7 @@ class CornerBrace(Piece):
 PIECE_TYPES = {
     'composite': CompositePiece,
     'void': Void, 
+    'block': Block,
     'beam': Beam,
     'sheet': Sheet,
     'board': Board,

@@ -58,6 +58,17 @@ def paint_obj(plotter:pv.Plotter,obj:pv.PolyData,tex:Texture):
                      texture=tex_map)
     return plotter
 
+def paint_block(plotter:pv.Plotter, obj:Sheet):
+    size = obj.volume.size
+    orig = obj.volume.offset
+    box = pv.Box(volume_to_box(obj.volume))
+    material = obj.material
+    texture = material.exterior
+    if texture.texture_map is not None:
+        box.texture_map_to_plane(origin=orig.coords,point_u=(size[0],0,0),point_v=(0,size[1],0),inplace=True)
+    plotter = paint_obj(plotter,box,texture)
+    return plotter
+
 def paint_sheet(plotter:pv.Plotter, obj:Sheet):
     size = obj.volume.size
     orig = obj.volume.offset
@@ -70,6 +81,23 @@ def paint_sheet(plotter:pv.Plotter, obj:Sheet):
         elif obj.face_orientation == Y_COORD:
             box.texture_map_to_plane(origin=orig.coords,point_u=(size[0],0,0),point_v=(0,0,size[2]),inplace=True)
         elif obj.face_orientation == X_COORD:
+            box.texture_map_to_plane(origin=orig.coords,point_u=(0,size[1],0),point_v=(0,0,size[2]),inplace=True)
+    plotter = paint_obj(plotter,box,texture)
+    return plotter
+
+
+def paint_beam(plotter:pv.Plotter, obj:Beam):
+    size = obj.volume.size
+    orig = obj.volume.offset
+    box = pv.Box(volume_to_box(obj.volume))
+    material = obj.material
+    texture = material.exterior
+    if texture.texture_map is not None:
+        if obj.orientation == Z_COORD:
+            box.texture_map_to_plane(origin=orig.coords,point_u=(size[0],0,0),point_v=(0,size[1],0),inplace=True)
+        elif obj.orientation == Y_COORD:
+            box.texture_map_to_plane(origin=orig.coords,point_u=(size[0],0,0),point_v=(0,0,size[2]),inplace=True)
+        elif obj.orientation == X_COORD:
             box.texture_map_to_plane(origin=orig.coords,point_u=(0,size[1],0),point_v=(0,0,size[2]),inplace=True)
     plotter = paint_obj(plotter,box,texture)
     return plotter
@@ -125,9 +153,7 @@ def paint_board(plotter:pv.Plotter, obj:Board):
     return plotter
 
 
-def paint_screw(plotter:pv.Plotter, obj:Screw):
-    # most stupid piece
-    # most complicated to draw
+def paint_nail_like(plotter:pv.Plotter, obj:NailLike):
     #
     volume = obj.volume # this is actually the bounding box
     offset = volume.offset
@@ -145,8 +171,8 @@ def paint_screw(plotter:pv.Plotter, obj:Screw):
         offset.coords[2] + size.dim[2]/2]
     beam_height = obj.length
     head_height = obj.head_height
-    beam_radius = obj.caliber
-    head_radius = obj.head_radius
+    beam_radius = obj.caliber / 2 
+    head_width = obj.head_width
     head_shift  = ( head_height + beam_height ) / 2
     head_center = [
         offset.coords[0] + size.dim[0]/2,
@@ -172,9 +198,9 @@ def paint_screw(plotter:pv.Plotter, obj:Screw):
         cyl_dir = (0,0,1)
     else:
         raise ValueError(f'Invalid direction')
-
-    pd = pv.Cylinder(center=head_center,direction=cyl_dir,radius=head_radius,height=head_height)
-    plotter = paint_obj(plotter,pd,tex)
+    if head_height > 0:
+        pd = pv.Cylinder(center=head_center,direction=cyl_dir,radius=head_width/2,height=head_height)
+        plotter = paint_obj(plotter,pd,tex)
     pd = pv.Cylinder(center=beam_center,direction=cyl_dir,radius=beam_radius,height=beam_height)
     plotter = paint_obj(plotter,pd,tex)
 
@@ -199,13 +225,17 @@ def paint(plotter:pv.Plotter,obj):
         return paint_sheet(plotter,obj)
     elif type(obj) == Void:
         return paint_void(plotter,obj)
-    elif type(obj) == Screw:
-        return paint_screw(plotter,obj)
     elif type(obj) == DrawerGuide:
         return paint_drawer_guide(plotter,obj)
     elif type(obj) == CompositePiece:
         return paint_composite(plotter,obj)
-
-import logging
+    elif isinstance(obj,NailLike):
+        return paint_nail_like(plotter,obj)
+    elif isinstance(obj,Beam):
+        return paint_beam(plotter,obj)
+    elif isinstance(obj,Block):
+        return paint_block(plotter,obj)
+    else:
+        print(f"Don't know how to paint {obj}")
 
 

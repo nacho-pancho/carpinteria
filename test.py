@@ -52,7 +52,7 @@ def test_void():
     print(proj2)
     print(proj2.to_dict())
     save_project('test_void_reloaded.json',proj2)
-
+    piece = proj2.pieces[0]
     # test display
     paint(pl,piece)
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
@@ -65,11 +65,11 @@ def test_composite():
     get_logger().setLevel(logging.DEBUG)
     pl = pv.Plotter()
     comp = CompositePiece('Compuesto de nada',fixed_size=Size(100,200,300))
-    piece =  Void(Size(10,None,30))
+    piece =  Void(name='zilch',fixed_size=Size(10,None,30))
     cons = LayoutConstraints()
     cons.margin = Margin((10,20,30,40,50,60)) # +30, +70, + 110
     cons.padding = Padding((1,2,3,4,5,6))     # -3, -7, - 11
-    comp.add_piece(piece,cons)
+    comp.add_piece(piece,cons,0)
     enable_tracing()
     comp.apply_layout()
 
@@ -104,23 +104,23 @@ def test_stack():
                                fixed_size=Size(100,200,300),
                                layout=StackLayout(num_slots=3,axis=Z_COORD))
 
-    piece = Void(fixed_size=Size(None,None,20)) # fix height    
+    piece = Void(name='nada',fixed_size=Size(None,None,20)) # fix height    
     cons = LayoutConstraints()
     cons.margin = Margin((5,5,5,5,10,20)) 
     cons.padding = Padding((0,0,0,0,0,0))
-    comp.add_part(piece,cons,0)
+    comp.add_piece(piece,cons,0)
 
-    piece = Void(fixed_size=Size(None,None,40)) # fix height    
+    piece = Void(name='niet',fixed_size=Size(None,None,40)) # fix height    
     cons = LayoutConstraints()
     cons.margin = Margin((5,5,5,5,10,10)) 
     cons.padding = Padding((0,0,0,0,0,0))
-    comp.add_part(piece,cons,1)
+    comp.add_piece(piece,cons,1)
 
-    piece = Void(fixed_size=Size(None,None,60)) # fix height    
+    piece = Block(name='block', fixed_size=Size(None,None,60)) # fix height    
     cons = LayoutConstraints()
     cons.margin = Margin((5,5,5,5,10,10)) 
     cons.padding = Padding((20,0,0,0,0,0))
-    comp.add_part(piece,cons,2)
+    comp.add_piece(piece,cons,2)
 
     comp.apply_layout()
 
@@ -183,11 +183,11 @@ def test_sheet():
     # works
     get_logger().setLevel(logging.DEBUG)
     pl = pv.Plotter()
-    piece =  Sheet('sheet',
-                        material=FINGER_MATERIAL,
-                        thickness=20,
-                        face_orientation=Z_COORD,
-                        fixed_size=Size(1000,600,None))
+    piece =  Sheet('a sheet',
+                    material=FINGER_MATERIAL,
+                    thickness=20,
+                    face_orientation=Z_COORD,
+                    fixed_size=Size(1000,600,None))
 
     # test I/O
     proj = Project(name='Test sheet',version='1.0',date='1/1/1',author='Ignacio Ramirez',description='bah')
@@ -322,7 +322,7 @@ def test_nail():
     print(proj2)
     print(proj2.to_dict())
     save_project('test_nail_reloaded.json',proj2)
-
+    print("PAINT")
     # test display
     paint(pl,piece)
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 

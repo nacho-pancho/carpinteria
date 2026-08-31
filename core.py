@@ -101,7 +101,7 @@ class Piece(JSONable):
         d = {}
         d["type"] = self.type
         d["name"] = self.name
-        d["material"] =  self.material.to_dict()
+        d["material"] =  self.material.to_dict() if self.material is not None else None
         d["min_size"] =  self.min_size.to_dict()
         d["max_size"] =  self.max_size.to_dict()
         d["volume"]   =    self.volume.to_dict() 
@@ -195,10 +195,10 @@ class Layout(JSONable):
         self._type = type
 
     def apply(self, composite: CompositePiece):
-        return NotImplementedError()
+        raise NotImplementedError()
 
     def slots(self):
-        return NotImplementedError()
+        raise NotImplementedError()
 
     def to_dict(self):
         return {'type': self.type(), 'slots': self.slots() }

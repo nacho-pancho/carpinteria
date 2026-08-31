@@ -111,10 +111,10 @@ class Beam(Piece):
             ret.append(s.id())
 
     def from_dict(d:dict):
-        return NotImplementedError()
+        raise NotImplementedError()
 
     def to_dict(self):
-        return NotImplementedError()
+        raise NotImplementedError()
     
 
 #--------------------------------------------------------------------
@@ -329,7 +329,8 @@ class NailLike(Piece):
         self.caliber = caliber
         self.length = length
         self.direction = direction
-        self.radius = caliber / 2
+        self.head_radius = caliber / 2
+        self.head_height = 1 # 1mm
 
         if self.direction == BOTTOM_TO_TOP or self.direction == TOP_TO_BOTTOM:        
             size = Size(2*self.head_radius,2*self.head_radius,self.length)
@@ -338,12 +339,21 @@ class NailLike(Piece):
         elif self.direction == FRONT_TO_BACK or self.direction == BACK_TO_FRONT:        
             size = Size(2*self.head_radius,self.length,2*self.head_radius)
         else:
-            raise ValueError(f'Invalid direction {self.direction}.')
+             raise ValueError(f'Invalid direction {self.direction}.')
         super().__init__(name=name, type=type, material=material,fixed_size=size)
     
     def part_list(self):
         ret = list()
         ret.append(self.id())
+
+    def to_dict(self):
+        d = super().to_dict()
+        d['caliber'] = self.caliber
+        d['direction'] = self.direction
+        d['length'] = self.length
+        d['head_radius'] = self.head_radius
+        return d
+
 
 #--------------------------------------------------------------------
 
@@ -363,18 +373,35 @@ class Screw(NailLike):
     def part_description(self)->str:
         return f'{self.type()}_{self.caliber}mm_x_{self.length}mm'
 
+
+    def from_dict(d:dict):
+        return Screw(name=d['name'],
+                     material=Material.from_dict(d['material']),
+                     caliber=d['caliber'],
+                     length=d['length'],
+                     direction=d['direction'])
+
 #--------------------------------------------------------------------
 
 class Nail(NailLike):
     """
-    Dowel or Dowel pin in English
-    Tarugo in spanish (only way I can remember this)
-    Small peg of wood used to join two boards or something like that
+    A nail.
     """
 
     def __init__(self,name, caliber, length, direction):
-        super().__init__(name,NAIL_MATERIAL,caliber,length,direction)
+        super().__init__(name=name,
+                         type='nail',
+                         material=NAIL_MATERIAL,
+                         caliber=caliber,
+                         length=length,
+                         direction=direction)
 
+
+    def from_dict(d:dict):
+        return Nail(name=d['name'],
+                     caliber=d['caliber'],
+                     length=d['length'],
+                     direction=d['direction'])
 
     def part_description(self)->str:
         return f'{self.type()}_{self.caliber}mm_x_{self.length}mm'
@@ -400,6 +427,11 @@ class Dowel(NailLike):
     def part_description(self)->str:
         return f'{self.type()}_{self.length}mm'
 
+    def from_dict(d:dict):
+        return Dowel(name=d['name'],
+                     length=d['length'],
+                     direction=d['direction'])
+
 
 #--------------------------------------------------------------------
 
@@ -423,6 +455,10 @@ class CornerBrace(Piece):
 
     def part_description(self):
         return self.type()
+
+    def from_dict(d:dict):
+        return CornerBrace(name=d['name'],
+                     direction=d['direction'])
 
 #--------------------------------------------------------------------
 

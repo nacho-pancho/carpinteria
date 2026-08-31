@@ -37,8 +37,23 @@ def test_void():
     get_logger().setLevel(logging.DEBUG)
     pl = pv.Plotter()
     size = Size(10,20,30)
-    piece =  Void(size)
+    piece =  Void(name='a void',fixed_size=size)
     print(piece)
+
+    # test I/O
+    proj = Project(name='Test void',version='1.0',date='1/1/1',author='Ignacio Ramirez',description='bah')
+    proj.add_piece(piece)
+    print('PROJECT CREATED')
+    print(proj)
+    print(proj.to_dict())
+    save_project('test_void.json',proj)
+    proj2 = load_project('test_void.json')
+    print('LOADED PROJECT')
+    print(proj2)
+    print(proj2.to_dict())
+    save_project('test_void_reloaded.json',proj2)
+
+    # test display
     paint(pl,piece)
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
@@ -57,7 +72,21 @@ def test_composite():
     comp.add_piece(piece,cons)
     enable_tracing()
     comp.apply_layout()
-    print(comp)
+
+    # test I/O
+    proj = Project(name='Test composite',version='1.0',date='1/1/1',author='Ignacio Ramirez',description='bah')
+    proj.add_piece(piece)
+    print('PROJECT CREATED')
+    print(proj)
+    print(proj.to_dict())
+    save_project('test_composite.json',proj)
+    proj2 = load_project('test_composite.json')
+    print('LOADED PROJECT')
+    print(proj2)
+    print(proj2.to_dict())
+    save_project('test_composite_reloaded.json',proj2)
+
+    # test display
     paint(pl,comp)
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
@@ -94,9 +123,55 @@ def test_stack():
     comp.add_part(piece,cons,2)
 
     comp.apply_layout()
+
+    # test I/O
+    proj = Project(name='Test stack',version='1.0',date='1/1/1',author='Ignacio Ramirez',description='bah')
+    proj.add_piece(piece)
+    print('PROJECT CREATED')
+    print(proj)
+    print(proj.to_dict())
+    save_project('test_stack.json',proj)
+    proj2 = load_project('test_stack.json')
+    print('LOADED PROJECT')
+    print(proj2)
+    print(proj2.to_dict())
+    save_project('test_stack_reloaded.json',proj2)
+
+    # test display
     enable_tracing()
     paint(pl,comp)
     print(comp)
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
+    pl.view_vector((0,-5,0))
+    pl.show_axes()
+    pl.show_grid()
+    pl.show()
+
+def test_beam():
+    # works
+    get_logger().setLevel(logging.DEBUG)
+    pl = pv.Plotter()
+    piece =  Beam('a beam',
+                        material=FINGER_MATERIAL,
+                        thickness1=40,
+                        thickness2=40,
+                        orientation=X_COORD,
+                        fixed_length=1000)
+
+    # test I/O
+    proj = Project(name='Test beam',version='1.0',date='1/1/1',author='Ignacio Ramirez',description='bah')
+    proj.add_piece(piece)
+    print('PROJECT CREATED')
+    print(proj)
+    print(proj.to_dict())
+    save_project('test_beam.json',proj)
+    proj2 = load_project('test_beam.json')
+    print('LOADED PROJECT')
+    print(proj2)
+    print(proj2.to_dict())
+    save_project('test_beam_reloaded.json',proj2)
+
+    paint(pl,piece)  
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
     pl.show_axes()
@@ -113,8 +188,21 @@ def test_sheet():
                         thickness=20,
                         face_orientation=Z_COORD,
                         fixed_size=Size(1000,600,None))
-    print(piece)
-    paint(pl,piece)
+
+    # test I/O
+    proj = Project(name='Test sheet',version='1.0',date='1/1/1',author='Ignacio Ramirez',description='bah')
+    proj.add_piece(piece)
+    print('PROJECT CREATED')
+    print(proj)
+    print(proj.to_dict())
+    save_project('test_sheet.json',proj)
+    proj2 = load_project('test_sheet.json')
+    print('LOADED PROJECT')
+    print(proj2)
+    print(proj2.to_dict())
+    save_project('test_sheet_reloaded.json',proj2)
+
+    paint(pl,piece)  
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
     pl.show_axes()
@@ -123,7 +211,6 @@ def test_sheet():
 
 
 def test_board():
-    proj = Project(name='Test board',version='1.0',date='1/1/1',author='Ignacio Ramirez',description='bah')
     get_logger().setLevel(logging.DEBUG)
     pl = pv.Plotter()
     piece =  Board('board',
@@ -132,19 +219,18 @@ def test_board():
                         face_orientation=Z_COORD,
                         coating=CoatingSpec((1,1,0,0,1,1)),
                         fixed_size=Size(1000,600,None))
-    print(piece)
-    proj.add_piece(piece)
-
     # test I/O
+    proj = Project(name='Test board',version='1.0',date='1/1/1',author='Ignacio Ramirez',description='bah')
+    proj.add_piece(piece)
     print('PROJECT CREATED')
     print(proj)
     print(proj.to_dict())
-    save_project('test.json',proj)
-    proj2 = load_project('test.json')
+    save_project('test_board.json',proj)
+    proj2 = load_project('test_board.json')
     print('LOADED PROJECT')
     print(proj2)
     print(proj2.to_dict())
-    save_project('test2.json',proj2)
+    save_project('test_board_reloaded.json',proj2)
 
     # test display
     paint(pl,piece)
@@ -162,7 +248,22 @@ def test_guide():
     piece =  DrawerGuide('guide',
                         orientation=Y_COORD,
                         length=400)
-    print(piece)
+
+
+    # test I/O
+    proj = Project(name='Test guide',version='1.0',date='1/1/1',author='Ignacio Ramirez',description='bah')
+    proj.add_piece(piece)
+    print('PROJECT CREATED')
+    print(proj)
+    print(proj.to_dict())
+    save_project('test_guide.json',proj)
+    proj2 = load_project('test_guide.json')
+    print('LOADED PROJECT')
+    print(proj2)
+    print(proj2.to_dict())
+    save_project('test_guide_reloaded.json',proj2)
+
+    # test display
     paint(pl,piece)
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
@@ -174,11 +275,108 @@ def test_screw():
     get_logger().setLevel(logging.DEBUG)
     pl = pv.Plotter()
     piece =  Screw(name='screw',
+                   material=FLAT_SCREW_MATERIAL,
                    caliber=3,
                    length=15,
-                   _type=Screw.FLAT_HEAD,
                    direction=TOP_TO_BOTTOM)
-    print(piece)
+
+    # test I/O
+    proj = Project(name='Test screw',version='1.0',date='1/1/1',author='Ignacio Ramirez',description='bah')
+    proj.add_piece(piece)
+    print('PROJECT CREATED')
+    print(proj)
+    print(proj.to_dict())
+    save_project('test_screw.json',proj)
+    proj2 = load_project('test_screw.json')
+    print('LOADED PROJECT')
+    print(proj2)
+    print(proj2.to_dict())
+    save_project('test_screw_reloaded.json',proj2)
+
+    # test display
+    paint(pl,piece)
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
+    pl.view_vector((0,-5,0))
+    pl.show_axes()
+    pl.show_grid()
+    pl.show()
+
+
+def test_nail():
+    get_logger().setLevel(logging.DEBUG)
+    pl = pv.Plotter()
+    piece =  Nail(name='nail',
+                   caliber=3,
+                   length=40,
+                   direction=TOP_TO_BOTTOM)
+
+    # test I/O
+    proj = Project(name='Test nail',version='1.0',date='1/1/1',author='Ignacio Ramirez',description='bah')
+    proj.add_piece(piece)
+    print('PROJECT CREATED')
+    print(proj)
+    print(proj.to_dict())
+    save_project('test_nail.json',proj)
+    proj2 = load_project('test_nail.json')
+    print('LOADED PROJECT')
+    print(proj2)
+    print(proj2.to_dict())
+    save_project('test_nail_reloaded.json',proj2)
+
+    # test display
+    paint(pl,piece)
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
+    pl.view_vector((0,-5,0))
+    pl.show_axes()
+    pl.show_grid()
+    pl.show()
+
+
+def test_dowel():
+    get_logger().setLevel(logging.DEBUG)
+    pl = pv.Plotter()
+    piece =  Dowel(name=' a dowel',length=40,direction=TOP_TO_BOTTOM)
+
+    # test I/O
+    proj = Project(name='Test dowel',version='1.0',date='1/1/1',author='Ignacio Ramirez',description='bah')
+    proj.add_piece(piece)
+    print('PROJECT CREATED')
+    print(proj)
+    print(proj.to_dict())
+    save_project('test_dowel.json',proj)
+    proj2 = load_project('test_dowel.json')
+    print('LOADED PROJECT')
+    print(proj2)
+    print(proj2.to_dict())
+    save_project('test_dowel_reloaded.json',proj2)
+
+    # test display
+    paint(pl,piece)
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
+    pl.view_vector((0,-5,0))
+    pl.show_axes()
+    pl.show_grid()
+    pl.show()
+
+def test_corner():
+    get_logger().setLevel(logging.DEBUG)
+    pl = pv.Plotter()
+    piece =  CornerBrace(name='a corner',orientation=X_COORD)
+
+    # test I/O
+    proj = Project(name='Test corner',version='1.0',date='1/1/1',author='Ignacio Ramirez',description='bah')
+    proj.add_piece(piece)
+    print('PROJECT CREATED')
+    print(proj)
+    print(proj.to_dict())
+    save_project('test_corner.json',proj)
+    proj2 = load_project('test_corner.json')
+    print('LOADED PROJECT')
+    print(proj2)
+    print(proj2.to_dict())
+    save_project('test_corner_reloaded.json',proj2)
+
+    # test display
     paint(pl,piece)
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
@@ -187,7 +385,15 @@ def test_screw():
     pl.show()
 
 if __name__ == '__main__':
+    test_void()
+    test_nail() # did not show 
+    test_dowel() # did not show
+    test_screw() # shows but wrong
+    test_beam()
+    test_sheet()
     test_board()
+    test_composite()
+    test_stack()
 
 
 

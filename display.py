@@ -145,7 +145,7 @@ def paint_screw(plotter:pv.Plotter, obj:Screw):
         offset.coords[2] + size.dim[2]/2]
     beam_height = obj.length
     head_height = obj.head_height
-    beam_radius = obj.radius
+    beam_radius = obj.caliber
     head_radius = obj.head_radius
     head_shift  = ( head_height + beam_height ) / 2
     head_center = [

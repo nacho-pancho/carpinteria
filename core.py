@@ -144,8 +144,8 @@ class LayoutConstraints(JSONable):
  alignment {self.alignment}'''
 
     def to_dict(self):
-        return {'padding': self.padding.to_dict(self),
-                'margin': self.margin.to_dict(self),
+        return {'padding': self.padding.to_dict(),
+                'margin': self.margin.to_dict(),
                 'weight': self.weight,
                 'alignment': self.alignment}
 
@@ -180,7 +180,7 @@ class PieceSpec(JSONable):
 
     def to_dict(self)->dict:
         d = {}
-        d['piece'] = self.piece.to_dict(),
+        d['piece'] = self.piece.to_dict()
         d['constraints'] = self.constraints.to_dict()
         return d
 
@@ -301,6 +301,10 @@ class DefaultLayout(Layout):
     def __str__(self):
         return self.type()
 
+
+    def from_dict(d:dict):
+        return DefaultLayout()
+    
 #--------------------------------------------------------------------
 
 
@@ -323,39 +327,39 @@ class CompositePiece(Piece):
                          min_size=min_size,
                          max_size=max_size)
         self.layout = layout
-        self.parts = [None]*self.layout.slots()
+        self.piece_specs = [None]*self.layout.slots()
 
     def translate(self,t:Vector):
         super().translate(self,t)
-        for part in self.parts:
+        for part in self.piece_specs:
             if part is not None:
                 piece = part.piece
                 piece.volume.offset.translate(t)
 
 
     def add_piece(self, piece:Piece, constraints:LayoutConstraints, position):
-        if self.parts[position] is not None:
+        if self.piece_specs[position] is not None:
             get_logger().warning(f'There is already a piece at position {position}.')
-        self.parts[position] = PieceSpec(piece,constraints)
+        self.piece_specs[position] = PieceSpec(piece,constraints)
 
     def apply_layout(self):
         if self.layout is None:
             raise ValueError(f'Layout not defined.')
-        self.layout.apply(self.volume,self.parts)
+        self.layout.apply(self.volume,self.piece_specs)
 
     def __str__(self):
-        str = f'Composite piece with layout {self.layout} and {len(self.parts)} parts:\n'
-        for i,p in enumerate(self.parts):
+        str = f'Composite piece with layout {self.layout} and {len(self.piece_specs)} parts:\n'
+        for i,p in enumerate(self.piece_specs):
             str += f'{i})\n{p}'
         return str
 
     
     def part_description(self):
-        return f'composite with {len(self.parts)} parts and layout {self.layout}'
+        return f'composite with {len(self.piece_specs)} parts and layout {self.layout}'
     
     def part_list(self):
         ret = list()
-        for part in self.parts:
+        for part in self.piece_specs:
             if part is not None:
                 pl = part.piece.part_list()
                 ret.extend(pl)
@@ -367,9 +371,16 @@ class CompositePiece(Piece):
 
 
     def to_dict(self):
-        d = {}
+        d = super().to_dict()
         d['layout'] = self.layout.to_dict()
-        d['parts'] = list( p.to_dict() for p in self.parts )
+        piece_list = list()
+        for i,p in enumerate(self.piece_specs):
+            piece_d = {}
+            piece_d['piece'] = p.piece.to_dict()
+            piece_d['constraints'] = p.constraints.to_dict()
+            piece_d['position'] = i
+            piece_list.append(piece_d)
+        d['pieces'] = piece_list
         return d
 
 

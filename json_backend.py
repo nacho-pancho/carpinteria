@@ -35,12 +35,8 @@ def save_project(fname:str,p:Project):
 def dict_to_layout(d:dict):
     layout_type = d['type']
     print(f'loading layout {layout_type}')
-    return LAYOUTS[layout_type].from_dict()
+    return LAYOUTS[layout_type].from_dict(d)
 
-
-def dict_to_part(d:dict):
-    return PieceSpec(dict_to_piece(d['piece']),
-                constraints=LayoutConstraints.from_dict(d['constraints']))
 
 
 def dict_to_composite(d:dict):
@@ -48,14 +44,19 @@ def dict_to_composite(d:dict):
     min_size = Size(d['min_size'])
     max_size = Size(d['max_size'])
     layout = dict_to_layout(d['layout'])
-    piece = CompositePiece(name=name,min_size=min_size,max_size=max_size,layout=layout)
-    parts = d['parts']
-    for p in parts:
-        piece.add_piece(dict_to_part(p))
+    comp = CompositePiece(name=name,min_size=min_size,max_size=max_size,layout=layout)
+    pieces = d['pieces']
+    for i,pd in enumerate(pieces):
+        print(i,pd)
+        piece=dict_to_piece(pd['piece'])
+        constraints=LayoutConstraints.from_dict(pd['constraints'])
+        position=pd['position']
+        comp.add_piece(piece,constraints,position)
+    return comp
 
-
-
+ 
 def dict_to_piece(d:dict):
+    print(d)
     type = d['type'] # very important field
     if type == 'composite': # the only special one that needs to be treated differently
         return dict_to_composite(d)

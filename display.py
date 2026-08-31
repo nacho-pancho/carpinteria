@@ -208,7 +208,7 @@ def paint_nail_like(plotter:pv.Plotter, obj:NailLike):
 
 
 def paint_composite(plotter:pv.Plotter,obj:CompositePiece):
-    for part in obj.parts:
+    for part in obj.piece_specs:
         if trace:
             plotter = paint_volume(plotter,part.slot_volume,'green')
             plotter = paint_volume(plotter,part.padded_volume,'blue')

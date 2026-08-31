@@ -53,6 +53,7 @@ def test_void():
     print(proj2.to_dict())
     save_project('test_void_reloaded.json',proj2)
     piece = proj2.pieces[0]
+
     # test display
     paint(pl,piece)
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
@@ -75,7 +76,7 @@ def test_composite():
 
     # test I/O
     proj = Project(name='Test composite',version='1.0',date='1/1/1',author='Ignacio Ramirez',description='bah')
-    proj.add_piece(piece)
+    proj.add_piece(comp)
     print('PROJECT CREATED')
     print(proj)
     print(proj.to_dict())
@@ -86,7 +87,9 @@ def test_composite():
     print(proj2.to_dict())
     save_project('test_composite_reloaded.json',proj2)
 
-    # test display
+    # test display and consistency after loading
+    print(comp)
+    comp = proj2.pieces[0]
     paint(pl,comp)
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
@@ -126,7 +129,7 @@ def test_stack():
 
     # test I/O
     proj = Project(name='Test stack',version='1.0',date='1/1/1',author='Ignacio Ramirez',description='bah')
-    proj.add_piece(piece)
+    proj.add_piece(comp)
     print('PROJECT CREATED')
     print(proj)
     print(proj.to_dict())
@@ -137,8 +140,10 @@ def test_stack():
     print(proj2.to_dict())
     save_project('test_stack_reloaded.json',proj2)
 
-    # test display
+    # test display and consistency after loading
+    comp = proj2.pieces[0]
     enable_tracing()
+    print(comp)
     paint(pl,comp)
     print(comp)
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
@@ -171,6 +176,8 @@ def test_beam():
     print(proj2.to_dict())
     save_project('test_beam_reloaded.json',proj2)
 
+    # test display and consistency
+    piece = proj2.pieces[0]
     paint(pl,piece)  
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
@@ -202,6 +209,8 @@ def test_sheet():
     print(proj2.to_dict())
     save_project('test_sheet_reloaded.json',proj2)
 
+    # test display and consistency
+    piece = proj2.pieces[0]
     paint(pl,piece)  
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
@@ -232,7 +241,8 @@ def test_board():
     print(proj2.to_dict())
     save_project('test_board_reloaded.json',proj2)
 
-    # test display
+    # test display and consistency
+    piece = proj2.pieces[0]
     paint(pl,piece)
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
@@ -263,7 +273,8 @@ def test_guide():
     print(proj2.to_dict())
     save_project('test_guide_reloaded.json',proj2)
 
-    # test display
+    # test display and consistency
+    piece = proj2.pieces[0]
     paint(pl,piece)
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
@@ -293,7 +304,8 @@ def test_screw():
     print(proj2.to_dict())
     save_project('test_screw_reloaded.json',proj2)
 
-    # test display
+    # test display and consistency
+    piece = proj2.pieces[0]
     paint(pl,piece)
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
@@ -323,7 +335,10 @@ def test_nail():
     print(proj2.to_dict())
     save_project('test_nail_reloaded.json',proj2)
     print("PAINT")
+
     # test display
+    # test display and consistency
+    piece = proj2.pieces[0]
     paint(pl,piece)
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
@@ -350,7 +365,8 @@ def test_dowel():
     print(proj2.to_dict())
     save_project('test_dowel_reloaded.json',proj2)
 
-    # test display
+    # test display and consistency
+    piece = proj2.pieces[0]
     paint(pl,piece)
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
     pl.view_vector((0,-5,0))
@@ -385,13 +401,14 @@ def test_corner():
     pl.show()
 
 if __name__ == '__main__':
-    test_void()
-    test_nail() # did not show 
-    test_dowel() # did not show
-    test_screw() # shows but wrong
-    test_beam()
-    test_sheet()
-    test_board()
+    #test_void()
+    #test_nail() # did not show 
+    #test_dowel() # did not show
+    #test_screw() # shows but wrong
+    #test_beam()
+    #test_sheet()
+    #test_board()
+    #test_block()
     test_composite()
     test_stack()
 

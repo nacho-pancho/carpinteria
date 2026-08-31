@@ -210,7 +210,7 @@ class Volume(JSONable):
         return {"size":self.size.to_dict(), "offset": self.offset.to_dict() }
 
     def from_dict(d:dict):
-        return Volume(Size(d['size']),Vector(d['offset']))
+        return Volume(Size.from_dict(d['size']),Vector.from_dict(d['offset']))
 
 
 def grow_volume(v:Volume,p:Padding):

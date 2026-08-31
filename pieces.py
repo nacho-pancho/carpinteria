@@ -36,7 +36,11 @@ class Void(Piece):
         return self.type()
 
     def from_dict(d:dict):
-        return Void(d['name'])
+        min_size = Size.from_dict(d['min_size'])
+        max_size = Size.from_dict(d['max_size'])
+        obj = Void(d['name'],min_size=min_size, max_size=max_size)
+        obj.volume = Volume.from_dict(d['volume'])
+        return obj
     
  #--------------------------------------------------------------------
 

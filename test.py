@@ -152,6 +152,37 @@ def test_stack():
     pl.show_grid()
     pl.show()
 
+def test_block():
+    # works
+    get_logger().setLevel(logging.DEBUG)
+    pl = pv.Plotter()
+    piece =  Block('a block',
+                        material=FINGER_MATERIAL,
+                        fixed_size=Size(10,20,30))
+
+    # test I/O
+    proj = Project(name='Test block',version='1.0',date='1/1/1',author='Ignacio Ramirez',description='bah')
+    proj.add_piece(piece)
+    print('PROJECT CREATED')
+    print(proj)
+    print(proj.to_dict())
+    save_project('test_block.json',proj)
+    proj2 = load_project('test_block.json')
+    print('LOADED PROJECT')
+    print(proj2)
+    print(proj2.to_dict())
+    save_project('test_block_reloaded.json',proj2)
+
+    # test display and consistency
+    piece = proj2.pieces[0]
+    paint(pl,piece)  
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
+    pl.view_vector((0,-5,0))
+    pl.show_axes()
+    pl.show_grid()
+    pl.show()
+
+
 def test_beam():
     # works
     get_logger().setLevel(logging.DEBUG)
@@ -408,7 +439,7 @@ if __name__ == '__main__':
     #test_beam()
     #test_sheet()
     #test_board()
-    #test_block()
+    test_block()
     test_composite()
     test_stack()
 

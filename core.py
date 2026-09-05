@@ -14,7 +14,7 @@ library so we don't care about adding vectors by hand as long as each element ha
 import copy
 from dataclasses import dataclass
 import math
-
+from util import *
 from jsonable import *
 from util import *
 from geometry import *

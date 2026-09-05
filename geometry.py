@@ -43,6 +43,8 @@ INFINITY = 1000000000 # 1000km is quite large for a furniture
 class Vector(JSONable):
 
     def __init__(self,x=0,y=0,z=0):
+        if type(x) == list or type(x) == tuple:
+                raise ValueError('Vector takes 3 scalars.')
         self.coords = [x,y,z]
 
     def __getitem__(self,i):
@@ -105,7 +107,9 @@ type Point = Vector
 
 class Size(JSONable):
 
-    def __init__(self,sx:float=0,sy:float=0,sz:float=0):
+    def __init__(self,sx:float=0, sy:float=0, sz:float=0):
+        if type(sx) == list or type(sx) == tuple:
+            raise ValueError("Size initializer takes 3 scalars")
         self.dim = [sx,sy,sz]
 
 

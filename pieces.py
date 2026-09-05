@@ -122,7 +122,7 @@ class Beam(Piece):
             ret.append(s.id())
 
     def from_dict(d:dict):
-        return Beam(
+        obj = Beam(
             name=d['name'],
             material=Material.from_dict(d['material']),
             thickness1=d['thickness1'],
@@ -131,6 +131,9 @@ class Beam(Piece):
             length=d['length'],
             min_length=d['min_length'],
             max_length=d['max_length'])
+        obj.volume = Volume.from_dict(d['volume'])
+        return obj
+    
 
     def to_dict(self):
         d_base = super().to_dict()
@@ -185,12 +188,14 @@ class Block(Piece):
             ret.append(s.id())
 
     def from_dict(d:dict):
-        return Block(
+        obj = Block(
             name=d['name'],
             min_size=Size.from_dict(d['min_size']),
             max_size=Size.from_dict(d['max_size']),
             material=Material.from_dict(d['material'])
             )
+        obj.volume = Volume.from_dict(d['volume'])
+        return obj
     
     def to_dict(self):
         d_base = super().to_dict()
@@ -255,13 +260,16 @@ class Sheet(Piece):
             ret.append(s.id())
 
     def from_dict(d:dict):
-        return Sheet(
+        obj = Sheet(
             name=d['name'],
             material=Material.from_dict(d['material']),
             thickness=d['thickness'],
             face_orientation=d['face_orientation'],
             min_size=Size.from_dict(d['min_size']),
             max_size=Size.from_dict(d['max_size']))
+        obj.volume = Volume.from_dict(d['volume'])
+        return obj
+
     
     def to_dict(self):
         d_base = super().to_dict()

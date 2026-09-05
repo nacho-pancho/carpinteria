@@ -41,8 +41,8 @@ def dict_to_layout(d:dict):
 
 def dict_to_composite(d:dict):
     name = d['name']
-    min_size = Size(d['min_size'])
-    max_size = Size(d['max_size'])
+    min_size = Size.from_dict(d['min_size'])
+    max_size = Size.from_dict(d['max_size'])
     layout = dict_to_layout(d['layout'])
     comp = CompositePiece(name=name,min_size=min_size,max_size=max_size,layout=layout)
     pieces = d['pieces']

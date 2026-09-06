@@ -147,7 +147,7 @@ def paint_board(plotter:pv.Plotter, obj:Board):
             coat_thk = coating[i][1]
             coat_vol = copy.deepcopy(volume)
             coat_vol.size.dim[i] = coat_thk
-            coat_vol.offset.coords[i] = volume.size.dim[i] - coat_thk
+            coat_vol.offset.coords[i] += volume.size.dim[i] - coat_thk
             coat_box = pv.Box(volume_to_box(coat_vol))
             plotter = paint_obj(plotter,coat_box,ext_tex)
     return plotter

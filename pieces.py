@@ -349,6 +349,7 @@ class Board(Sheet):
             max_size=Size.from_dict(d['max_size']),
             coating=CoatingSpec.from_dict(d['coating']))
         obj.volume = Volume.from_dict(d['volume'])
+        return obj
 
     def __str__(self):
         return  super().__str__() + f' coating {self.coating}'

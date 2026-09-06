@@ -411,7 +411,7 @@ def test_stack():
 def test_drawer():
     get_logger().setLevel(logging.DEBUG)
     pl = pv.Plotter()
-    drawer = build_drawer(size=Size(200,300,400))
+    drawer = build_drawer(size=Size(400,500,200))
     drawer.apply_layout()
     print("CHECKING")
     ok = check(drawer)
@@ -426,12 +426,13 @@ def test_drawer():
     save_project('test_drawer.json',proj)
     proj2 = load_project('test_drawer.json')
     print('LOADED PROJECT')
+    print(proj2)
+
     print("CHECKING AGAIN")
     ok = check(proj2.pieces[0])
     if not ok:
         print("doesn't check")
         exit(1)
-    print(proj2)
     print(proj2.to_dict())
     save_project('test_drawer_reloaded.json',proj2)
 

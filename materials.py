@@ -17,6 +17,21 @@ STEEL_COLOR = (0.8,0.9,1.0)
 BRONZE_COLOR = (0.8,0.6,0.4)
 LIGHT_WOOD_COLOR = (0.9,0.75,0.6)
 
+named_colors = {
+    'brown':BROWN_COLOR,
+    'white':WHITE_COLOR,
+    'steel':STEEL_COLOR,
+    'bronze':BRONZE_COLOR,
+    'lwood':LIGHT_WOOD_COLOR,
+    'euca':EUCALYPTUS_COLOR,
+    'red':(1.0,0.0,0.0),
+    'green':(0.0,1.0,0.0),
+    'blue':(0.0,0.0,1.0),
+    'yellow':(1.0,1.0,0.0),
+    'magenta':(1.0,0.0,1.0),
+    'cyan':(0.0,1.0,1.0),
+    'black':(0.0,0.0,0.0)
+}
 #==========================================================
 
 @dataclass 
@@ -99,3 +114,8 @@ NAIL_MATERIAL  = Material('NAIL',interior=STEEL_TEXTURE,exterior=STEEL_TEXTURE)
 PINE_WOOD_MATERIAL  = Material('PINE',interior=LIGHT_WOOD_TEXTURE,exterior=LIGHT_WOOD_TEXTURE)
 DOWEL_MATERIAL  = Material('DOWEL',interior=LIGHT_WOOD_TEXTURE,exterior=LIGHT_WOOD_TEXTURE)
 CORNER_MATERIAL  = Material('CORNER',interior=WHITE_PLASTIC_TEXTURE,exterior=WHITE_PLASTIC_TEXTURE)
+
+def create_mdf_material(color_name):
+    int_tex = MDF_INT_TEXTURE
+    ext_tex = Texture(color=named_colors[color_name])
+    return Material("MDF_{color_name}",interior=int_tex,exterior=ext_tex)

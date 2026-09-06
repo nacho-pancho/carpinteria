@@ -51,6 +51,8 @@ def dict_to_composite(d:dict):
         piece=dict_to_piece(pd['piece'])
         constraints=LayoutConstraints.from_dict(pd['constraints'])
         position=pd['position']
+        print(piece)
+        print(position)
         comp.add_piece(piece,constraints,position)
     comp.volume = Volume.from_dict(d['volume'])
     return comp

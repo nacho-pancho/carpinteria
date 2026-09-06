@@ -348,9 +348,9 @@ class CompositePiece(Piece):
         self.layout.apply(self.volume,self.piece_specs)
 
     def __str__(self):
-        str = f'Composite piece with layout {self.layout} and {len(self.piece_specs)} parts:\n'
+        str = f'Composite {self.name} with layout {self.layout} and {len(self.piece_specs)} parts:\n'
         for i,p in enumerate(self.piece_specs):
-            str += f'{i})\n{p}'
+            str += f'\n{i}){p}'
         return str
 
     
@@ -413,3 +413,20 @@ class Project(JSONable):
         d['description'] = self.description
         d['pieces'] = list( p.to_dict() for p in self.pieces )
         return d
+
+def check(p:Piece):
+    logger = get_logger()
+    ok = True
+    if isinstance(p,CompositePiece):
+        for i,ps in enumerate(p.piece_specs):
+            if ps.piece is None:
+                logger.warning(f" composite {p.name} has no piece defined at slot {i}")
+                ok = False
+            if not check(ps.piece):
+                ok = False
+        return ok
+    if p.volume.size[0] == None or p.volume.size[1] == None or p.volume.size[2] == None:
+        logger.warning(f"Undefined size for piece {p.name}")
+        return False
+    else:
+        return True

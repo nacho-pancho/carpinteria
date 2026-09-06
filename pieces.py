@@ -340,7 +340,7 @@ class Board(Sheet):
             ret.append(s.id())
 
     def from_dict(d:dict):
-        return Board(
+        obj = Board(
             name=d['name'],
             material=Material.from_dict(d['material']),
             thickness=d['thickness'],
@@ -348,6 +348,7 @@ class Board(Sheet):
             min_size=Size.from_dict(d['min_size']),
             max_size=Size.from_dict(d['max_size']),
             coating=CoatingSpec.from_dict(d['coating']))
+        obj.volume = Volume.from_dict(d['volume'])
 
     def __str__(self):
         return  super().__str__() + f' coating {self.coating}'

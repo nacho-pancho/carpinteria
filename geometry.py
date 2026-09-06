@@ -248,7 +248,6 @@ class SizeModifier():
         # - 6 scalars: a particular value for each direction and side
         # - 3 tuples of 2: same as 6 but overly complicated
         #
-        print(_size)
         if type(_size) == tuple or type(_size) == list:
             if len(_size) == 6:
                 for i in range(3):
@@ -256,7 +255,6 @@ class SizeModifier():
             elif len(_size) == 3:
                 for i in range(3):
                     _size_i = _size[i]
-                    print(_size_i)
                     if type(_size_i) == tuple or type(_size_i) == list:
                         if len(_size_i) == 2:
                             self.values[i][0] = _size_i[0]

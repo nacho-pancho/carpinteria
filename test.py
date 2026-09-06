@@ -7,6 +7,7 @@ from pieces import *
 from materials import *
 from display import *
 from json_backend import *
+from factory import *
 
 def test_pyvista():
     get_logger().setLevel(logging.DEBUG)
@@ -404,6 +405,51 @@ def test_stack():
 
 
 
+
+
+
+def test_drawer():
+    get_logger().setLevel(logging.DEBUG)
+    pl = pv.Plotter()
+    drawer = build_drawer(size=Size(200,300,400))
+    drawer.apply_layout()
+    print("CHECKING")
+    ok = check(drawer)
+    if not ok:
+        exit(1)
+    # test I/O
+    proj = Project(name='Test drawer',version='1.0',date='1/1/1',author='Ignacio Ramirez',description='bah')
+    proj.add_piece(drawer)
+    print('PROJECT CREATED')
+    print(proj)
+    print(proj.to_dict())
+    save_project('test_drawer.json',proj)
+    proj2 = load_project('test_drawer.json')
+    print('LOADED PROJECT')
+    print("CHECKING AGAIN")
+    ok = check(proj2.pieces[0])
+    if not ok:
+        print("doesn't check")
+        exit(1)
+    print(proj2)
+    print(proj2.to_dict())
+    save_project('test_drawer_reloaded.json',proj2)
+
+    # test display and consistency after loading
+    comp = proj2.pieces[0]
+    enable_tracing()
+    print(comp)
+    paint(pl,comp)
+    print(comp)
+    pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
+    pl.view_vector((0,-5,0))
+    pl.show_axes()
+    pl.show_grid()
+    pl.show()
+
+
+
+
 if __name__ == '__main__':
     #test_void()
     #test_nail() # did not show 
@@ -412,10 +458,10 @@ if __name__ == '__main__':
     #test_beam()
     #test_sheet()
     #test_board()
-    test_block()
-    test_composite()
-    test_stack()
-
+    #test_block()
+    #test_composite()
+    #test_stack()
+    test_drawer()
 
 
 

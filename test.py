@@ -39,6 +39,7 @@ def test_void():
     pl = pv.Plotter()
     size = Size(10,20,30)
     piece =  Void(name='a void',fixed_size=size)
+    piece.layout()
     print(piece)
 
     # test I/O
@@ -54,7 +55,10 @@ def test_void():
     print(proj2.to_dict())
     save_project('test_void_reloaded.json',proj2)
     piece = proj2.pieces[0]
-
+    piece.layout()
+    print(piece)
+    print(piece.size)
+    print(piece.offset)
     # test display
     paint(pl,piece)
     pl.add_floor('-z',color='gray',lighting=True,pad=0.5) 
@@ -452,7 +456,7 @@ def test_drawer():
 
 
 if __name__ == '__main__':
-    #test_void()
+    test_void()
     #test_nail() # did not show 
     #test_dowel() # did not show
     #test_screw() # shows but wrong
@@ -462,7 +466,7 @@ if __name__ == '__main__':
     #test_block()
     #test_composite()
     #test_stack()
-    test_drawer()
+    #test_drawer()
 
 
 

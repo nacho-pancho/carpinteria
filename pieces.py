@@ -14,16 +14,11 @@ class Void(Piece):
 
     def __init__(self, 
                  name:str,
-                 fixed_size:Size=Size(None,None,None),
-                 min_size:Size=Size(0,0,0),
-                 max_size:Size=Size(INFINITY,INFINITY,INFINITY),
-                 ):
+                 fixed_size:Size=Size(None,None,None)):
         super().__init__(name,
                          type='void', 
                          material=None, 
-                         fixed_size=fixed_size,
-                         min_size=min_size,
-                         max_size=max_size)
+                         fixed_size=fixed_size)
 
     def part_list():
         return []
@@ -36,12 +31,57 @@ class Void(Piece):
         return self.type()
 
     def from_dict(d:dict):
-        min_size = Size.from_dict(d['min_size'])
-        max_size = Size.from_dict(d['max_size'])
-        obj = Void(d['name'],min_size=min_size, max_size=max_size)
-        obj.volume = Volume.from_dict(d['volume'])
+        obj = Void(d['name'])
+        obj.constraints = LayoutConstraints.from_dict(d['constraints'])
+        return obj
+
+
+#--------------------------------------------------------------------
+
+class Block(Piece):
+    """
+    A wooden block of arbitrary size
+    """
+
+    def __init__(self, 
+                 name, 
+                 material=PINE_WOOD_MATERIAL,
+                 fixed_size:Size=Size(None,None,None)):
+        super().__init__(name=name,
+                         type='block',
+                       material=material,
+                       fixed_size=fixed_size)  
+        self.screws = list()
+
+    
+    def part_description(self):
+        dims = ['?','?','?']
+        if self.size is not None:
+            for i in range(3):
+                if self.size[i] is not None:
+                    dims[i] = self.size[i]
+        w,d,h = dims        
+        return f'block_of_{self.material.name}_{w}mm_x_{h}mm_x_{d}mm'
+
+    def add_screw(self,position:Vector):
+        pass
+
+    def part_list(self):
+        ret = list()
+        ret.append(self.id())
+        for s in self.screws():
+            ret.append(s.id())
+
+    def from_dict(d:dict):
+        obj = Block(name=d['name'],
+            material=Material.from_dict(d['material']))
+        obj.constraints = LayoutConstraints.from_dict(d['constraints'])
         return obj
     
+    def to_dict(self):
+        d_base = super().to_dict()
+        return d_base
+
  #--------------------------------------------------------------------
 
 class Beam(Piece):
@@ -62,55 +102,41 @@ class Beam(Piece):
                  thickness1,
                  thickness2, 
                  orientation,
-                 length:float=None,
-                 min_length:float=0,
-                 max_length:float=INFINITY
-                 ):
-
-        if orientation == Z_COORD:
-            min_size = Size(thickness1,thickness2,min_length)
-            max_size = Size(thickness1,thickness2,max_length)
-
-        elif orientation == Y_COORD:
-            min_size = Size(thickness1,min_length,thickness2)
-            max_size = Size(thickness1,min_length,thickness2)
-
-        elif orientation == X_COORD:
-            min_size = Size(min_length,thickness1,thickness2)
-            max_size = Size(max_length,thickness1,thickness2)
-
-        if length is not None:
-            min_size.dim[orientation] = length
-            max_size.dim[orientation] = length
-            min_length = length
-            max_length = length
+                 fixed_length:float=None):
 
         super().__init__(name=name,
                          type='beam',
-                       material=material,
-                       min_size=min_size,
-                       max_size=max_size)  
+                       material=material)  
+        #
+        # compute size constraints
+        #
+        if fixed_length is not None:
+            min_length = fixed_length
+            max_length = fixed_length
+
+        if orientation == Z_COORD:
+            self.constraints.min_size = Size(thickness1,thickness2,min_length)
+            self.constraints.max_size = Size(thickness1,thickness2,max_length)
+
+        elif orientation == Y_COORD:
+            self.constraints.min_size = Size(thickness1,min_length,thickness2)
+            self.constraints.max_size = Size(thickness1,min_length,thickness2)
+
+        elif orientation == X_COORD:
+            self.constraints.min_size = Size(min_length,thickness1,thickness2)
+            self.constraints.max_size = Size(max_length,thickness1,thickness2)
+
         self.orientation = orientation
         self.thickness1= thickness1
         self.thickness2= thickness2
-        self.min_length = min_length
-        self.max_length = max_length
-        self.length = length
         self.screws = list()
 
 
-    def id(self):
-        if self.orientation == X_COORD:
-            dim1 = self.volume.size.dim[Z_COORD]
-            dim2 = self.volume.size.dim[Y_COORD]
-        elif self.orientation == Y_COORD:
-            dim1 = self.volume.size.dim[X_COORD]
-            dim2 = self.volume.size.dim[Z_COORD]
-        else:
-            dim1 = self.volume.size.dim[X_COORD]
-            dim2 = self.volume.size.dim[Y_COORD]
-        w,h = min(dim1,dim2),max(dim1,dim2)
-        return f'{self.material.name}_{self.thickness}mm_x_{self.thickness}mm'
+    def part_description(self):
+        length = self.size.dim[self.orientation]
+        if length is None:
+            length = '?'
+        return f'{self.material.name}_{self.thickness1}mm_x_{self.thickness2}mm_x_{length}'
 
     def add_screw(self,position:Vector):
         pass
@@ -127,11 +153,8 @@ class Beam(Piece):
             material=Material.from_dict(d['material']),
             thickness1=d['thickness1'],
             thickness2=d['thickness2'],
-            orientation=d['orientation'],
-            length=d['length'],
-            min_length=d['min_length'],
-            max_length=d['max_length'])
-        obj.volume = Volume.from_dict(d['volume'])
+            orientation=d['orientation'])
+        obj.constraints = LayoutConstraints.from_dict(d['constraints'])
         return obj
     
 
@@ -139,67 +162,10 @@ class Beam(Piece):
         d_base = super().to_dict()
         d_base['thickness1'] =  self.thickness1
         d_base['thickness2'] =  self.thickness2
-        d_base['length'] =  self.length
         d_base['orientation'] =  self.orientation
-        d_base['min_length'] =  self.min_length
-        d_base['max_length'] =  self.max_length
         return d_base
     
 
-#--------------------------------------------------------------------
-
-class Block(Piece):
-    """
-    A wooden block of arbitrary size
-    """
-
-    def __init__(self, 
-                 name, 
-                 material=PINE_WOOD_MATERIAL,
-                fixed_size:Size=Size(None,None,None),
-                 min_size:Size=Size(0,0,0),
-                 max_size:Size=Size(INFINITY,INFINITY,INFINITY),
-                 ):
-        super().__init__(name=name,
-                         type='block',
-                       material=material,
-                       fixed_size=fixed_size,
-                       min_size=min_size,
-                       max_size=max_size)  
-        self.screws = list()
-
-    
-    def part_description(self):
-        dims = ['?','?','?']
-        if self.volume is not None:
-            for i in range(3):
-                if self.volume.size[i] is not None:
-                    dims[i] = self.volume.size[i]
-        w,d,h = dims        
-        return f'block_of_{self.material.name}_{w}_x_{h}_x_{d}_mm'
-
-    def add_screw(self,position:Vector):
-        pass
-
-    def part_list(self):
-        ret = list()
-        ret.append(self.id())
-        for s in self.screws():
-            ret.append(s.id())
-
-    def from_dict(d:dict):
-        obj = Block(
-            name=d['name'],
-            min_size=Size.from_dict(d['min_size']),
-            max_size=Size.from_dict(d['max_size']),
-            material=Material.from_dict(d['material'])
-            )
-        obj.volume = Volume.from_dict(d['volume'])
-        return obj
-    
-    def to_dict(self):
-        d_base = super().to_dict()
-        return d_base
 
 #--------------------------------------------------------------------
 
@@ -215,24 +181,15 @@ class Sheet(Piece):
                  thickness, 
                  face_orientation,
                  fixed_size:Size=Size(None,None,None),
-                 min_size:Size=Size(0,0,0),
-                 max_size:Size=Size(INFINITY,INFINITY,INFINITY),
                  ):
         super().__init__(name=name,
                          type='sheet',
                        material=material,
-                       fixed_size=fixed_size,
-                       min_size=min_size,
-                       max_size=max_size)  
+                       fixed_size=fixed_size)  
         self.face_orientation = face_orientation
         o = self.face_orientation
-        if self.min_size[o] is not None:
-            get_logger().warning(f'min_size specified along orientation {o} is overwritten by thicnkess.')
-            self.min_size.dim[o] = thickness
-        if self.max_size[o] is not None:
-            get_logger().warning(f'max_size specified along orientation {o} is overwritten by thicnkess.')
-            self.max_size.dim[o] = thickness
-        self.volume.size.dim[o] = thickness
+        self.constraints.min_size.dim[o] = thickness
+        self.constraints.max_size.dim[o] = thickness
         self.thickness = thickness
         self.screws = list()
 
@@ -248,7 +205,7 @@ class Sheet(Piece):
             dim1 = self.volume.size.dim[X_COORD]
             dim2 = self.volume.size.dim[Y_COORD]
         w,h = min(dim1,dim2),max(dim1,dim2)
-        return f'{self.material.name}_{self.thickness}mm'
+        return f'{self.material.name}_{self.thickness}mm' # :TODO: complete this description with size
 
     def add_screw(self,position:Vector):
         pass
@@ -264,10 +221,8 @@ class Sheet(Piece):
             name=d['name'],
             material=Material.from_dict(d['material']),
             thickness=d['thickness'],
-            face_orientation=d['face_orientation'],
-            min_size=Size.from_dict(d['min_size']),
-            max_size=Size.from_dict(d['max_size']))
-        obj.volume = Volume.from_dict(d['volume'])
+            face_orientation=d['face_orientation'])
+        obj.constraints = LayoutConstraints.from_dict(d['constraints'])
         return obj
 
     
@@ -310,9 +265,7 @@ class Board(Sheet):
                  thickness, 
                  coating:CoatingSpec,
                  face_orientation,                  
-                 fixed_size:Size=Size(None,None,None),
-                 min_size:Size=Size(0,0,0),
-                 max_size:Size=Size(INFINITY,INFINITY,INFINITY)):
+                 fixed_size:Size=Size(None,None,None)):
         """
         Cretes a Board.
         This is identical to a Sheet, but adds 6 boolean parameters that specify whether
@@ -323,10 +276,8 @@ class Board(Sheet):
         super().__init__(name=name,
                        material=material,
                        thickness=thickness,
-                       face_orientation=face_orientation,
                        fixed_size=fixed_size,
-                       max_size=max_size,
-                       min_size=min_size)
+                       face_orientation=face_orientation)
         self.type = 'board' # overwrite 'sheet'
         self.coating = coating
 
@@ -345,10 +296,8 @@ class Board(Sheet):
             material=Material.from_dict(d['material']),
             thickness=d['thickness'],
             face_orientation=d['face_orientation'],
-            min_size=Size.from_dict(d['min_size']),
-            max_size=Size.from_dict(d['max_size']),
             coating=CoatingSpec.from_dict(d['coating']))
-        obj.volume = Volume.from_dict(d['volume'])
+        obj.constraints = LayoutConstraints.from_dict(d['constraints'])
         return obj
 
     def __str__(self):
@@ -373,23 +322,29 @@ class DrawerGuide(Piece):
                  orientation:int, 
                  thickness=DEFAULT_THICKNESS, 
                  width=DEFAULT_WIDTH):
+
+        super().__init__(name=name,
+                         type='guide',
+                         material=GUIDE_MATERIAL)
+
         self.orientation = orientation
         self.length = length
         self.thickness = thickness
         self.width = width
+        #
+        # size is 100% fixed
+        #
         if self.orientation == Z_COORD: # weird for a guide but ok..., assume it is attached to a frontal plane
-            fixed_size = Size(self.thickness,self.width,self.length)
+            self.constraints.min_size = Size(self.thickness,self.width,self.length)
+            self.constraints.max_size = Size(self.thickness,self.width,self.length)
         elif self.orientation == X_COORD: # a little less weird, assume attached to a vertical plane
-            fixed_size = Size(self.length,self.thickness,self.width)
+            self.constraints.min_size = Size(self.length,self.thickness,self.width)
+            self.constraints.max_size = Size(self.length,self.thickness,self.width)
         elif self.orientation == Y_COORD: # most common, assume it is attached to a vertical plane
-            fixed_size = Size(self.thickness,self.length,self.width)
+            self.constraints.min_size = Size(self.thickness,self.length,self.width)
+            self.constraints.max_size = Size(self.thickness,self.length,self.width)
         else:
             raise ValueError(f'Invalid guide orientation {self.orientation}.')
-
-        super().__init__(name=name,
-                         type='guide',
-                         material=GUIDE_MATERIAL,
-                         fixed_size=fixed_size)
 
 
     def part_description(self)->str:
@@ -423,14 +378,14 @@ class NailLike(Piece):
         self.head_height = head_height
 
         if self.direction == BOTTOM_TO_TOP or self.direction == TOP_TO_BOTTOM:        
-            size = Size(self.head_width,self.head_width,self.length)
+            fixed_size = Size(self.head_width,self.head_width,self.length)
         elif self.direction == LEFT_TO_RIGHT or self.direction == RIGHT_TO_LEFT:        
-            size = Size(self.length, self.head_width,self.head_width)
+            fixed_size = Size(self.length, self.head_width,self.head_width)
         elif self.direction == FRONT_TO_BACK or self.direction == BACK_TO_FRONT:        
-            size = Size(self.head_width,self.length,self.head_width)
+            fixed_size = Size(self.head_width,self.length,self.head_width)
         else:
              raise ValueError(f'Invalid direction {self.direction}.')
-        super().__init__(name=name, type=type, material=material,fixed_size=size)
+        super().__init__(name=name, type=type, material=material,fixed_size=fixed_size)
     
     def part_list(self):
         ret = list()

@@ -42,7 +42,7 @@ INFINITY = 1000000000 # 1000km is quite large for a furniture
 
 class Vector(JSONable):
 
-    def __init__(self,x=0,y=0,z=0):
+    def __init__(self,x=None,y=None,z=None):
         if type(x) == list or type(x) == tuple:
                 raise ValueError('Vector takes 3 scalars.')
         self.coords = [x,y,z]
@@ -84,6 +84,12 @@ class Vector(JSONable):
 
     def from_dict(d): # this would be a list or tuple, not a dict
         return Vector(*d)
+
+    def check(self):
+        ok = self.coords[0] is not None and self.coords[1] is not None and self.coords[2] is not None
+        if not ok:
+            print('Failed to check vector.')
+        return ok
     
 
 def translate_vector(a:Vector,b:Vector|Size):
@@ -124,7 +130,12 @@ class Size(JSONable):
     def depth(self):
         return self.dim[Y_COORD]
 
-    
+    def check(self):
+        ok = self.dim[0] is not None and self.dim[1] is not None and self.dim[2] is not None
+        if not ok:
+            print('failed to check size.')
+        return ok
+     
     def grow(self,amount:Size | SizeModifier):
         if isinstance(amount,SizeModifier):
             size = amount.size()
@@ -216,6 +227,9 @@ class Volume(JSONable):
     def from_dict(d:dict):
         return Volume(Size.from_dict(d['size']),Vector.from_dict(d['offset']))
 
+    def check(self):
+        return self.size.check() and self.offset.check()
+    
 
 def grow_volume(v:Volume,p:Padding):
     ret = copy.deepcopy(v)

@@ -20,25 +20,25 @@ def disable_tracing():
     global trace
     trace = False
 
-def volume_to_box(v:Volume):
+def create_box(o:Vector,s:Size):
     return (
-        v.offset[0],
-        v.offset[0]+v.size[0],
-        v.offset[1],
-        v.offset[1]+v.size[1],
-        v.offset[2],
-        v.offset[2]+v.size[2],
+        o[0],
+        o[0]+s[0],
+        o[1],
+        o[1]+s[1],
+        o[2],
+        o[2]+s[2],
         )
 
 
 def paint_volume(plotter:pv.Plotter, volume:Volume, color='gray'):
-    box = pv.Box(volume_to_box(volume))
+    box = pv.Box(create_box(volume.offset,volume.size))
     plotter.add_mesh(box,show_edges=True,style='wireframe',color=color)
     return plotter
 
 
 def paint_void(plotter:pv.Plotter, obj:Void):
-    box = pv.Box(volume_to_box(obj.volume))
+    box = pv.Box(create_box(obj.offset,obj.size))
     plotter.add_mesh(box,show_edges=True,style='wireframe')
     return plotter
 
@@ -61,7 +61,7 @@ def paint_obj(plotter:pv.Plotter,obj:pv.PolyData,tex:Texture):
 def paint_block(plotter:pv.Plotter, obj:Sheet):
     size = obj.volume.size
     orig = obj.volume.offset
-    box = pv.Box(volume_to_box(obj.volume))
+    box = pv.Box(create_box(obj.offset,obj.size))
     material = obj.material
     texture = material.exterior
     if texture.texture_map is not None:
@@ -72,7 +72,7 @@ def paint_block(plotter:pv.Plotter, obj:Sheet):
 def paint_sheet(plotter:pv.Plotter, obj:Sheet):
     size = obj.volume.size
     orig = obj.volume.offset
-    box = pv.Box(volume_to_box(obj.volume))
+    box = pv.Box(create_box(obj.offset,obj.size))
     material = obj.material
     texture = material.exterior
     if texture.texture_map is not None:
@@ -89,7 +89,7 @@ def paint_sheet(plotter:pv.Plotter, obj:Sheet):
 def paint_beam(plotter:pv.Plotter, obj:Beam):
     size = obj.volume.size
     orig = obj.volume.offset
-    box = pv.Box(volume_to_box(obj.volume))
+    box = pv.Box(create_box(obj.offset,obj.size))
     material = obj.material
     texture = material.exterior
     if texture.texture_map is not None:
@@ -104,7 +104,7 @@ def paint_beam(plotter:pv.Plotter, obj:Beam):
 
 
 def paint_drawer_guide(plotter:pv.Plotter, obj:DrawerGuide):
-    box = pv.Box(volume_to_box(obj.volume))
+    box = pv.Box(create_box(obj.offset,obj.size))
     return paint_obj(plotter,box,obj.material.exterior)
 
 
@@ -116,7 +116,7 @@ def paint_board(plotter:pv.Plotter, obj:Board):
     coating_size =coating.size()
     coating_off = coating.offset()
     int_vol = shrink_volume(volume,coating)
-    int_box = pv.Box(volume_to_box(int_vol))
+    int_box = pv.Box(create_box(int_vol.offset,int_vol.size))
     int_tex = obj.material.interior
     ext_tex = obj.material.exterior
 
@@ -140,7 +140,7 @@ def paint_board(plotter:pv.Plotter, obj:Board):
             coat_thk = coating[i][0]
             coat_vol = copy.deepcopy(volume)
             coat_vol.size.dim[i] = coat_thk
-            coat_box = pv.Box(volume_to_box(coat_vol))
+            coat_box = pv.Box(create_box(coat_vol.offset,coat_vol.size))
             plotter = paint_obj(plotter,coat_box,ext_tex)
 
         if coating[i][1] > 0:
@@ -148,7 +148,7 @@ def paint_board(plotter:pv.Plotter, obj:Board):
             coat_vol = copy.deepcopy(volume)
             coat_vol.size.dim[i] = coat_thk
             coat_vol.offset.coords[i] += volume.size.dim[i] - coat_thk
-            coat_box = pv.Box(volume_to_box(coat_vol))
+            coat_box = pv.Box(create_box(coat_vol.offset,coat_vol.size))
             plotter = paint_obj(plotter,coat_box,ext_tex)
     return plotter
 
@@ -208,7 +208,7 @@ def paint_nail_like(plotter:pv.Plotter, obj:NailLike):
 
 
 def paint_composite(plotter:pv.Plotter,obj:CompositePiece):
-    for part in obj.piece_specs:
+    for part in obj.parts:
         if trace:
             plotter = paint_volume(plotter,part.slot_volume,'green')
             plotter = paint_volume(plotter,part.padded_volume,'blue')
@@ -218,7 +218,11 @@ def paint_composite(plotter:pv.Plotter,obj:CompositePiece):
             plotter = paint(plotter,part.piece)
     return plotter
 
-def paint(plotter:pv.Plotter,obj):
+def paint(plotter:pv.Plotter,obj:Piece):
+    if not obj.check():
+        logger = get_logger()
+        logger.warning(f'Failed checking piece. Cannot draw.')
+        return
     if type(obj) == Board:
         return paint_board(plotter,obj)
     elif type(obj) == Sheet:

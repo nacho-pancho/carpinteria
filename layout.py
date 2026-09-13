@@ -25,8 +25,9 @@ class StackLayout(Layout):
 
     def __str__(self):
         return f'StackLayout along axis {self.axis} with {self.num_slots} slots.'
-    
-    def apply(self, _volume:Volume, _parts:tuple[PieceSpec]):
+
+
+    def apply(self, _volume:Volume, _parts:tuple[Piece]):
         #
         # parts are arranged in increasing value along the axis
         # the assignment is greedy and respects the weights
@@ -37,6 +38,10 @@ class StackLayout(Layout):
         logger.info(f'Applying layout {self} to volume {_volume} with {self.num_slots} slots.')
         # the initial available size is the whole volume
         # and its offset is the same as the base volume
+        #
+        # first pass: determine the splitting of the space along the stack axis
+        # we need to resolve the sizes along the axis
+
         unallocated_volume = copy.deepcopy(_volume)
         for i,part in enumerate(_parts):
             if part is None:

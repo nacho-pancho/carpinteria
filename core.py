@@ -98,9 +98,14 @@ class Piece(JSONable):
         self.name = name
         self.type = type
         self.material = material
-        # these two are always computed; they are not stored or loaded
-        self.size = Size(None,None,None) 
-        self.offset = Vector(None,None,None)
+        #
+        # these are computed dynamically; 
+        # they are not stored or loaded
+        #
+        self.computed_size = Size(None,None,None) 
+        self.computed_offset = Vector(None,None,None)
+        self.computed_min_size = Size(None,None,None)
+        self.computed_max_size = Size(None,None,None)
 
         self.constraints = LayoutConstraints()
         # fixed_size overrides min_size and max_size 
@@ -111,13 +116,13 @@ class Piece(JSONable):
 
     def __str__(self):
         return f'''Piece {self.name} of type {self.type} made of {self.material}\
- at offset {self.offset} size {self.size} with constraints {self.constraints}.'''
+ at offset {self.computed_offset} size {self.computed_size} with constraints {self.constraints}.'''
     
     def translate(self,t:Vector):
-        self.offset.translate(t)
+        self.computed_offset.translate(t)
 
     def rotate(self,axis:float, angle:float):
-        x,y,z = self.offset[:]
+        x,y,z = self.computed_offset[:]
         if axis == X_COORD:
             new_x = x
             new_y = y*math.cos(angle) + -z*math.sin(angle)
@@ -130,7 +135,7 @@ class Piece(JSONable):
             new_x = x*math.cos(angle) + -y*math.sin(angle)
             new_y = x*math.sin(angle) +  y*math.cos(angle)
             new_z = z
-        self.offset = [new_x,new_y,new_z]
+        self.computed_offset = [new_x,new_y,new_z]
 
 
     
@@ -167,23 +172,29 @@ class Piece(JSONable):
     def check(self):
         logger = get_logger()
         logger.info(f'Checking piece {self.name}')   
-        if not self.size.check() or not self.offset.check():
+        if not self.computed_size.check() or not self.computed_offset.check():
             logger.warning(f'Failed check.')
             return False
         return True
 
-    def layout(self,offset=Vector(0,0,0)): 
+    def layout(self,offset=Vector(0,0,0)):
+        self.computed_offset = copy.deepcopy(offset)
+        self.compute_sizes()
+        
+    def compute_sizes(self): 
         """
-        Define size and offset. 
-        For simple pieces this will only define things if minimum and maximum sizes are equal
+        Determine computed sizes (actual size/min/max) and position
+        For simple pieces this will only define the actual size 
+        if minimum and maximum sizes are equal.
         """
         logger = get_logger()
         logger.info(f'Laying out {self.name}')
-        self.offset = copy.deepcopy(offset)
-        self.size = copy.deepcopy(self.constraints.preferred_size)
-        m = self.constraints.min_size
-        M = self.constraints.max_size
-        s = self.size.dim
+        self.computed_max_size = copy.deepcopy(self.constraints.max_size)
+        self.computed_min_Size = copy.deepcopy(self.constraints.min_size)
+        self.computed_size = copy.deepcopy(self.constraints.preferred_size)
+        m = self.computed_min_size
+        M = self.computed_max_size
+        s = self.computed_size.dim
         for i in range(3):
             if s[i] is not None:
                 if M[i] is not None:
@@ -198,7 +209,7 @@ class Piece(JSONable):
                     s[i] = m[i]
                 if M[i] is not None:
                     s[i] = M[i]
-        self.size.dim = s
+        self.computed_size.dim = s
         
 
 #--------------------------------------------------------------------
@@ -355,9 +366,25 @@ class CompositePiece(Piece):
             get_logger().warning(f'There is already a piece at position {position}.')
         self.parts[position] = piece
 
-    def apply_layout(self):
+    def layout(self):
+        #
+        #
+        # first fixed sizes and stuff, if defined
+        super().layout()
         if self.layout is None:
             raise ValueError(f'Layout not defined.')
+        #
+        # then we need to compute the final size of this and siblings depending
+        # on the layout strategy
+        # this is done in three steps:
+        #
+        # 1) downwards: propagate min/max size constraints down the tree
+        # 2) upwards: 
+        #    2.1 gather non-flexible sizes (minimum and fixed) from the siblings
+        #    2.2 compute remaining space
+        #    2.3 distribute among flexible elements 
+        # 3) downwards: assign sizes and positions
+        #
         self.layout.apply(self.volume,self.parts)
 
     def __str__(self):

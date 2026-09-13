@@ -38,7 +38,7 @@ def paint_volume(plotter:pv.Plotter, volume:Volume, color='gray'):
 
 
 def paint_void(plotter:pv.Plotter, obj:Void):
-    box = pv.Box(create_box(obj.offset,obj.size))
+    box = pv.Box(create_box(obj.computed_offset,obj.computed_size))
     plotter.add_mesh(box,show_edges=True,style='wireframe')
     return plotter
 
@@ -61,7 +61,7 @@ def paint_obj(plotter:pv.Plotter,obj:pv.PolyData,tex:Texture):
 def paint_block(plotter:pv.Plotter, obj:Sheet):
     size = obj.volume.size
     orig = obj.volume.offset
-    box = pv.Box(create_box(obj.offset,obj.size))
+    box = pv.Box(create_box(obj.computed_offset,obj.computed_size))
     material = obj.material
     texture = material.exterior
     if texture.texture_map is not None:
@@ -72,7 +72,7 @@ def paint_block(plotter:pv.Plotter, obj:Sheet):
 def paint_sheet(plotter:pv.Plotter, obj:Sheet):
     size = obj.volume.size
     orig = obj.volume.offset
-    box = pv.Box(create_box(obj.offset,obj.size))
+    box = pv.Box(create_box(obj.computed_offset,obj.computed_size))
     material = obj.material
     texture = material.exterior
     if texture.texture_map is not None:
@@ -89,7 +89,7 @@ def paint_sheet(plotter:pv.Plotter, obj:Sheet):
 def paint_beam(plotter:pv.Plotter, obj:Beam):
     size = obj.volume.size
     orig = obj.volume.offset
-    box = pv.Box(create_box(obj.offset,obj.size))
+    box = pv.Box(create_box(obj.computed_offset,obj.computed_size))
     material = obj.material
     texture = material.exterior
     if texture.texture_map is not None:
@@ -104,7 +104,7 @@ def paint_beam(plotter:pv.Plotter, obj:Beam):
 
 
 def paint_drawer_guide(plotter:pv.Plotter, obj:DrawerGuide):
-    box = pv.Box(create_box(obj.offset,obj.size))
+    box = pv.Box(create_box(obj.computed_offset,obj.computed_size))
     return paint_obj(plotter,box,obj.material.exterior)
 
 

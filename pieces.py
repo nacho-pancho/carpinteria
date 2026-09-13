@@ -56,10 +56,10 @@ class Block(Piece):
     
     def part_description(self):
         dims = ['?','?','?']
-        if self.size is not None:
+        if self.computed_size is not None:
             for i in range(3):
-                if self.size[i] is not None:
-                    dims[i] = self.size[i]
+                if self.computed_size[i] is not None:
+                    dims[i] = self.computed_size[i]
         w,d,h = dims        
         return f'block_of_{self.material.name}_{w}mm_x_{h}mm_x_{d}mm'
 
@@ -133,7 +133,7 @@ class Beam(Piece):
 
 
     def part_description(self):
-        length = self.size.dim[self.orientation]
+        length = self.computed_size.dim[self.orientation]
         if length is None:
             length = '?'
         return f'{self.material.name}_{self.thickness1}mm_x_{self.thickness2}mm_x_{length}'

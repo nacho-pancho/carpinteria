@@ -14,7 +14,7 @@ def bajomesada(nombre='bmes'):
     #
     # rellenamos los agujeros izquierda a derecha, de arriba a abajo
     #
-    # los primeros dos agujeros son simples. El ultimo es mas grand epero tiene la pileta
+    # los primeros dos agujeros son simples. El ultimo es mas grande epero tiene la pileta
     # así que cuenta como uno más, pero no me acuerdo qué tan ancho es
 
     grosor_placa = 15
@@ -22,7 +22,7 @@ def bajomesada(nombre='bmes'):
     alto_2 = 230 # para herramientas y cosas de esas
     alto_3 = 300 # para ollas, mas que bien. Entran botellas de productos de limpieza, etc, bastante altas. 
     altos = (alto_1,alto_2,alto_3)
-    guarda_vert = 5
+    guarda_vert = 10
     huecos = (510,510,1030)
     anchos = (510,510,400)
     prof  = 500 - 10
@@ -49,14 +49,68 @@ def bajomesada(nombre='bmes'):
     return piezas    
     
 
+"""
+* Profundidad: 55cm
+* Altura: 87m (pero vamos a rebajarla hasta el mismo tamaño que la otra, 69cm)
+* 4 agujeros: 4x51cm
+"""
+
+def isla(nombre='isla'):
+    #
+    # rellenamos los agujeros izquierda a derecha, de arriba a abajo
+    #
+    # los primeros dos agujeros son simples. El ultimo es mas grande epero tiene la pileta
+    # así que cuenta como uno más, pero no me acuerdo qué tan ancho es
+
+    grosor_placa = 15
+    alto_1 = 160 # para cubiertos y eso está bien
+    alto_2 = 230 # para herramientas y cosas de esas
+    alto_3 = 300 # para ollas, mas que bien. Entran botellas de productos de limpieza, etc, bastante altas. 
+    altos = (alto_1,alto_2,alto_3)
+    guarda_vert = 10
+    huecos = (510,510,1030)
+    anchos = (510,510,510,510)
+    prof  = 500 - 10
+
+    piezas = list()
+    x_cajon = 0
+    y_cajon = 0
+    for j in range(4):
+        z_cajon = np.sum(np.array(altos))
+        for i in range(3):
+            z_cajon -= altos[i]
+            cajon = carpinteria.crear_cajon(
+                f"{nombre}_caj_{i}{j}",                                        
+                ancho=anchos[j],
+                alto=altos[i]-guarda_vert,
+                profundidad=prof,
+                margen_horiz=grosor_placa//2-2,
+                color_base=carpinteria.COLOR_BLANCO,
+                color_frente=carpinteria.COLOR_DEBUG1)
+            carpinteria.trasladar(cajon,x_cajon,y_cajon,z_cajon)
+            piezas.extend(cajon)
+        x_cajon += huecos[j] + grosor_placa
+
 
 if __name__ == "__main__":
-    print("COMODA")
+    print("BAJOMESADA")
     ancho = 400
     alto  = 600
     prof  = 400
     margen = 10
-    piezas = bajomesada("cmd")
+    piezas = bajomesada("bajomesada")
     ass = carpinteria.ensamblar(piezas)
     ass.add(cq.Workplane().sphere(5))
-    vis.show(ass,title="COMODA")
+    vis.show(ass,title="BAJOMESADA")
+
+    print("ISLA")
+    ancho = 400
+    alto  = 600
+    prof  = 400
+    margen = 10
+    piezas = isla("isla")
+    ass = carpinteria.ensamblar(piezas)
+    ass.add(cq.Workplane().sphere(5))
+    vis.show(ass,title="ISLA")
+
+    print("BAÑO")

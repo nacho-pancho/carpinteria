@@ -91,6 +91,12 @@ def isla(nombre='isla'):
             piezas.extend(cajon)
         x_cajon += huecos[j] + grosor_placa
 
+def banio(nombre='banio'):
+    pass
+
+def placard():
+    pass
+
 
 if __name__ == "__main__":
     print("BAJOMESADA")
